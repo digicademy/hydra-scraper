@@ -1,6 +1,8 @@
 # Scraper for CVMA Web Data
 
-This script can grab API data from the CVMA website. To run the script, clone this repo, open a terminal in the resulting folder and run `python scra.py`.
+This script can grab API data from the CVMA website. To run the script, clone this repo, open a terminal in the resulting folder, check the `sourcesIteratorEnd` variable at the beginning of the script and run `python scra.py`.
+
+## Output configuration
 
 To specify which type of output you want, edit the `request` before running the script. You have the following options:
 
@@ -13,3 +15,11 @@ To specify which type of output you want, edit the `request` before running the 
 - `beacon-rdf`: beacon file with all RDF URLs (results stored in `cvma-beacon-rdf.txt`)
 - `beacon-ttl`: beacon file with all TTL (Turtle) URLs (results stored in `cvma-beacon-ttl.txt`)
 - `beacon-cgif`: beacon file with all CGIF (Culture Graph Interchange Format) URLs (results stored in `cvma-beacon-cgif.txt`)
+
+## Remove known API issues
+
+If you need to remove entries that cause issues, add them to the `knownIssues` list, such as:
+
+```python
+knownIssues = [ 'https://corpusvitrearum.de/id/F5877/about.' ]
+```
