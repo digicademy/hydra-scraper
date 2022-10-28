@@ -16,11 +16,31 @@
 
 # CONFIGURATION
 
-request = 'csv' # csv, dump-jsonld, dump-rdf, dump-ttl, dump-cgif, beacon-jsonld, beacon-rdf, beacon-ttl, beacon-cgif
-sourcesBase = 'https://corpusvitrearum.de/id/about.html?tx_vocabulary_about%5Bpage%5D='
+request = [
+    'csv'
+    #'dump-jsonld',
+    #'dump-rdf',
+    #'dump-ttl',
+    #'beacon-jsonld',
+    #'beacon-rdf',
+    #'beacon-ttl',
+]
+sourcesBase = 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html?tx_cvma_archive[%40widget_0][currentPage]='
+#sourcesBase = 'https://corpusvitrearum.de/id/about.html?tx_vocabulary_about%5Bpage%5D='
 sourcesIteratorStart = 1
-sourcesIteratorEnd = 155
-knownIssues = [ 'https://corpusvitrearum.de/id/F5877/about.' ]
+sourcesIteratorEnd = 160
+knownIssues = [
+    #'https://corpusvitrearum.de/id/F13073', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13074', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13075', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13076', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13077', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13072', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13071', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13070', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13069', # Apostrophe issue in CSV path
+    #'https://corpusvitrearum.de/id/F13068' # Apostrophe issue in CSV path
+]
 
 
 # STEP 1: IMPORT LIBRARIES
@@ -29,28 +49,25 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from time import sleep
 from json import loads
+from os import mkdir
 
 
 # STEP 2: DETERMINE REQUEST TYPE
 
-if request == 'csv':
+if 'csv' in request:
     print( 'Request: all metadata as comma-separated values' )
-elif request == 'dump-jsonld':
+elif 'dump-jsonld' in request:
     print( 'Request: dump of all JSON-LD files' )
-elif request == 'dump-rdf':
+elif 'dump-rdf' in request:
     print( 'Request: dump of all RDF files' )
-elif request == 'dump-ttl':
+elif 'dump-ttl' in request:
     print( 'Request: dump of all TTL (Turtle) files' )
-elif request == 'dump-cgif':
-    print( 'Request: dump of all CGIF (Culture Graph Interchange Format) files' )
-elif request == 'beacon-jsonld':
+elif 'beacon-jsonld' in request:
     print( 'Request: beacon file with all JSON-LD URLs' )
-elif request == 'beacon-rdf':
+elif 'beacon-rdf' in request:
     print( 'Request: beacon file with all RDF URLs' )
-elif request == 'beacon-ttl':
+elif 'beacon-ttl' in request:
     print( 'Request: beacon file with all TTL (Turtle) URLs' )
-elif request == 'beacon-cgif':
-    print( 'Request: beacon file with all CGIF (Culture Graph Interchange Format) URLs' )
 
 
 # STEP 3: LIST ALL SOURCES
@@ -72,9 +89,8 @@ for sourcesIterator in range( sourcesIteratorStart, sourcesIteratorEnd + 1 ):
 print( 'Identifying resource URLs' )
 
 # Variables
-resourcesBase = 'https://corpusvitrearum.de/id/'
-resourceAddition = '/about.'
 resources = []
+resourceAddition = '/about.'
 
 # Set up the parser
 for source in sources:
@@ -82,32 +98,45 @@ for source in sources:
     soup = BeautifulSoup( html, 'html.parser' )
 
     # Find the right section
-    sectionOuter = soup.find( 'div', {'id': 'content'} )
-    sectionInner = sectionOuter.find( 'div', {'class': 'container'} )
-    section = sectionInner.find( 'dl' )
-    rows = section.find_all( 'div' )
+    sectionA = soup.find( 'div', {'id': 'content'} )
+    sectionB = sectionA.find( 'div', {'class': 'container'} )
+    sectionC = sectionB.find( 'div', {'class': 'column-2-3'} )
+    sectionD = sectionC.find( 'div' )
+    sectionE = sectionD.find( 'div' )
+    rows = sectionE.find_all( 'div', {'rel': 'schema:dataFeedElement'} )
+    #sectionOuter = soup.find( 'div', {'id': 'content'} )
+    #sectionInner = sectionOuter.find( 'div', {'class': 'container'} )
+    #section = sectionInner.find( 'dl' )
+    #rows = section.find_all( 'div' )
 
     # Grab the right string
     for row in rows:
-        entry = row.find( 'dt' )
-        if entry.find( 'a' ):
-            entryElement = entry.find( 'a' )
-            entryID = entryElement['href']
-            if entryID[0] == 'F':
-                resources.append( resourcesBase + entryID + resourceAddition )
+        entry = row.find( 'div' )
+        if entry.find( 'div' ):
+            entryElement = entry.find( 'div' )
+            entryURL = entryElement['resource']
+            resources.append( entryURL )
+        #entry = row.find( 'dt' )
+        #if entry.find( 'a' ):
+            #entryElement = entry.find( 'a' )
+            #entryURL = entryElement['href']
+            #if entryURL[0] == 'F':
+                #resources.append( resourcesBase + entryURL + resourceAddition )
+
 
     # Let the server rest
     sleep(0.2)
 
 # Remove known issues
 for knownIssue in knownIssues:
-    resources.remove( knownIssue )
+    if knownIssue in resources:
+        resources.remove( knownIssue )
 
 
 # STEP 5A: GATHER DATA FROM RESOURCES
 
 # Check path
-if request == 'csv':
+if 'csv' in request:
 
     # Give an update
     print( 'Gathering data from resources' )
@@ -122,7 +151,7 @@ if request == 'csv':
     for resource in resources:
         output = ''
 
-        dataRaw = urlopen( resource + 'json' )
+        dataRaw = urlopen( resource + resourceAddition + 'json' )
 
         # Check whether JSON is valid
         try:
@@ -201,23 +230,30 @@ if request == 'csv':
 # STEP 5B: DOWNLOAD RESOURCES
 
 # Check path
-if request == 'dump-jsonld' or request == 'dump-rdf' or request == 'dump-ttl' or request == 'dump-cgif':
+if 'dump-jsonld' in request or 'dump-rdf' in request or 'dump-ttl' in request:
 
     # Give an update
     print( 'Downloading resources' )
 
     # Define file ending
-    fileExtension = request.replace( 'dump-', '')
+    for currentRequest in request:
+        fileExtension = currentRequest.replace( 'dump-', '')
+
+    # Create folder
+    try:
+        mkdir( 'cvma-dump-' + fileExtension )
+    except OSError as error:
+        print( '- Skipping folder creation' )
+        
 
     # Write one line per resource
     for resource in resources:
-        content = urlopen( resource + fileExtension )
+        content = urlopen( resource + resourceAddition + fileExtension ).read().decode( 'utf-8' )
         fileName = resource.replace( 'https://corpusvitrearum.de/id/', '')
-        fileName = 'cvma-dump-' + fileExtension + '/' + fileName.replace( '/about', '')
-        fileName = fileName + fileExtension
+        fileName = 'cvma-dump-' + fileExtension + '/' + fileName
 
         # Save content to file
-        f = open( fileName + fileExtension, 'w' )
+        f = open( fileName + '.' + fileExtension, 'w' )
         f.write( content )
         f.flush
 
@@ -225,20 +261,21 @@ if request == 'dump-jsonld' or request == 'dump-rdf' or request == 'dump-ttl' or
 # STEP 5C: COMPILE RESOURCE URLS
 
 # Check path
-if request == 'beacon-jsonld' or request == 'beacon-rdf' or request == 'beacon-ttl' or request == 'beacon-cgif':
+if 'beacon-jsonld' in request or 'beacon-rdf' in request or 'beacon-ttl' in request:
 
     # Give an update
     print( 'Compiling resource URLs' )
 
     # Define file ending
-    fileExtension = request.replace( 'beacon-', '')
+    for currentRequest in request:
+        fileExtension = currentRequest.replace( 'beacon-', '')
 
     # Open file
     f = open( 'cvma-beacon-' + fileExtension + '.txt', 'w' )
 
     # Write one line per resource
     for resource in resources:
-        f.write( resource + fileExtension + '\n' )
+        f.write( resource + '.' + fileExtension + '\n' )
         f.flush
 
 
