@@ -2,24 +2,26 @@
 
 This script can grab API data from the CVMA website. To run the script, clone this repo, open a terminal in the resulting folder, check the `sourcesIteratorEnd` variable at the beginning of the script and run `python scra.py`.
 
-## Output configuration
+## Configuration
 
-To specify which type of output you want, edit the `request` before running the script. You have the following options:
+To specify which type of output you want, edit the `request` list before running the script. You have the following options:
 
 - `csv`: all metadata as comma-separated values (results stored in `cvma-metadata.csv`)
 - `dump-jsonld`: dump of all JSON-LD files (results stored in `cvma-dump-jsonld`)
 - `dump-rdf`: dump of all RDF files (results stored in `cvma-dump-rdf`)
 - `dump-ttl`: dump of all TTL (Turtle) files (results stored in `cvma-dump-ttl`)
-- `dump-cgif`: dump of all CGIF (Culture Graph Interchange Format) files (results stored in `cvma-dump-cgif`)
 - `beacon-jsonld`: beacon file with all JSON-LD URLs (results stored in `cvma-beacon-jsonld.txt`)
 - `beacon-rdf`: beacon file with all RDF URLs (results stored in `cvma-beacon-rdf.txt`)
 - `beacon-ttl`: beacon file with all TTL (Turtle) URLs (results stored in `cvma-beacon-ttl.txt`)
-- `beacon-cgif`: beacon file with all CGIF (Culture Graph Interchange Format) URLs (results stored in `cvma-beacon-cgif.txt`)
-
-## Remove known API issues
 
 If you need to remove entries that cause issues, add them to the `knownIssues` list, such as:
 
 ```python
-knownIssues = [ 'https://corpusvitrearum.de/id/F5877/about.' ]
+knownIssues = [ 'https://corpusvitrearum.de/id/F5877' ]
 ```
+
+## Roadmap
+
+- Change logic to allow for several requests in one go
+- Consider configuration by command line input
+- Consider making iteration automatic (as an option)
