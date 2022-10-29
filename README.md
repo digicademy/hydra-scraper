@@ -4,9 +4,9 @@ This script can grab API data from the CVMA website. To run the script, clone th
 
 ## Configuration
 
-To specify which type of output you want, edit the `request` list before running the script. You have the following options:
+To specify which type of output you want, edit the `requests` list before running the script. You have the following options:
 
-- `csv`: all metadata as comma-separated values (results stored in `cvma-metadata.csv`)
+- `table-csv`: table of all metadata as comma-separated values (results stored in `cvma-metadata.csv`)
 - `dump-jsonld`: dump of all JSON-LD files (results stored in `cvma-dump-jsonld`)
 - `dump-rdf`: dump of all RDF files (results stored in `cvma-dump-rdf`)
 - `dump-ttl`: dump of all TTL (Turtle) files (results stored in `cvma-dump-ttl`)
@@ -19,9 +19,3 @@ If you need to remove entries that cause issues, add them to the `knownIssues` l
 ```python
 knownIssues = [ 'https://corpusvitrearum.de/id/F5877' ]
 ```
-
-## Roadmap
-
-- Change logic to allow for several requests in one go
-- Consider configuration by command line input
-- Consider making iteration automatic (as an option)
