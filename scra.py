@@ -18,36 +18,31 @@
 
 # List all requests
 requests = [
-    #'beacon-jsonld',
+    #'beacon-json',
     #'beacon-rdf',
     #'beacon-ttl',
-    #'dump-jsonld',
+    #'beacon-cgif',
+    #'dump-json',
     #'dump-rdf',
     #'dump-ttl',
+    #'dump-cgif',
     'table-csv'
 ]
 
-# Configure source URLs
-sourcesBase = 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html?tx_cvma_archive[%40widget_0][currentPage]='
-#sourcesBase = 'https://corpusvitrearum.de/id/about.html?tx_vocabulary_about%5Bpage%5D='
+# Configure URLs
+#sourcesBase = 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html?tx_cvma_archive[%40widget_0][currentPage]='
+sourcesBase = 'https://corpusvitrearum.de/id/about.html?tx_vocabulary_about%5Bpage%5D='
 sourcesIteratorStart = 1
-sourcesIteratorEnd = 160
+sourcesIteratorEnd = 101
+resourcesBase = 'https://corpusvitrearum.de/id/'
+resourceAddition = '/about.'
 
 # Rest period for the server in seconds
 rest = 0.1
 
 # List all known issues
 knownIssues = [
-    #'https://corpusvitrearum.de/id/F13073', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13074', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13075', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13076', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13077', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13072', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13071', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13070', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13069', # Produces an apostrophe issue in the CSV path
-    #'https://corpusvitrearum.de/id/F13068'  # Produces an apostrophe issue in the CSV path
+    #'https://corpusvitrearum.de/id/F13073'
 ]
 
 
@@ -69,13 +64,13 @@ requestInfoSeparator = ', '
 requestInfoBeginning = 'Requested: '
 
 # Add 'beacon' string if applicable
-if 'beacon-jsonld' in requests or 'beacon-rdf' in requests or 'beacon-turtle' in requests:
+if 'beacon-json' in requests or 'beacon-rdf' in requests or 'beacon-ttl' in requests or 'beacon-cgif' in requests:
     if requestInfo != '':
         requestInfo += requestInfoSeparator
     requestInfo += 'beacon ('
 
     # Go through individual 'beacon' formats
-    if 'beacon-jsonld' in requests:
+    if 'beacon-json' in requests:
         if requestInfoSubinfo != '':
             requestInfoSubinfo += requestInfoSeparator
         requestInfoSubinfo += 'JSON-LD'
@@ -87,19 +82,23 @@ if 'beacon-jsonld' in requests or 'beacon-rdf' in requests or 'beacon-turtle' in
         if requestInfoSubinfo != '':
             requestInfoSubinfo += requestInfoSeparator
         requestInfoSubinfo += 'TTL'
+    if 'beacon-cgif' in requests:
+        if requestInfoSubinfo != '':
+            requestInfoSubinfo += requestInfoSeparator
+        requestInfoSubinfo += 'CGIF'
 
     # Close the string
     requestInfo += requestInfoSubinfo + ')'
     requestInfoSubinfo = ''
 
 # Add 'dump' string if applicable
-if 'dump-jsonld' in requests or 'dump-rdf' in requests or 'dump-turtle' in requests:
+if 'dump-json' in requests or 'dump-rdf' in requests or 'dump-ttl' in requests or 'dump-cgif' in requests:
     if requestInfo != '':
         requestInfo += requestInfoSeparator
     requestInfo += 'dump ('
 
     # Go through individual 'dump' formats
-    if 'dump-jsonld' in requests:
+    if 'dump-json' in requests:
         if requestInfoSubinfo != '':
             requestInfoSubinfo += requestInfoSeparator
         requestInfoSubinfo += 'JSON-LD'
@@ -111,6 +110,10 @@ if 'dump-jsonld' in requests or 'dump-rdf' in requests or 'dump-turtle' in reque
         if requestInfoSubinfo != '':
             requestInfoSubinfo += requestInfoSeparator
         requestInfoSubinfo += 'TTL'
+    if 'dump-cgif' in requests:
+        if requestInfoSubinfo != '':
+            requestInfoSubinfo += requestInfoSeparator
+        requestInfoSubinfo += 'CGIF'
 
     # Close the string
     requestInfo += requestInfoSubinfo + ')'
@@ -154,9 +157,8 @@ for sourcesIterator in range( sourcesIteratorStart, sourcesIteratorEnd + 1 ):
 # Give an update
 print( 'Identifying resource URLs' )
 
-# Variables
+# Variable
 resources = []
-resourceAddition = '/about.'
 
 # Set up the parser
 for source in sources:
@@ -164,34 +166,19 @@ for source in sources:
     soup = BeautifulSoup( html, 'html.parser' )
 
     # Find the right section
-    sectionA = soup.find( 'div', {'id': 'content'} )
-    sectionB = sectionA.find( 'div', {'class': 'container'} )
-    sectionC = sectionB.find( 'div', {'class': 'column-2-3'} )
-    sectionD = sectionC.find( 'div' )
-    sectionE = sectionD.find( 'div' )
-    rows = sectionE.find_all( 'div', {'rel': 'schema:dataFeedElement'} )
-
-    # Alternative path to be activated when the API list is ready
-    #sectionOuter = soup.find( 'div', {'id': 'content'} )
-    #sectionInner = sectionOuter.find( 'div', {'class': 'container'} )
-    #section = sectionInner.find( 'dl' )
-    #rows = section.find_all( 'div' )
+    sectionOuter = soup.find( 'div', {'id': 'content'} )
+    sectionInner = sectionOuter.find( 'div', {'class': 'container'} )
+    section = sectionInner.find( 'dl' )
+    rows = section.find_all( 'div' )
 
     # Grab the right string
     for row in rows:
-        entry = row.find( 'div' )
-        if entry.find( 'div' ):
-            entryElement = entry.find( 'div' )
-            entryURL = entryElement['resource']
-            resources.append( entryURL )
-
-        # Alternative path to be activated when the API list is ready
-        #entry = row.find( 'dt' )
-        #if entry.find( 'a' ):
-            #entryElement = entry.find( 'a' )
-            #entryURL = entryElement['href']
-            #if entryURL[0] == 'F':
-                #resources.append( resourcesBase + entryURL + resourceAddition )
+        entry = row.find( 'dt' )
+        if entry.find( 'a' ):
+            entryElement = entry.find( 'a' )
+            entryURL = entryElement['href']
+            if entryURL[0] == 'F':
+                resources.append( resourcesBase + entryURL )
 
     # Let the server rest
     sleep( rest )
@@ -206,7 +193,7 @@ for knownIssue in knownIssues:
 
 # Go through all 'beacon' requests
 for request in requests:
-    if request == 'beacon-jsonld' or request == 'beacon-rdf' or request == 'beacon-ttl':
+    if request == 'beacon-json' or request == 'beacon-rdf' or request == 'beacon-ttl' or request == 'beacon-cgif':
 
         # Give an update
         print( 'Compiling a beacon file' )
@@ -217,7 +204,7 @@ for request in requests:
 
         # For each resource, write a single line
         for resource in resources:
-            f.write( resource + '.' + fileExtension + '\n' )
+            f.write( resource + resourceAddition + fileExtension + '\n' )
             f.flush
 
 
@@ -225,7 +212,7 @@ for request in requests:
 
 # Go through all 'dump' requests
 for request in requests:
-    if request == 'dump-jsonld' or request == 'dump-rdf' or request == 'dump-ttl':
+    if request == 'dump-json' or request == 'dump-rdf' or request == 'dump-ttl' or request == 'dump-cgif':
 
         # Give an update
         print( 'Compiling a resource dump' )
@@ -240,7 +227,7 @@ for request in requests:
         # For each resource, download content
         for resource in resources:
             content = urlopen( resource + resourceAddition + fileExtension ).read().decode( 'utf-8' )
-            fileName = resource.replace( 'https://corpusvitrearum.de/id/', '')
+            fileName = resource.replace( resourcesBase, '')
             fileName = 'cvma-dump-' + fileExtension + '/' + fileName
 
             # And save it to a file
