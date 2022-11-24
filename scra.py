@@ -29,6 +29,36 @@ requests = [
     'table-csv'
 ]
 
+# Fields to grab
+header = [
+    'ID',
+    'Title',
+    'State',
+    'City',
+    'Building',
+    'Location ID',
+    'Location Latitude',
+    'Location Longitude',
+    'Date Beginning',
+    'Date End',
+    'Iconclasses'
+]
+fields = [
+    '@id',
+    'dc:Title',
+    'Iptc4xmpExt:ProvinceState',
+    'Iptc4xmpExt:City',
+    'Iptc4xmpExt:Sublocation',
+    'Iptc4xmpExt:LocationId',
+    'exif:GPSLatitude',
+    'exif:GPSLongitude',
+    'cvma:AgeDeterminationStart'
+    'cvma:AgeDeterminationEnd'
+]
+cleanUps = [
+    [ 'http://iconclass.org/', '' ]
+]
+
 # Configure URLs
 #sourcesBase = 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html?tx_cvma_archive[%40widget_0][currentPage]='
 sourcesBase = 'https://corpusvitrearum.de/id/about.html?tx_vocabulary_about%5Bpage%5D='
@@ -51,8 +81,11 @@ knownIssues = [
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from time import sleep
-from json import loads
 from os import mkdir
+
+from compile import compileDataFromJson
+from clean import cleanTable
+from fileio import saveTableAsCsv
 
 
 # STEP 2: DETERMINE REQUEST TYPE ##############################################
@@ -239,98 +272,16 @@ for request in requests:
             sleep( rest )
 
 
-# STEP 7: COMPILE METADATA TABLES #############################################
+# COMPILE DATA TABLES #########################################################
 
 # Go through all 'table' requests
 for request in requests:
     if request == 'table-csv':
-
-        # Give an update
+        # Change resources to resource + resourceAddition + 'json'
         print( 'Compiling a metadata table' )
-
-        # Open file and write headers
-        f = open( 'cvma-metadata.csv', 'w' )
-        header = '"ID","Title","State","City","Building","Location ID","Location Latitude","Location Longitude","Date Beginning","Date End","Iconclasses"\n'
-        f.write( header )
-        f.flush
-
-        # For each resource, download the JSON content
-        for resource in resources:
-            output = ''
-            dataRaw = urlopen( resource + resourceAddition + 'json' )
-
-            # Check whether JSON is valid
-            try:
-                data = loads( dataRaw.read() )
-
-                # Add required data to output
-                if data.get('@id'):
-                    output += '"' + data.get( '@id' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('dc:Title'):
-                    output += '"' + data.get( 'dc:Title' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('Iptc4xmpExt:ProvinceState'):
-                    output += '"' + data.get( 'Iptc4xmpExt:ProvinceState' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('Iptc4xmpExt:City'):
-                    output += '"' + data.get( 'Iptc4xmpExt:City' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('Iptc4xmpExt:Sublocation'):
-                    output += '"' + data.get( 'Iptc4xmpExt:Sublocation' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('Iptc4xmpExt:LocationId'):
-                    output += '"' + data.get( 'Iptc4xmpExt:LocationId' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('exif:GPSLatitude'):
-                    output += '"' + data.get( 'exif:GPSLatitude' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('exif:GPSLongitude'):
-                    output += '"' + data.get( 'exif:GPSLongitude' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('cvma:AgeDeterminationStart'):
-                    output += '"' + data.get( 'cvma:AgeDeterminationStart' ) + '",'
-                else:
-                    output += '"",'
-                if data.get('cvma:AgeDeterminationEnd'):
-                    output += '"' + data.get( 'cvma:AgeDeterminationEnd' ) + '",'
-                else:
-                    output += '"",'
-
-                # Add iconclasses
-                removeIconclass = 'http://iconclass.org/'
-                if data.get( 'cvma:IconclassNotation' ):
-                    dataIconclasses = data.get( 'cvma:IconclassNotation' )
-                    outputIconclasses = ''
-                    for dataIconclass in dataIconclasses:
-                        outputIconclass = dataIconclass.replace( removeIconclass, '' )
-                        if outputIconclasses == '':
-                            outputIconclassesSeparator = ''
-                        else:
-                            outputIconclassesSeparator = ';'
-                        outputIconclasses += outputIconclassesSeparator + outputIconclass
-                    output += '"' + outputIconclasses + '"\n'
-                else:
-                    output += '""\n'
-
-                # Save output to file
-                f.write( output )
-                f.flush
-
-            # Make a note if JSON is not valid
-            except ValueError as e:
-                print( '- Invalid: ' + resource )
-
-            # Let the server rest
-            sleep( rest )
+        table = compileDataFromJson( resources, fields, rest )
+        table = cleanTable( table, cleanUps )
+        saveTableAsCsv( header, table, 'cvma-metadata' )
 
 
 # STEP 8: DONE ################################################################
