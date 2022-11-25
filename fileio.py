@@ -15,6 +15,24 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
+def saveListAsTxt( list:list, fileName:str ):
+    '''
+    Saves a one-dimensional list as a text file
+
+        Parameters:
+            list (list): Simple one-dimensional list
+            fileName (str): Name of the file to save
+    '''
+
+    # Open the file
+    f = open( fileName + '.txt', 'w' )
+
+    # For each list entry, write a single line
+    for listEntry in list:
+        f.write( listEntry + '\n' )
+        f.flush
+
+
 def saveTableAsCsv( header:list, table:list, fileName:str ):
     '''
     Saves a table-like multidimensional list as a comma-separated value file
