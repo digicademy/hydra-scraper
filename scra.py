@@ -14,79 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-# CONFIGURATION ###############################################################
 
-# List all requests
-requests = [
-    'beacon-json',
-    'beacon-rdf',
-    'beacon-ttl',
-    'beacon-cgif',
-    'listdump-json',
-    'listdump-rdf',
-    'listdump-ttl',
-    'listdump-cgif',
-    'dump-json',
-    'dump-rdf',
-    'dump-ttl',
-    'dump-cgif',
-    'table-csv'
-]
-
-# Fields to grab
-header = [
-    'ID',
-    'Title',
-    'State',
-    'City',
-    'Building',
-    'Location ID',
-    'Location Latitude',
-    'Location Longitude',
-    'Date Beginning',
-    'Date End',
-    'Iconclasses'
-]
-fields = [
-    '@id',
-    'dc:Title',
-    'Iptc4xmpExt:ProvinceState',
-    'Iptc4xmpExt:City',
-    'Iptc4xmpExt:Sublocation',
-    'Iptc4xmpExt:LocationId',
-    'exif:GPSLatitude',
-    'exif:GPSLongitude',
-    'cvma:AgeDeterminationStart'
-    'cvma:AgeDeterminationEnd'
-]
-cleanUps = [
-    [ 'http://iconclass.org/', '' ]
-]
-
-# Configure URLs
-#sourcesBase = 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html?tx_cvma_archive[%40widget_0][currentPage]='
-sourcesBase = 'https://corpusvitrearum.de/id/about.html?tx_vocabulary_about%5Bpage%5D='
-sourcesIteratorStart = 1
-sourcesIteratorEnd = 101
-resourcesBase = 'https://corpusvitrearum.de/id/'
-resourceAddition = '/about.'
-
-# Rest period for the server in seconds
-rest = 0.1
-
-# List all known issues
-knownIssues = [
-    #'https://corpusvitrearum.de/id/F13073'
-]
-
-
-# STEP 1: IMPORT LIBRARIES ####################################################
-
+# Import libraries
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from time import sleep
 from os import mkdir
 
+# Import script modules
+from config import * # TODO
 #from status import * # TODO
 from compile import *
 from clean import *
