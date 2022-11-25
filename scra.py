@@ -18,14 +18,18 @@
 
 # List all requests
 requests = [
-    #'beacon-json',
-    #'beacon-rdf',
-    #'beacon-ttl',
-    #'beacon-cgif',
-    #'dump-json',
-    #'dump-rdf',
-    #'dump-ttl',
-    #'dump-cgif',
+    'beacon-json',
+    'beacon-rdf',
+    'beacon-ttl',
+    'beacon-cgif',
+    'listdump-json',
+    'listdump-rdf',
+    'listdump-ttl',
+    'listdump-cgif',
+    'dump-json',
+    'dump-rdf',
+    'dump-ttl',
+    'dump-cgif',
     'table-csv'
 ]
 
@@ -83,6 +87,34 @@ if 'beacon-json' in requests or 'beacon-rdf' in requests or 'beacon-ttl' in requ
             requestInfoSubinfo += requestInfoSeparator
         requestInfoSubinfo += 'TTL'
     if 'beacon-cgif' in requests:
+        if requestInfoSubinfo != '':
+            requestInfoSubinfo += requestInfoSeparator
+        requestInfoSubinfo += 'CGIF'
+
+    # Close the string
+    requestInfo += requestInfoSubinfo + ')'
+    requestInfoSubinfo = ''
+
+# Add 'listdump' string if applicable
+if 'listdump-json' in requests or 'listdump-rdf' in requests or 'listdump-ttl' in requests or 'listdump-cgif' in requests:
+    if requestInfo != '':
+        requestInfo += requestInfoSeparator
+    requestInfo += 'list dump ('
+
+    # Go through individual 'dump' formats
+    if 'listdump-json' in requests:
+        if requestInfoSubinfo != '':
+            requestInfoSubinfo += requestInfoSeparator
+        requestInfoSubinfo += 'JSON-LD'
+    if 'listdump-rdf' in requests:
+        if requestInfoSubinfo != '':
+            requestInfoSubinfo += requestInfoSeparator
+        requestInfoSubinfo += 'RDF'
+    if 'listdump-ttl' in requests:
+        if requestInfoSubinfo != '':
+            requestInfoSubinfo += requestInfoSeparator
+        requestInfoSubinfo += 'TTL'
+    if 'listdump-cgif' in requests:
         if requestInfoSubinfo != '':
             requestInfoSubinfo += requestInfoSeparator
         requestInfoSubinfo += 'CGIF'
@@ -208,7 +240,44 @@ for request in requests:
             f.flush
 
 
-# STEP 6: COMPILE RESOURCE DUMPS ##############################################
+# STEP 6: COMPILE SOURCE DUMPS ###############################################
+
+# Go through all 'listdump' requests
+for request in requests:
+    if request == 'listdump-json' or request == 'listdump-rdf' or request == 'listdump-ttl' or request == 'listdump-cgif':
+
+        # Give an update
+        print( 'Compiling a list dump' )
+
+        # Determine requested file extension and create folder
+        fileExtension = request.replace( 'listdump-', '')
+        try:
+            mkdir( 'cvma-listdump-' + fileExtension )
+        except OSError as error:
+            print( '- Using an existing folder' )
+
+        # Compile all lists to download
+        lists = [w.replace('html', fileExtension) for w in sources]
+
+        # Download and save each list
+        listiterator = 0
+        for individuallist in lists:
+            listiterator = listiterator + 1
+
+            content = urlopen( individuallist ).read().decode( 'utf-8' )
+            fileName = 'list-' + str(listiterator).zfill(3)
+            fileName = 'cvma-listdump-' + fileExtension + '/' + fileName
+
+            # And save it to a file
+            f = open( fileName + '.' + fileExtension, 'w' )
+            f.write( content )
+            f.flush
+
+            # Let the server rest
+            sleep( rest )
+
+
+# STEP 7: COMPILE RESOURCE DUMPS ##############################################
 
 # Go through all 'dump' requests
 for request in requests:
@@ -239,7 +308,7 @@ for request in requests:
             sleep( rest )
 
 
-# STEP 7: COMPILE METADATA TABLES #############################################
+# STEP 8: COMPILE METADATA TABLES #############################################
 
 # Go through all 'table' requests
 for request in requests:
@@ -333,7 +402,7 @@ for request in requests:
             sleep( rest )
 
 
-# STEP 8: DONE ################################################################
+# STEP 9: DONE ################################################################
 
 # Give an update
 print( 'Done!' )
