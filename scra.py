@@ -1,4 +1,4 @@
-# Scraper for API Data
+# Simple Scraper for API Data
 # Copyright (C) 2022 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
 #
 # This program is free software: you can redistribute it and/or modify

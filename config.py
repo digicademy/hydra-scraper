@@ -44,7 +44,7 @@ fileNameRemove = [
     '/about.'
 ]
 
-# Exclude entries that produce errors
+# Exclude resource items that produce errors
 excludeItems = [
     # 'https://corpusvitrearum.de/id/F13073/about.json'
 ]
@@ -79,7 +79,8 @@ fields = [
     'exif:GPSLatitude',
     'exif:GPSLongitude',
     'cvma:AgeDeterminationStart',
-    'cvma:AgeDeterminationEnd'
+    'cvma:AgeDeterminationEnd',
+    'cvma:IconclassNotation'
 ]
 
 # Search and replace patterns across all fields
