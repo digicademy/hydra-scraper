@@ -91,6 +91,13 @@ from compile import compileDataFromJson
 from clean import cleanTable
 from fileio import saveTableAsCsv
 
+# Status
+# Compile sources (using different formats!)
+# Compile resources (using different formats)
+# List dumps
+# File dumps
+# Save as beacon file (different formats)
+
 
 # STEP 2: DETERMINE REQUEST TYPE ##############################################
 

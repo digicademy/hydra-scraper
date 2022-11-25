@@ -33,8 +33,6 @@ def saveTableAsCsv( header:list, table:list, fileName:str ):
     f.write( headerString )
     f.flush
 
-    # TODO Clean up entries (lists into strings, everything else into strings)
-
     # Write table line by line
     for tableLine in table:
         tableString = '"' + '","'.join( tableLine ) + '"\n'
