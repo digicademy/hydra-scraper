@@ -1,4 +1,4 @@
-# Scraper for CVMA Web Data
+# Scraper for API Data
 # Copyright (C) 2022 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -87,22 +87,15 @@ from bs4 import BeautifulSoup
 from time import sleep
 from os import mkdir
 
-from compile import compileDataFromJson
-from clean import cleanTable
-from fileio import saveListAsTxt
-from fileio import saveTableAsCsv
+#from status import * # TODO
+from compile import *
+from clean import *
+from fileio import *
 
-# Status
 # Compile sources (using different formats!)
 # Compile resources (using different formats)
 # List dumps
 # File dumps
-# Save as beacon file (different formats)
-
-
-# STEP 2: DETERMINE REQUEST TYPE ##############################################
-
-# TODO Status
 
 
 # STEP 3: IDENTIFY ALL SOURCES ################################################
