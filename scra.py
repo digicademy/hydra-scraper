@@ -22,16 +22,51 @@ from time import sleep
 from os import mkdir
 
 # Import script modules
-from config import * # TODO
-#from status import * # TODO
+from config import *
+from status import *
+from retrieval import *
 from compile import *
 from clean import *
 from fileio import *
 
-# Compile sources (using different formats!)
-# Compile resources (using different formats)
-# List dumps
-# File dumps
+
+# CLEAN AND ECHO SCRIPT CONFIGURATION #########################################
+
+
+# Clean requests and formats
+requests = cleanRequests( requests )
+formats = cleanFormats( formats )
+
+# Echo them
+echoRequests( requests, formats )
+
+
+# BEACON AND LISTS ############################################################
+
+
+# Go through each format
+for format in formats:
+
+    # Create the folder to use for this format
+    if 'beacon and lists' in requests:
+        formatFolder = format[1]
+        formatFolderEcho = formatFolder.upper()
+        createFolder( format[1] )
+
+        # Cycle through lists and save items as beacon file
+        print( formatFolderEcho + ': Downloading all lists' )
+        beacon = retrieveApiLists( format[0], format[1], format[2] )
+        print( formatFolderEcho + ': Creating a beacon file' )
+        saveListAsTxt( beacon, format[1] + '/' + 'beacon' )
+
+
+# ITEMS #######################################################################
+# TABLE #######################################################################
+
+
+
+
+
 
 
 # STEP 3: IDENTIFY ALL SOURCES ################################################

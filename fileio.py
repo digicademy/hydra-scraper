@@ -15,6 +15,24 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
+# Import libraries
+from os import mkdir
+
+
+def createFolder( folderName:str ):
+    '''
+    Creates a folder with a given name in the script's directory
+
+        Parameters:
+            folderName (str): Name of the folder to create
+    '''
+
+    try:
+        mkdir( folderName )
+    except OSError as error:
+        print( '- Using an existing folder (' + folderName + ')' )
+
+
 def saveListAsTxt( list:list, fileName:str ):
     '''
     Saves a one-dimensional list as a text file

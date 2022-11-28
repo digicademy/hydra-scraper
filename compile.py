@@ -15,6 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
+# Import libraries
 from urllib.request import urlopen
 from json import loads
 from time import sleep

@@ -15,12 +15,12 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-# Formats to access
+# Formats to access (parser, local storage folder to create, entry-point URL)
 formats = [
-    [ 'json', 'https://corpusvitrearum.de/id/about.json' ],
-    [ 'rdf', 'https://corpusvitrearum.de/id/about.rdf' ],
-    [ 'ttl', 'https://corpusvitrearum.de/id/about.ttl' ],
-    [ 'cgif', 'https://corpusvitrearum.de/id/about.cgif' ]
+    [ 'json-ld', 'json', 'https://corpusvitrearum.de/id/about.json' ],
+    [ 'rdf-xml', 'rdf', 'https://corpusvitrearum.de/id/about.rdf' ],
+    [ 'turtle', 'ttl', 'https://corpusvitrearum.de/id/about.ttl' ],
+    [ 'json-ld', 'cgif', 'https://corpusvitrearum.de/id/about.cgif' ]
 ]
 
 # List of requests

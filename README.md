@@ -1,19 +1,25 @@
 # Scra.py: A Simple Scraper for API Data
 
+- Version: 0.5
+- Author: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de))
+- Requirements: Python 3, `validators` package
+
+## Description
+
 This script can grab API data, create beacon files and file dumps, and compile data tables to check data and API functionality from outside the source system. Scra.py was originally developed as part of the Corpus Vitrearum Medii Aevi Germany at the Academy of Sciences and Literature Mainz.
 
 To run the script, clone this repo, open a terminal in the resulting folder, rename the `config-template.py` file to `config.py`, and adapt the variables to the API you seek to harvest. When the config file is ready, open a terminal in the script's folder and run `python scra.py`.
 
 ## Configuration
 
-The script needs a least three variables as input: `formats`, `requests`, and `rest`. The first one should contain all API formats to call, along with all the starting URLs. For pagination, Scra.py assumes Hydra links (i.e. `hydra:first`, `hydra:last`, `hydra:previous`, and `hydra:next`). The script currently supports JSON-LD, RDF XML, and Turtle-based formats.
+The script needs a least three variables as input: `formats`, `requests`, and `rest`. The first one should contain all API formats to call, including the parser to use, a folder name for storage, and the entry-point URL. For pagination, Scra.py currently assumes that Hydra links (i.e. `hydra:first`, `hydra:last`, `hydra:previous`, and `hydra:next`) are present. The script supports JSON-LD, RDF XML, and Turtle-based files.
 
 ```python
 formats = [
-    [ 'json', 'https://corpusvitrearum.de/id/about.json' ],
-    [ 'rdf', 'https://corpusvitrearum.de/id/about.rdf' ],
-    [ 'ttl', 'https://corpusvitrearum.de/id/about.ttl' ],
-    [ 'cgif', 'https://corpusvitrearum.de/id/about.cgif' ]
+    [ 'json-ld', 'json', 'https://corpusvitrearum.de/id/about.json' ],
+    [ 'rdf-xml', 'rdf', 'https://corpusvitrearum.de/id/about.rdf' ],
+    [ 'turtle', 'ttl', 'https://corpusvitrearum.de/id/about.ttl' ],
+    [ 'json-ld', 'cgif', 'https://corpusvitrearum.de/id/about.cgif' ]
 ]
 ```
 
