@@ -47,15 +47,19 @@ echoRequests( requests, formats )
 # Go through each format
 for format in formats:
 
+    # Make central format info available
+    formatFolder = format[1]
+    formatFolderEcho = formatFolder.upper()
+
     # Create the folder to use for this format
     if 'beacon and lists' in requests:
-        formatFolder = format[1]
-        formatFolderEcho = formatFolder.upper()
         createFolder( format[1] )
 
-        # Cycle through lists and save items as beacon file
+        # Cycle through lists
         print( formatFolderEcho + ': Downloading all lists' )
         beacon = retrieveApiLists( format[0], format[1], format[2] )
+
+        # Save item URLs as beacon file
         print( formatFolderEcho + ': Creating a beacon file' )
         saveListAsTxt( beacon, format[1] + '/' + 'beacon' )
 
@@ -64,22 +68,26 @@ for format in formats:
 # TABLE #######################################################################
 
 
+    # TODO Table generation
+    if 'beacon and lists' in requests and 'items' in requests and 'table' in requests:
+        # Change resources to resource + resourceAddition + 'json'
+        print( 'Compiling a metadata table' )
+        table = compileDataFromJson( resources, fields, rest )
+        table = cleanTable( table, cleanUps )
+        saveTableAsCsv( header, table, 'cvma-metadata' )
+
+
+# FINISH ######################################################################
+
+# All done
+print( 'All done!' )
 
 
 
 
 
-# STEP 3: IDENTIFY ALL SOURCES ################################################
 
-# Give an update
-print( 'Identifying source URLs' )
 
-# Variable
-sources = []
-
-# Compile all source URLs by adding the right number to the base
-for sourcesIterator in range( sourcesIteratorStart, sourcesIteratorEnd + 1 ):
-    sources.append( sourcesBase + str( sourcesIterator ) )
 
 
 # STEP 4: IDENTIFY ALL RESOURCES ##############################################
@@ -201,21 +209,3 @@ for request in requests:
 
             # Let the server rest
             sleep( rest )
-
-
-# COMPILE DATA TABLES #########################################################
-
-# Go through all 'table' requests
-for request in requests:
-    if request == 'table-csv':
-        # Change resources to resource + resourceAddition + 'json'
-        print( 'Compiling a metadata table' )
-        table = compileDataFromJson( resources, fields, rest )
-        table = cleanTable( table, cleanUps )
-        saveTableAsCsv( header, table, 'cvma-metadata' )
-
-
-# STEP 9: DONE ################################################################
-
-# Give an update
-print( 'Done!' )

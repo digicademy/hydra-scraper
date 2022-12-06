@@ -2,7 +2,7 @@
 
 - Version: 0.5
 - Author: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de))
-- Requirements: Python 3, `validators` package
+- Requirements: Python 3, `validators` module, `rdflib` module
 
 ## Description
 

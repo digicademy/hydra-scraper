@@ -33,6 +33,22 @@ def createFolder( folderName:str ):
         print( '- Using an existing folder (' + folderName + ')' )
 
 
+def saveAsFile( content:str, fileName:str, fileExtension ):
+    '''
+    Saves content to a file with a specified name and extension
+
+        Parameters:
+            content (str): Content to be saved to file
+            fileName (str): Name of the file to create
+            fileExtension (str): Extension of the file to create
+    '''
+
+    # Write content to file
+    f = open( fileName + '.' + fileExtension, 'w' )
+    f.write( content )
+    f.flush
+
+
 def saveListAsTxt( list:list, fileName:str ):
     '''
     Saves a one-dimensional list as a text file

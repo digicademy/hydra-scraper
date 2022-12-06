@@ -15,6 +15,14 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
+# Import libraries
+from urllib.request import urlopen
+from rdflib import Graph
+
+# Import script modules
+from fileio import *
+
+
 def retrieveApiLists( formatParser:str, formatFolder:str, formatUrl:str ) -> list:
     '''
     Retrieves and paginates through API lists, saves them, and returns a beacon list
@@ -28,11 +36,46 @@ def retrieveApiLists( formatParser:str, formatFolder:str, formatUrl:str ) -> lis
             list: Beacon list containing item URLs generated from the API calls
     '''
 
-    # Download list file
-    # Save the file
-    # Get data for the beacon
+    # Iterator
+    listNumber = 1
+    listFinalUrl = ''
+
+    # Determine file extension
+    fileExtension = 'txt'
+    if formatParser == 'json-ld':
+        fileExtension = 'json'
+    elif formatParser == 'rdf-xml':
+        fileExtension = 'rdf'
+    elif formatParser == 'turtle':
+        fileExtension = 'ttl'
+
+    # Download and save list file
+    content = downloadFile( formatUrl )
+    saveAsFile( content, formatFolder + '/' + 'list-' + listNumber, fileExtension )
+
+    # Parse the file
+    g = Graph().parse( data=content )
+    for r in g.triples((None, None, None)):
+        print(r)
+    # prints: (rdflib.term.URIRef('a:'), rdflib.term.URIRef('p:'), rdflib.term.URIRef('p:'))
+
+
+    # Get data for beacon and final/next link
     # Repeat
     # Return the beacon list
 
-    listContent = downloadFile( format[2] )
-    saveFile( format[1] + '/' +  )
+
+
+def downloadFile( url:str ) -> str:
+    '''
+    Downloads a file from a URL and returns the content
+
+        Parameters:
+            url (str): Name of the URL to download the file from
+        
+        Returns:
+            str: Content of the downloaded file
+    '''
+
+    # Get the URL's content
+    return urlopen( url ).read().decode( 'utf-8' )
