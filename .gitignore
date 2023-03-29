@@ -1,14 +1,10 @@
 cvma-metadata.csv
-cvma-beacon-json.txt
+cvma-beacon-jsonld.txt
 cvma-beacon-rdf.txt
 cvma-beacon-ttl.txt
 cvma-beacon-cgif.txt
-cvma-dump-json/*
+cvma-dump-jsonld/*
 cvma-dump-rdf/*
 cvma-dump-ttl/*
 cvma-dump-cgif/*
-cvma-listdump-json/*
-cvma-listdump-rdf/*
-cvma-listdump-ttl/*
-cvma-listdump-cgif/*
 issues.md
