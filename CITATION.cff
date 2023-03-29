@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: Hydra Scraper
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jonatan Jalle
+    family-names: Steller
+    email: jonatan.steller@adwmainz.de
+    affiliation: Academy of Sciences and Literature Mainz
+    orcid: 'https://orcid.org/0000-0002-5101-5275'
+repository-code: >-
+  https://gitlab.rlp.net/adwmainz/digicademy/cvma/hydra-scraper
+abstract: >-
+  This simple scraper for APIs that use Hydra pagination was
+  originally developed as part of the Corpus Vitrearum
+  Germany (CVMA) at the Academy of Sciences and Literature
+  Mainz. The idea was to provide a basic toolset that can
+  pull data from resource lists as well as individual
+  resource pages in RDF-compatible formats such as JSON-LD
+  or Turtle. Command-line calls can be combined and adapted
+  to build fully-fledged scraping mechanisms.
+keywords:
+  - scraping
+  - Hydra Core Vocabulary
+  - API
+  - Python
+license: MIT
+version: 0.7.0
+date-released: '2023-03-29'
