@@ -79,7 +79,7 @@ class Resource:
 
             # Set object variables accordingly
             self.file_extension = download['file_extension']
-            self.file_path = 'downloads/' + self.folder + '/' + self.file_name + '.' + self.file_extension
+            self.file_path = 'downloads/' + self.folder + '/resources/' + self.file_name + '.' + self.file_extension
             self.success = True
 
             # Save file

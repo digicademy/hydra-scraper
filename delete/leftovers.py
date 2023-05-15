@@ -4,48 +4,6 @@
 # MIT License
 
 
-def retrieveApiLists( formatParser:str, formatFolder:str, formatUrl:str ) -> list:
-    '''
-    Retrieves and paginates through API lists, saves them, and returns a beacon list
-
-        Parameters:
-            formatParser (str): Name od the parser to use
-            formatFolder (str): Name of the folder to save data to
-            formatUrl (str): Entry-point URL
-        
-        Returns:
-            list: Beacon list containing item URLs generated from the API calls
-    '''
-
-    # Iterator
-    listNumber = 1
-    listFinalUrl = ''
-
-    # Determine file extension
-    fileExtension = 'txt'
-    if formatParser == 'json-ld':
-        fileExtension = 'json'
-    elif formatParser == 'rdf-xml':
-        fileExtension = 'rdf'
-    elif formatParser == 'turtle':
-        fileExtension = 'ttl'
-
-    # Download and save list file
-    content = downloadFile( formatUrl )
-    saveAsFile( content, formatFolder + '/' + 'list-' + listNumber, fileExtension )
-
-    # Parse the file
-    g = Graph().parse( data=content )
-    for r in g.triples((None, None, None)):
-        print(r)
-    # prints: (rdflib.term.URIRef('a:'), rdflib.term.URIRef('p:'), rdflib.term.URIRef('p:'))
-
-
-    # Get data for beacon and final/next link
-    # Repeat
-    # Return the beacon list
-
-
 # TODO revise this function for a new table feature
 def cleanTable( table:list, cleanUps:list ) -> list:
     '''

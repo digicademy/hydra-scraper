@@ -14,21 +14,19 @@ from helpers.clean import clean_request
 from helpers.fileio import create_folder
 
 
-# TODO Create the download folder
-# TODO Make sure everything looks good in a terminal
-
 # Get request data from command line arguments
 request = clean_request( argv[1:] )
-create_folder( 'downloads' )
-create_folder( request['folder'] )
+create_folder( 'downloads/' + request['folder'] )
 
 # Hydra routine
-if request['type'] == 'hydra':
+if request['routine'] == 'hydra':
+    create_folder( 'downloads/' + request['folder'] + '/hydra' )
     hydra = Hydra( request['url'], request['folder'], request['list'] )
     hydra.download()
 
 # Beacon routine
-elif request['type'] == 'beacon':
+elif request['routine'] == 'beacon':
+    create_folder( 'downloads/' + request['folder'] + '/resources' )
     beacon = Beacon( request['file'], request['folder'], request['replace'], request['with'], request['clean_names'] )
     beacon.download()
 
