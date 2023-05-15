@@ -86,7 +86,7 @@ class Hydra:
 
         # Optionally retrieve each individual resource URL
         if self.list_file_path != '':
-            list_query = '''PREFIX schema: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:member ?object . }'''
+            list_query = '''PREFIX hydra: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:member ?object . }'''
             list_triples = rdf.query( list_query )
             if len( list_triples ) == 0:
                 list_query = '''PREFIX schema: <http://schema.org/> SELECT * WHERE { ?subject schema:item ?object . }'''
@@ -107,7 +107,7 @@ class Hydra:
                 self.number_of_resources = total_triples[0].object
             
             # Get number of items per list and number of lists using hydra:member or schema:DataFeedItem
-            resources_query = '''PREFIX schema: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:member ?object . }'''
+            resources_query = '''PREFIX hydra: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:member ?object . }'''
             resources_triples = rdf.query( resources_query )
             self.resources_per_list = len( resources_triples )
             if self.resources_per_list == 0:
