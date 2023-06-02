@@ -1,7 +1,9 @@
-# Beacon File Class for Scraping Runs
-# Copyright (c) 2023 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
+# Beacon file class for scraping runs
 #
-# MIT License
+# This file is part of the Hydra Scraper package.
+#
+# For the full copyright and license information, please read the
+# LICENSE.txt file that was distributed with this source code.
 
 
 # Import script modules

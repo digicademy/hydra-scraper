@@ -1,7 +1,9 @@
-# File Input and Output
-# Copyright (c) 2023 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
+# File input and output
 #
-# MIT License
+# This file is part of the Hydra Scraper package.
+#
+# For the full copyright and license information, please read the
+# LICENSE.txt file that was distributed with this source code.
 
 
 # Import libraries

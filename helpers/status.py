@@ -1,7 +1,9 @@
-# Status Reporting for a Scraping Run
-# Copyright (c) 2023 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
+# Status reporting for a scraping run
 #
-# MIT License
+# This file is part of the Hydra Scraper package.
+#
+# For the full copyright and license information, please read the
+# LICENSE.txt file that was distributed with this source code.
 
 
 def echo_note( note:str ):

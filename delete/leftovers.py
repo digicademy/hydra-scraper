@@ -1,7 +1,9 @@
-# Bits and Pieces from Previous Versions
-# Copyright (c) 2022 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
+# Bits and pieces from previous versions
 #
-# MIT License
+# This file is part of the Hydra Scraper package.
+#
+# For the full copyright and license information, please read the
+# LICENSE.txt file that was distributed with this source code.
 
 
 # TODO revise this function for a new table feature

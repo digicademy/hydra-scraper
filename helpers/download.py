@@ -1,7 +1,9 @@
-# Retrieve Files from Web Sources
-# Copyright (c) 2022 Jonatan Jalle Steller <jonatan.steller@adwmainz.de>
+# Retrieve files from web sources
 #
-# MIT License
+# This file is part of the Hydra Scraper package.
+#
+# For the full copyright and license information, please read the
+# LICENSE.txt file that was distributed with this source code.
 
 
 # Import libraries

@@ -39,15 +39,15 @@ python go.py hydra -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html
 python go.py beacon -file 'cvma/beacon.txt' -folder 'cvma' -names '@id' -replace 'old' -with 'new'
 ```
 
-ESCAPE VALUES AND REMOVE APOSTROPHES
-
 ## Development
 
 ## Roadmap
 
+- Filter triples instead? Use oxygraph!!!
 - Finish debugging the script
 - Try to compile all CVMA file dumps with it
+- Find out what I meant when I wrote 'ESCAPE VALUES AND REMOVE APOSTROPHES'
 - Add the interactive mode
 - Test the script on another API
 - Re-add routine that compiles CSV tables to use the script for API testing
-- Consider adding a fourth routine to integrate, for example, an XSLT conversion for LIDO data
+- Consider adding a fourth routine to integrate, for example, an XTriples or XSLT conversion for LIDO data
