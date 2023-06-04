@@ -6,7 +6,7 @@
 # LICENSE.txt file that was distributed with this source code.
 
 
-def echo_note( note:str ):
+def echo_note(note:str):
     '''
     Echoes a note to the user
 
@@ -15,10 +15,10 @@ def echo_note( note:str ):
     '''
 
     # Echo note
-    print( note )
+    print(note)
 
 
-def echo_progress( note:str, current:int=None, maximum:int=None ):
+def echo_progress(note:str, current:int=None, maximum:int=None):
     '''
     Echoes progress information to the user
 
@@ -28,20 +28,20 @@ def echo_progress( note:str, current:int=None, maximum:int=None ):
             maximum (int): Total number of files, defaults to "None"
     '''
 
-    # Start the echo string
+    # Start echo string
     echo_string = '- ' + note + '… '
 
-    # Just echo the string of the loop has not started yet
+    # Just echo string if the loop has not started yet
     if current == None and maximum == None:
-        print( echo_string, end='\r' )
+        print(echo_string, end='\r')
 
-    # Calculate the percentage if the task is not complete
+    # Calculate percentage if task is not complete
     elif current < maximum:
-        progress = int( ( current / maximum ) * 100 )
+        progress = int((current / maximum ) * 100)
         echo_string += f"{progress:02}" + '%'
-        print( echo_string, end='\r' )
+        print(echo_string, end='\r')
 
-    # End the line properly when the task is done
+    # End line properly when task is done
     else:
         echo_string += 'done!'
-        print( echo_string )
+        print(echo_string)

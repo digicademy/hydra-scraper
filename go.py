@@ -13,25 +13,29 @@ from sys import argv
 from classes.hydra import *
 from classes.beacon import *
 from helpers.clean import clean_request
+from helpers.config import *
 from helpers.fileio import create_folder
 
 
 # Get request data from command line arguments
-request = clean_request( argv[1:] )
-create_folder( 'downloads/' + request['folder'] )
+request = clean_request(argv[1:])
+create_folder('downloads/' + request['folder'])
+
+# Add empty line
+echo_note('')
 
 # Hydra routine
 if request['routine'] == 'hydra':
-    create_folder( 'downloads/' + request['folder'] + '/hydra' )
-    hydra = Hydra( request['url'], request['folder'], request['list'] )
-    hydra.download()
+    create_folder(config['download_base'] + '/' + request['folder'] + '/lists')
+    hydra = Hydra(request['url'], request['folder'], request['list'])
+    hydra.process()
 
 # Beacon routine
 elif request['routine'] == 'beacon':
-    create_folder( 'downloads/' + request['folder'] + '/resources' )
-    beacon = Beacon( request['file'], request['folder'], request['replace'], request['with'], request['clean_names'] )
-    beacon.download()
+    create_folder(config['download_base'] + '/' + request['folder'] + '/resources')
+    beacon = Beacon(request['file'], request['folder'], request['replace'], request['with'], request['add'], request['clean_names'])
+    beacon.process()
 
-# Catch a corner case that should not occur
+# Catch corner case that should not occur
 else:
-    raise Exception( 'Hydra Scraper encountered an unknown error while handling the request' )
+    raise Exception('Hydra Scraper encountered an unknown error while handling the request')

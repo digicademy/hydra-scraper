@@ -1,4 +1,4 @@
-# Hydra API class for scraping runs
+# Class to manage scraping a Hydra API
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -7,15 +7,21 @@
 
 
 # Import script modules
+from helpers.config import *
 from helpers.download import download_file
 from helpers.fileio import save_file
 from helpers.fileio import save_list
 from helpers.status import echo_progress
-from math import ceil
 from rdflib import Graph
+from rdflib import Namespace
+from time import sleep
+
+# Define namespaces
+HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
+SCHEMA = Namespace('http://schema.org/')
 
 
-# Base class for any hydra API
+# Base class for a Hydra API to process
 class Hydra:
 
 
@@ -26,30 +32,30 @@ class Hydra:
     number_of_resources = 0
     resources_per_list = 0
     number_of_lists = 0
-    next_url = ''
-    final_url = ''
+    next_list = ''
+    final_list = ''
     resources = []
     done = None
 
 
-    def __init__( self, url:str, folder:str, list_file_path:str = '' ):
+    def __init__(self, url:str, folder:str, list_file_path:str = ''):
         '''
-        Sets up a hydra entry point
+        Sets up a Hydra entry point to process
 
             Parameters:
-                url (str): URL to use as a starting point for a scraping run
-                folder (str): Folder beneath 'downloads' to download (paginated) lists to
-                list_file_path (str): Path to a beacon file to create and fill with individual resource URLs
+                url (str): URL to use as an entry point for a scraping run
+                folder (str): Name of the downloads subfolder to store (paginated) lists at
+                list_file_path (str): Path to a beacon list of individual resource URLs to create
         '''
 
         # Assign variables
         self.url = url
         self.folder = folder
         self.list_file_path = list_file_path
-        self.next_url = url
+        self.next_list = url
 
 
-    def __str__( self ):
+    def __str__(self):
         '''
         String representation of instances of this object
         '''
@@ -63,91 +69,99 @@ class Hydra:
             return 'Processed hydra entry point at ' + self.url
 
 
-    def __download_list( self, number:int, url:str ) -> str:
+    def __download_list(self, number:int):
         '''
-        Downloads an individual list and processes its content
+        Downloads an individual Hydra list and processes its content
 
             Parameters:
                 number (int): Number of this list file
-                url (str): URL of the list to download
-
-            Returns:
-                str: URL of the next file to download
         '''
 
-        # Retrieve and save the file
-        hydra = download_file( url )
+        # Retrieve and save file
+        hydra = download_file(self.next_list)
         if hydra != None:
-            file_path = 'downloads/' + self.folder + '/hydra/' + str( number ) + '.' + hydra['file_extension']
-            save_file( hydra['content'], file_path )
+            file_path = config['download_base'] + '/' + self.folder + '/lists/' + str(number) + '.' + hydra['file_extension']
+            save_file(hydra['content'], file_path)
 
-        # Parse the file's content (a second request is initiated here to benefit
-        # from content-type headers not available in the text strings saved above)
+        # Throw error if list file is missing
+        else:
+            raise FileNotFoundError('One of the paginated lists is not available.')
+
+        # Parse file content; this is done as a second request to benefit from
+        # content-type headers not available in the text string retrieval above
         rdf = Graph()
-        rdf.parse( url )
+        rdf.parse(self.next_list)
 
-        # Optionally retrieve each individual resource URL
-        if self.list_file_path != '':
-            list_query = '''PREFIX hydra: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:member ?object . }'''
-            list_triples = rdf.query( list_query )
-            if len( list_triples ) == 0:
-                list_query = '''PREFIX schema: <http://schema.org/> SELECT * WHERE { ?subject schema:item ?object . }'''
-                list_triples = rdf.query( list_query )
-            if len( list_triples ) > 0:
-                for list_triple in list_triples:
-                    self.resources.append( list_triple.object )
+        # Add each individual resource URL (Hydra member or Schema item) to resource list
+        resource_urls = rdf.objects(None, HYDRA.member, unique=True)
+        for resource_url in resource_urls:
+            self.resources.append(resource_url.toPython())
+        resource_urls = rdf.objects(None, SCHEMA.item, unique=True)
+        for resource_url in resource_urls:
+            self.resources.append(resource_url.toPython())
+            
+        # Get total number of items per list, only makes sense on first page
+        if number == 1:
+            if len(self.resources) != 0:
+                self.resources_per_list = len(self.resources)
+            else:
+                raise Exception('The Hydra API does not contain any resources.')
 
-        # Retrieve the URL of the next list to see if the file is paginated
-        next_query = '''PREFIX hydra: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:next ?object . } LIMIT 1'''
-        next_triples = rdf.query( next_query )
-        if len( next_triples ) >= 1:
+        # Retrieve URL of next list to see if file is paginated
+        next_lists = rdf.objects(None, HYDRA.next, unique=True)
+        next_list_exists = False
+        for next_list in next_lists:
+            next_list_exists = True
+            #print(str(next_list))
+            self.next_list = next_list.toPython()
 
             # Get total number of resources
-            total_query = '''PREFIX hydra: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:totalItems ?object . } LIMIT 1'''
-            total_triples = rdf.query( total_query )
-            if len( total_triples ) >= 1:
-                self.number_of_resources = total_triples[0].object
-            
-            # Get number of items per list and number of lists using hydra:member or schema:DataFeedItem
-            resources_query = '''PREFIX hydra: <http://www.w3.org/ns/hydra/core#> SELECT * WHERE { ?subject hydra:member ?object . }'''
-            resources_triples = rdf.query( resources_query )
-            self.resources_per_list = len( resources_triples )
-            if self.resources_per_list == 0:
-                resources_query = '''PREFIX schema: <http://schema.org/> SELECT * WHERE { ?subject schema:DataFeedItem ?object . }'''
-                resources_triples = rdf.query( resources_query )
-                self.resources_per_list = len( resources_triples )
-            if self.number_of_resources > 0 and self.resources_per_list > 0:
-                self.number_of_lists = ceil( self.number_of_resources / self.resources_per_list )
+            total_ints = rdf.objects(None, HYDRA.totalItems, unique=True)
+            for total_int in total_ints:
+                self.number_of_resources = total_int.toPython()
 
-            # Return the next list URL
-            return next_triples[0].object
+            # Get number of lists
+            self.number_of_lists = self.number_of_resources // self.resources_per_list
         
-        # Return blank value if the file is not paginated
-        else:
-            return None
+        # Set next URL to a blank value if file is not paginated
+        if next_list_exists == False:
+            self.next_list = None
+
+        # Display progress indicator and add delay to avoid getting blocked be server
+        echo_progress('Retrieving paginated API lists', number, self.number_of_lists)
+        sleep(config['download_delay'])
 
 
-    def download( self ):
+    def process(self):
         '''
         Downloads all lists in the hydra API
         '''
 
-        # Progress indicator
+        # Provide initial status
+        echo_progress('Retrieving paginated API lists', 0, 100)
+
+        # Retrieve each Hydra list file
         index = 0
-        echo_progress( 'Retrieving paginated lists', index, self.number_of_lists )
-
-        # Retrieve each list file
-        while self.next_url != self.final_url:
+        while self.next_list != self.final_list:
             index += 1
-            self.next_url = self.__download_list( index, self.next_url )
+            self.__download_list(index)
 
-        # Retrieve the penultimate and the final lists
-        index += 1
-        self.__download_list( index, self.next_url )
-        index += 1
-        self.__download_list( index, self.final_url )
+            # Get out of loop if there is no next page for some reason
+            if self.next_list == None:
+                break
 
-        # Optionally save the resource list to a beacon file
+            # Throw error if maximum number of lists is reached as a safety
+            # net if there are API errors that do not stop the script
+            if index > config['max_paginated_lists']:
+                raise Exception('The maximum number of paginated lists was reached.')
+
+        # Retrieve final list if there was not just a single paginated
+        # list and if no other potential issue applies
+        if index != 1 and self.next_list != None:
+            index += 1
+            self.__download_list(index)
+
+        # Optionally save beacon list as a file
         if self.list_file_path != '' and self.resources != []:
-            file_path = 'downloads/' + self.folder + '/' + self.list_file_path
-            save_list( file_path, self.resources )
+            file_path = config['download_base'] + '/' + self.folder + '/' + self.list_file_path
+            save_list(file_path, self.resources)

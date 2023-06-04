@@ -10,23 +10,23 @@
 from urllib.request import urlopen
 
 
-def download_file( url:str ) -> dict:
+def download_file(url:str) -> dict:
     '''
     Downloads a file from a URL and returns the content
 
         Parameters:
-            url (str): Name of the URL to download the file from
+            url (str): URL to download the file from
 
         Returns:
-            dict: File extension and content of the downloaded file
+            dict: 'file_extension' and 'content' of the downloaded file
     '''
 
     # Retrieve URL content
     try:
-        response = urlopen( url )
+        response = urlopen(url)
         simple_response = {
-            'file_extension': determine_file_extension( response ),
-            'content': response.read().decode( 'utf-8' )
+            'file_extension': determine_file_extension(response),
+            'content': response.read().decode('utf-8')
         }
 
     # Notify if URL not available
@@ -37,7 +37,7 @@ def download_file( url:str ) -> dict:
     return simple_response
 
 
-def determine_file_extension( response:object ) -> str:
+def determine_file_extension(response:object) -> str:
     '''
     Determines the best file extension based on the server response
 
@@ -50,10 +50,10 @@ def determine_file_extension( response:object ) -> str:
 
     # Retrieve content type
     headers = response.headers.items()
-    headers = dict( headers )
+    headers = dict(headers)
     content_type = headers['Content-Type']
 
-    # Get the best file extension, list based on
+    # Get best file extension, list based on
     # https://github.com/RDFLib/rdflib/blob/main/rdflib/parser.py#L237
     if 'text/html' in content_type:
         file_extension = 'htm'
@@ -76,5 +76,5 @@ def determine_file_extension( response:object ) -> str:
     else:
         file_extension = 'txt'
 
-    # Return the response
+    # Return file extension
     return file_extension
