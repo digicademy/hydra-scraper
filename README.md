@@ -87,6 +87,7 @@ python go.py beacon -file 'downloads/cvma-lido/beacon.txt' -folder 'cvma-lido' -
 - Check features of the Beacon standard that need to be supported
 - Test the script on the culture portal
 - Add the interactive mode and the help routine
+- Remove leftovers file
 
 **Possible improvements**
 

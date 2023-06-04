@@ -32,6 +32,7 @@ class Hydra:
     number_of_resources = 0
     resources_per_list = 0
     number_of_lists = 0
+    current_list = ''
     next_list = ''
     final_list = ''
     resources = []
@@ -52,6 +53,7 @@ class Hydra:
         self.url = url
         self.folder = folder
         self.list_file_path = list_file_path
+        self.current_list = url
         self.next_list = url
 
 
@@ -107,12 +109,15 @@ class Hydra:
             else:
                 raise Exception('The Hydra API does not contain any resources.')
 
+        # Retrieve URL of current list
+        current_lists = rdf.objects(None, HYDRA.view, unique=True)
+        for current_list in current_lists:
+            self.current_list = current_list.toPython()
+
         # Retrieve URL of next list to see if file is paginated
+        self.next_list = None
         next_lists = rdf.objects(None, HYDRA.next, unique=True)
-        next_list_exists = False
         for next_list in next_lists:
-            next_list_exists = True
-            #print(str(next_list))
             self.next_list = next_list.toPython()
 
             # Get total number of resources
@@ -122,10 +127,6 @@ class Hydra:
 
             # Get number of lists
             self.number_of_lists = self.number_of_resources // self.resources_per_list
-        
-        # Set next URL to a blank value if file is not paginated
-        if next_list_exists == False:
-            self.next_list = None
 
         # Display progress indicator and add delay to avoid getting blocked be server
         echo_progress('Retrieving paginated API lists', number, self.number_of_lists)
@@ -142,7 +143,7 @@ class Hydra:
 
         # Retrieve each Hydra list file
         index = 0
-        while self.next_list != self.final_list:
+        while self.current_list != self.final_list:
             index += 1
             self.__download_list(index)
 
@@ -154,12 +155,6 @@ class Hydra:
             # net if there are API errors that do not stop the script
             if index > config['max_paginated_lists']:
                 raise Exception('The maximum number of paginated lists was reached.')
-
-        # Retrieve final list if there was not just a single paginated
-        # list and if no other potential issue applies
-        if index != 1 and self.next_list != None:
-            index += 1
-            self.__download_list(index)
 
         # Optionally save beacon list as a file
         if self.list_file_path != '' and self.resources != []:
