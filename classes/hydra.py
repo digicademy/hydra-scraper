@@ -132,7 +132,7 @@ class Hydra:
             # Get total number of resources
             total_ints = rdf.objects(None, HYDRA.totalItems, unique=True)
             for total_int in total_ints:
-                self.number_of_resources = total_int.toPython()
+                self.number_of_resources = int(total_int.toPython())
 
             # Get number of lists
             self.number_of_lists = int(ceil(self.number_of_resources / self.resources_per_list))

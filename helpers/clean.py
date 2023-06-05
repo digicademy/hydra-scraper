@@ -177,7 +177,7 @@ def clean_request(arguments:list) -> dict:
                     else:
                         raise ValueError('Beacon call is missing a string to add.')
                 else:
-                    request['with'] = ''
+                    request['add'] = ''
 
                 # Check '-clean_names' key/value pair
                 if '-clean_names' in arguments:

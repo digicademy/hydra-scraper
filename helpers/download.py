@@ -7,6 +7,7 @@
 
 
 # Import libraries
+from os import linesep
 from urllib.request import urlopen
 
 
@@ -24,11 +25,46 @@ def download_file(url:str) -> dict:
     # Retrieve URL content
     try:
         response = urlopen(url)
-        simple_response = {
-            'file_type': determine_file_type(response, False),
-            'file_extension': determine_file_type(response, True),
-            'content': response.read().decode('utf-8')
-        }
+
+        # Check if response is invalid
+        if response.status != 200:
+            simple_response = None
+
+        # If response is valid, get clean file content
+        else:
+            headers = dict(response.headers.items())
+            file_type = determine_file_type(headers, False)
+            file_extension = determine_file_type(headers, True)
+            content = response.read().decode('utf-8')
+
+            # If present, isolate embedded JSON-LD as it is not supported by RDFLib yet
+            if determine_file_type(headers, False) == 'rdfa':
+                embedded_jsonld = content.find('application/ld+json')
+                if embedded_jsonld != -1:
+                    embedded_jsonld_start = content.find('>', embedded_jsonld) + 1
+                    embedded_jsonld_end = content.find('</script>', embedded_jsonld)
+                    if embedded_jsonld_start > 0 and embedded_jsonld_end > embedded_jsonld_start:
+
+                        # Correct previous assumptions
+                        file_type = 'json-ld'
+                        file_extension = 'jsonld'
+                        content = content[embedded_jsonld_start:embedded_jsonld_end]
+
+                        # Remove empty lines
+                        content = linesep.join(
+                            [
+                                line for line in content.splitlines()
+                                if line.strip()
+                            ]
+                        )
+
+            # Structure the data
+            simple_response = {
+                'file_type': file_type,
+                'file_extension': file_extension,
+                'content': content
+            }
+
 
     # Notify if URL not available
     except:
@@ -38,12 +74,12 @@ def download_file(url:str) -> dict:
     return simple_response
 
 
-def determine_file_type(response:object, getFileExtension:bool = False) -> str:
+def determine_file_type(headers:dict, getFileExtension:bool = False) -> str:
     '''
     Determines the best file type and extension based on the server response
 
         Parameters:
-            response (object): Server response including headers
+            headers (dict): Headers of the server response as a dictionary
             getFileExtension (bool, optional): Determines whether the type or the extension is returned
         
         Returns:
@@ -51,42 +87,54 @@ def determine_file_type(response:object, getFileExtension:bool = False) -> str:
     '''
 
     # Retrieve content type
-    headers = response.headers.items()
-    headers = dict(headers)
     content_type = headers['Content-Type']
 
-    # Get best file type and extension, list based on
+    # Get best file type and extension, list originally based on
     # https://github.com/RDFLib/rdflib/blob/main/rdflib/parser.py#L237
+    # and extended based on further RDFLib documentation
     if 'text/html' in content_type:
-        file_type = 'text/html'
-        file_extension = 'htm'
+        file_type = 'rdfa'
+        file_extension = 'html'
+    elif 'application/xhtml+xml' in content_type:
+        file_type = 'rdfa'
+        file_extension = 'xhtml'
     elif 'application/rdf+xml' in content_type:
-        file_type = 'application/rdf+xml'
+        file_type = 'xml'
         file_extension = 'xml'
     elif 'text/n3' in content_type:
-        file_type = 'text/n3'
+        file_type = 'n3'
         file_extension = 'n3'
     elif 'text/turtle' in content_type or 'application/x-turtle' in content_type:
-        file_type = 'text/turtle'
+        file_type = 'turtle'
         file_extension = 'ttl'
     elif 'application/trig' in content_type:
-        file_type = 'application/trig'
+        file_type = 'trig'
         file_extension = 'trig'
     elif 'application/trix' in content_type:
-        file_type = 'application/trix'
+        file_type = 'trix'
         file_extension = 'trix'
+    elif 'application/n-quads' in content_type:
+        file_type = 'nquads'
+        file_extension = 'nq'
     elif 'application/ld+json' in content_type:
-        file_type = 'application/ld+json'
+        file_type = 'json-ld'
         file_extension = 'jsonld'
     elif 'application/json' in content_type:
-        file_type = 'application/json'
+        file_type = 'json-ld'
         file_extension = 'json'
+    elif 'application/hex+x-ndjson' in content_type:
+        file_type = 'hext'
+        file_extension = 'hext'
     elif 'text/plain' in content_type:
-        file_type = 'text/plain'
+        file_type = 'nt'
         file_extension = 'nt'
+
+    # Non-RDF file types that may be useful
+    elif 'application/xml' in content_type:
+        file_type = 'xml'
+        file_extension = 'xml'
     else:
-        file_type = 'text/plain'
-        file_extension = 'txt'
+        raise Exception('Hydra Scraper does not recognise this file type.')
 
     # Return file extension or type
     if getFileExtension == True:

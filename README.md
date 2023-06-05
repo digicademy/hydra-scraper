@@ -2,7 +2,7 @@
 
 - Description: simple scraper for APIs with Hydra pagination
 - Author: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de))
-- Requirements: `python3`, `python3-validators`, `python3-rdflib`
+- Requirements: `python3`, `python3-validators` (0.20.x), `python3-rdflib` (6.x.x)
 - License: MIT
 - Version: 0.7.5
 
@@ -75,23 +75,23 @@ python go.py beacon -file 'downloads/cvma-cgif/beacon.txt' -folder 'cvma-cgif' -
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -list 'beacon.txt'
 rm -r downloads/cvma-lido/lists
-python go.py beacon -file 'downloads/cvma-lido/beacon.txt' -folder 'cvma-lido' -add '/about.lido' -clean_names 'https://corpusvitrearum.de/id/,/about'
+python go.py beacon -file 'downloads/cvma-lido/beacon.txt' -folder 'cvma-lido' -add '/about.lido' -clean_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
 ## Development
 
 ## Roadmap
 
-- Compile all CVMA file dumps with it
+- Allow combined hydra/beacon requests
+- Allow downloading triples instead of individual files (with CGIF filters?)
 - Check features of the Beacon standard that need to be supported
 - Test the script on the culture portal
-- Add the interactive mode and the help routine
+- Add the interactive mode
+- Add the help routine
 - Remove leftovers file
 
 **Possible improvements**
 
-- Allow multiple requests at the same time?
 - Implement request shortcuts?
-- Add a routine to compile CGIF triples and save them as Turtle?
 - Re-add routine that compiles CSV tables to use the script for data testing?
 - Consider adding a fourth routine to integrate, for example, an XTriples or XSLT conversion for LIDO data to CGIF?
