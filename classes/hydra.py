@@ -33,7 +33,6 @@ class Hydra:
     resources_per_list = 0
     number_of_lists = 0
     current_list = ''
-    next_list = ''
     final_list = ''
     resources = []
     done = None
@@ -54,7 +53,6 @@ class Hydra:
         self.folder = folder
         self.list_file_path = list_file_path
         self.current_list = url
-        self.next_list = url
 
 
     def __str__(self):
@@ -71,7 +69,7 @@ class Hydra:
             return 'Processed hydra entry point at ' + self.url
 
 
-    def __download_list(self, number:int):
+    def __download_list(self, number:int, url:str) -> str:
         '''
         Downloads an individual Hydra list and processes its content
 
@@ -80,7 +78,7 @@ class Hydra:
         '''
 
         # Retrieve and save file
-        hydra = download_file(self.next_list)
+        hydra = download_file(url)
         if hydra != None:
             file_path = config['download_base'] + '/' + self.folder + '/lists/' + str(number) + '.' + hydra['file_extension']
             save_file(hydra['content'], file_path)
@@ -89,10 +87,10 @@ class Hydra:
         else:
             raise FileNotFoundError('One of the paginated lists is not available.')
 
-        # Parse file content; this is done as a second request to benefit from
-        # content-type headers not available in the text string retrieval above
+        # Parse file content; parsing the URL directly produced weird cache errors in RDFLib and this
+        # version is easier on servers because it accomplishes download and parsing in one request
         rdf = Graph()
-        rdf.parse(self.next_list)
+        rdf.parse(data=hydra['content'], format=hydra['file_type'])
 
         # Add each individual resource URL (Hydra member or Schema item) to resource list
         resource_urls = rdf.objects(None, HYDRA.member, unique=True)
@@ -115,10 +113,19 @@ class Hydra:
             self.current_list = current_list.toPython()
 
         # Retrieve URL of next list to see if file is paginated
-        self.next_list = None
+        next_list_url = ''
         next_lists = rdf.objects(None, HYDRA.next, unique=True)
         for next_list in next_lists:
-            self.next_list = next_list.toPython()
+            next_list_url = next_list.toPython()
+
+            # Retrieve URL of final list
+            final_lists = rdf.objects(None, HYDRA.last, unique=True)
+            for final_list in final_lists:
+                self.final_list = final_list.toPython()
+            
+            # Throw error if there is no final list
+            if self.final_list == '':
+                raise Exception('The Hydra API does not specify a final list.')
 
             # Get total number of resources
             total_ints = rdf.objects(None, HYDRA.totalItems, unique=True)
@@ -132,6 +139,9 @@ class Hydra:
         echo_progress('Retrieving paginated API lists', number, self.number_of_lists)
         sleep(config['download_delay'])
 
+        # Return next URL to scrape
+        return next_list_url
+
 
     def process(self):
         '''
@@ -143,12 +153,13 @@ class Hydra:
 
         # Retrieve each Hydra list file
         index = 0
+        next_list_url = self.url
         while self.current_list != self.final_list:
             index += 1
-            self.__download_list(index)
+            next_list_url = self.__download_list(index, next_list_url)
 
             # Get out of loop if there is no next page for some reason
-            if self.next_list == None:
+            if next_list_url == '':
                 break
 
             # Throw error if maximum number of lists is reached as a safety
