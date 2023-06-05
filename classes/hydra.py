@@ -11,9 +11,11 @@ from helpers.config import *
 from helpers.download import download_file
 from helpers.fileio import save_file
 from helpers.fileio import save_list
+from helpers.status import echo_note
 from helpers.status import echo_progress
 from rdflib import Graph
 from rdflib import Namespace
+from math import ceil
 from time import sleep
 
 # Define namespaces
@@ -133,7 +135,7 @@ class Hydra:
                 self.number_of_resources = total_int.toPython()
 
             # Get number of lists
-            self.number_of_lists = self.number_of_resources // self.resources_per_list
+            self.number_of_lists = int(ceil(self.number_of_resources / self.resources_per_list))
 
         # Display progress indicator and add delay to avoid getting blocked be server
         echo_progress('Retrieving paginated API lists', number, self.number_of_lists)
@@ -149,6 +151,7 @@ class Hydra:
         '''
 
         # Provide initial status
+        self.done = False
         echo_progress('Retrieving paginated API lists', 0, 100)
 
         # Retrieve each Hydra list file
@@ -171,3 +174,7 @@ class Hydra:
         if self.list_file_path != '' and self.resources != []:
             file_path = config['download_base'] + '/' + self.folder + '/' + self.list_file_path
             save_list(file_path, self.resources)
+
+        # Report new status as successful
+        self.done = True
+        echo_note('\nDone! All paginated lists saved to the download folder.\n')

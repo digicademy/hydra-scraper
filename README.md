@@ -82,7 +82,6 @@ python go.py beacon -file 'downloads/cvma-lido/beacon.txt' -folder 'cvma-lido' -
 
 ## Roadmap
 
-- Fix page 2 issue
 - Compile all CVMA file dumps with it
 - Check features of the Beacon standard that need to be supported
 - Test the script on the culture portal
