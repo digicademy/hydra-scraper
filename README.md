@@ -28,54 +28,61 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
 - `-folder '<path to folder>'`: Download all resources into this subfolder  of `downloads` (defaults to current timestamp)
 - `-replace '<string>'`: Before downloading, replace this string in each entry in the beacon file (defaults to empty string)
 - `-with '<string>'`: Replace the previous string with this one (defaults to empty string)
-- `-add '<string>'`: Add this string to the end of each URL to download
+- `-add '<string>'`: Add this string to the end of each URL to download (defaults to empty string)
 - `-clean_names '<string>'`: Comma-separated substrings to remove from the URL to get a resource's file name (empty default string leads to enumerated files instead)
 
 ## Examples
 
 The scraper was originally developed as part of the Corpus Vitrearum Germany (CVMA) at the Academy of Sciences and Liteture Mainz. The commands listed below are supposed to illustrate how to harvest all CVMA APIs.
 
-**All embedded metadata**
+**CVMA: all embedded metadata**
 
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded' -list 'beacon.txt'
 python go.py beacon -file 'downloads/cvma-embedded/beacon.txt' -folder 'cvma-embedded' -clean_names 'https://corpusvitrearum.de/id/'
 ```
 
-**All JSON-LD files**
+**CVMA: all JSON-LD files**
 
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/id/about.json' -folder 'cvma-jsonld' -list 'beacon.txt'
 python go.py beacon -file 'downloads/cvma-jsonld/beacon.txt' -folder 'cvma-jsonld' -clean_names 'https://corpusvitrearum.de/id/,/about.json'
 ```
 
-**All RDF/XML files**
+**CVMA: all RDF/XML files**
 
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/id/about.rdf' -folder 'cvma-rdfxml' -list 'beacon.txt'
 python go.py beacon -file 'downloads/cvma-rdfxml/beacon.txt' -folder 'cvma-rdfxml' -clean_names 'https://corpusvitrearum.de/id/,/about.rdf'
 ```
 
-**All Turtle files**
+**CVMA: all Turtle files**
 
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/id/about.ttl' -folder 'cvma-turtle' -list 'beacon.txt'
 python go.py beacon -file 'downloads/cvma-turtle/beacon.txt' -folder 'cvma-turtle' -clean_names 'https://corpusvitrearum.de/id/,/about.ttl'
 ```
 
-**All CGIF files**
+**CVMA: all CGIF files**
 
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/id/about.cgif' -folder 'cvma-cgif' -list 'beacon.txt'
 python go.py beacon -file 'downloads/cvma-cgif/beacon.txt' -folder 'cvma-cgif' -add '/about.cgif' -clean_names 'https://corpusvitrearum.de/id/,/about.cgif'
 ```
 
-**All LIDO files**
+**CVMA: all LIDO files**
 
 ```
 python go.py hydra -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -list 'beacon.txt'
 rm -r downloads/cvma-lido/lists
 python go.py beacon -file 'downloads/cvma-lido/beacon.txt' -folder 'cvma-lido' -add '/about.lido' -clean_names 'https://corpusvitrearum.de/id/,/about.lido'
+```
+
+**NFDI4Culture: all Turtle files**
+
+```
+python go.py hydra -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle' -list 'beacon.txt'
+python go.py beacon -file 'downloads/n4c-turtle/beacon.txt' -folder 'n4c-turtle' -clean_names 'https://nfdi4culture.de/resource/,.ttl'
 ```
 
 ## Development
@@ -85,7 +92,6 @@ python go.py beacon -file 'downloads/cvma-lido/beacon.txt' -folder 'cvma-lido' -
 - Allow combined hydra/beacon requests
 - Allow downloading triples instead of individual files (with CGIF filters?)
 - Check features of the Beacon standard that need to be supported
-- Test the script on the culture portal
 - Add the interactive mode
 - Add the help routine
 - Remove leftovers file
