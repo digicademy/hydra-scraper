@@ -16,19 +16,19 @@ To use this script, simply clone this repository (e.g. via `git clone https://gi
 
 This scraper is a command-line tool. Use `python go.py` to run the script in interactive mode. Alternatively, use the configuration options listed below to run the script without interaction.
 
-- `-download '<value>'`: Comma-separated list of requests, possible values:
+- `-download '<value>'`: comma-separated list of requests, possible values:
   - `lists`: all Hydra-paginated lists (requires `-url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-url`)
   - `beacon`: beacon file of all resources listed in a Hydra API (requires `-url`)
   - `resources`: all resources listed in a Hydra API or a beacon file (requires `-url` or `-file`)
   - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-url` or `-file`)
-- `-url '<url>'`: Use this entry-point URL to scrape content
-- `-file '<path to file>'`: Use the URLs contained in this beacon file to scrape content
-- `-folder '<name of folder>'`: Download everything into this subfolder of `downloads` (defaults to timestamp)
-- `-resource_url_replace '<string>'`: Before downloading, replace this string in each resource URL (defaults to none)
-- `-resource_url_replace_with '<string>'`: Before downloading, replace the previous string in each resource URL with this one (defaults to none)
-- `-resource_url_add '<string>'`: Before downloading, add this string to the end of each resource URL (defaults to none)
-- `-clean_resource_names '<string>'`: Comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
+- `-url '<url>'`: use this entry-point URL to scrape content
+- `-file '<path to file>'`: use the URLs contained in this beacon file to scrape content
+- `-folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
+- `-resource_url_replace '<string>'`: before downloading, replace this string in each resource URL (defaults to none)
+- `-resource_url_replace_with '<string>'`: before downloading, replace the previous string in each resource URL with this one (defaults to none)
+- `-resource_url_add '<string>'`: before downloading, add this string to the end of each resource URL (defaults to none)
+- `-clean_resource_names '<string>'`: comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
 
 ## Examples
 
@@ -82,8 +82,7 @@ python go.py -download 'lists,beacon,resources' -url 'https://nfdi4culture.de/re
 
 - Add URL composition feature of the Beacon standard
 - Re-add the interactive mode
-- Re-add a `-csv` option and remove leftovers file
-- Imlement a `-help` option
+- Re-add a `-csv` option and remove leftover file
 
 **Possible improvements**
 

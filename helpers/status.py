@@ -45,3 +45,44 @@ def echo_progress(note:str, current:int=None, maximum:int=None):
     else:
         echo_string += 'done!'
         print(echo_string)
+
+
+def echo_help():
+    '''
+    Echoes a help text to the user instead of checking other command-line options.
+    The data should be kept in sync with the readme file.
+    '''
+
+    print(
+'''
+
+This scraper is a command-line tool. Use "python go.py" to run the script in interactive mode. Alternatively, use the configuration options listed below to run the script without interaction.
+
+-download '<value>': comma-separated list of requests, possible values:
+
+    lists: all Hydra-paginated lists (requires -url)
+
+    list_triples: all RDF triples in a Hydra API (requires-url)
+
+    beacon: beacon file of all resources listed in a Hydra API (requires -url)
+
+    resources: all resources listed in a Hydra API or a beacon file (requires -url or -file)
+
+    resource_triples: all RDF triples in resources listed in a Hydra API or a beacon file (requires -url or -file)
+
+-url '<url>': use this entry-point URL to scrape content
+
+-file '<path to file>': use the URLs contained in this beacon file to scrape content
+
+-folder '<name of folder>': download everything into this subfolder of `downloads` (defaults to timestamp)
+
+-resource_url_replace '<string>': before downloading, replace this string in each resource URL (defaults to none)
+
+-resource_url_replace_with '<string>': before downloading, replace the previous string in each resource URL with this one (defaults to none)
+
+-resource_url_add '<string>': before downloading, add this string to the end of each resource URL (defaults to none)
+
+-clean_resource_names '<string>': comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
+
+'''
+    )

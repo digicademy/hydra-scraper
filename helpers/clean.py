@@ -27,16 +27,6 @@ def clean_request(arguments:list) -> dict:
 
     # Compile expected routine arguments
     request = {}
-    arguments_hydra = [
-        'hydra',
-        '-hydra',
-        '--hydra'
-    ]
-    arguments_beacon = [
-        'beacon',
-        '-beacon',
-        '--beacon'
-    ]
     arguments_help = [
         'help',
         '-help',
@@ -53,8 +43,38 @@ def clean_request(arguments:list) -> dict:
     # If arguments were provided, enter non-interactive mode
     else:
 
-        # 'hydra' is requested and required fields are provided
-        if arguments[0] in arguments_hydra:
+        # Help request as a special case
+        if arguments[0] in arguments_help:
+            echo_help()
+
+        elif '-download' in arguments:
+                request['routine'] = 'beacon'
+
+                # Check '-file' key/value pair
+                value_index = arguments.index('-file') + 1
+                if len(arguments) >= value_index:
+                    value = arguments[value_index]
+                    if isinstance(value, str):
+                        request['file'] = value
+                    else:
+                        raise ValueError('Beacon call uses a faulty file path.')
+                else:
+                    raise ValueError('Beacon call is missing a file path.')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            # 'hydra' is requested and required fields are provided
             if '-url' in arguments:
                 request['routine'] = 'hydra'
 
@@ -201,14 +221,6 @@ def clean_request(arguments:list) -> dict:
             # Throw an error if required attribute is missing
             else:
                 raise IndexError('Beacon call is missing a required attribute.')
-
-        # '-help' is requested
-        elif arguments[0] in arguments_help:
-            request['routine'] = 'help'
-
-        # Throw an error if invalid request was made
-        else:
-            raise IndexError('Hydra Scraper called with faulty attributes.')
 
     # Return the request dictionary
     return request
