@@ -8,10 +8,12 @@
 
 # Import libraries
 from datetime import datetime
+from os import linesep
 from validators import url
 
 # Import script modules
-from helpers.status import *
+from helpers.status import echo_help
+from helpers.status import echo_note
 
 
 def clean_request(arguments:list) -> dict:
@@ -25,16 +27,17 @@ def clean_request(arguments:list) -> dict:
             dict: Clean request dictionary
     '''
 
-    # Compile expected routine arguments
-    request = {}
-    arguments_help = [
-        'help',
-        '-help',
-        '--help',
-        'h',
-        '-h',
-        '--h'
-    ]
+    # Set up an empty request dictionary
+    request = {
+        'download': [], # May contain lists, list_triples, beacon, resources, resource_triples
+        'url': None,
+        'file': None,
+        'folder': current_timestamp(),
+        'resource_url_replace': '',
+        'resource_url_replace_with': '',
+        'resource_url_add': '',
+        'clean_resource_names': [] # Collects individual strings to remove from URLs in order to build file names
+    }
 
     # If no arguments were provided, start interactive mode
     if arguments == []:
@@ -44,22 +47,19 @@ def clean_request(arguments:list) -> dict:
     else:
 
         # Help request as a special case
-        if arguments[0] in arguments_help:
+        if arguments[0] in [
+            'help',
+            '-help',
+            '--help',
+            'h',
+            '-h',
+            '--h'
+        ]:
             echo_help()
 
+        # Check other requests to modify the request dictionary if necessary
         elif '-download' in arguments:
-                request['routine'] = 'beacon'
-
-                # Check '-file' key/value pair
-                value_index = arguments.index('-file') + 1
-                if len(arguments) >= value_index:
-                    value = arguments[value_index]
-                    if isinstance(value, str):
-                        request['file'] = value
-                    else:
-                        raise ValueError('Beacon call uses a faulty file path.')
-                else:
-                    raise ValueError('Beacon call is missing a file path.')
+            pass
 
 
 
@@ -71,7 +71,7 @@ def clean_request(arguments:list) -> dict:
 
 
 
-
+            '''
 
 
             # 'hydra' is requested and required fields are provided
@@ -101,10 +101,7 @@ def clean_request(arguments:list) -> dict:
                     else:
                         raise ValueError('Hydra call is missing a folder path.')
                 else:
-                    timestamp = datetime.now()
-                    timestamp = timestamp.strftime('%Y-%m-%d %H:%M')
-                    timestamp = str(timestamp)
-                    request['folder'] = str(timestamp)
+                    
 
                 # Check '-list' key/value pair
                 if '-list' in arguments:
@@ -124,8 +121,8 @@ def clean_request(arguments:list) -> dict:
             else:
                 raise IndexError('Hydra call is missing a required attribute.')
 
-        # 'beacon' is requested and required fields are provided
-        elif arguments[0] in arguments_beacon:
+            # 'beacon' is requested and required fields are provided
+            elif arguments[0] in arguments_beacon:
             if '-file' in arguments:
                 request['routine'] = 'beacon'
 
@@ -222,5 +219,56 @@ def clean_request(arguments:list) -> dict:
             else:
                 raise IndexError('Beacon call is missing a required attribute.')
 
+
+            '''
+
+
+
+
+
+
+
+
+        # Throw error if there are options but '-download' is not one of them
+        else:
+            raise ValueError('Hydra Scraper called with invalid options.')
+
     # Return the request dictionary
     return request
+
+
+def clean_lines(content:str) -> str:
+    '''
+    Takes a string, removes empty lines, removes comments, and returns the string
+
+        Parameters:
+            content (str): input string to clean
+
+        Returns:
+            str: cleaned output string
+    '''
+
+    # Split up by lines and remove empty ones as well as comments
+    content_lines = [
+        line for line in content.splitlines()
+        if line.strip() and line[0] != '#'
+    ]
+
+    # Return re-assembled string
+    return linesep.join(content_lines)
+
+
+def current_timestamp() -> str:
+    '''
+    Produces a current timestamp to be used as a folder name
+
+        Returns:
+            str: current timestamp as a string
+    '''
+
+    # Format timestamp
+    timestamp = datetime.now()
+    timestamp = timestamp.strftime('%Y-%m-%d %H:%M')
+
+    # Return it as a string
+    return str(timestamp)

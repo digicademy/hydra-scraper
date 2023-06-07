@@ -7,8 +7,10 @@
 
 
 # Import libraries
-from os import linesep
 from urllib.request import urlopen
+
+# Import script modules
+from helpers.clean import clean_lines
 
 
 def download_file(url:str) -> dict:
@@ -51,12 +53,7 @@ def download_file(url:str) -> dict:
                         content = content[embedded_jsonld_start:embedded_jsonld_end]
 
                         # Remove empty lines
-                        content = linesep.join(
-                            [
-                                line for line in content.splitlines()
-                                if line.strip()
-                            ]
-                        )
+                        content = clean_lines(content)
 
             # Structure the data
             simple_response = {

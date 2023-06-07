@@ -9,6 +9,9 @@
 # Import libraries
 from os import makedirs
 
+# Import script modules
+from helpers.clean import clean_lines
+
 
 def save_file(content:str, file_path:str):
     '''
@@ -55,12 +58,13 @@ def read_list(file_path:str) -> list:
     try:
         f = open(file_path, 'r')
 
+        # Clean empty lines and comments
+        f = clean_lines(f)
+
         # Add each line to list
         entries = []
         for entry in f:
-            entry_text = entry.strip()
-            if entry_text != '':
-                entries.append(entry_text)
+            entries.append(entry)
 
         # Return list
         return entries
