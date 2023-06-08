@@ -16,7 +16,7 @@ To use this script, simply clone this repository (e.g. via `git clone https://gi
 
 This scraper is a command-line tool. Use `python go.py` to run the script in interactive mode. Alternatively, use the configuration options listed below to run the script without interaction.
 
-- `-download '<value>'`: comma-separated list of requests, possible values:
+- `-download '<string list>'`: comma-separated list of requests, possible values:
   - `lists`: all Hydra-paginated lists (requires `-url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-url`)
   - `beacon`: beacon file of all resources listed in a Hydra API (requires `-url`)
@@ -28,7 +28,7 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
 - `-resource_url_replace '<string>'`: before downloading, replace this string in each resource URL (defaults to none)
 - `-resource_url_replace_with '<string>'`: before downloading, replace the previous string in each resource URL with this one (defaults to none)
 - `-resource_url_add '<string>'`: before downloading, add this string to the end of each resource URL (defaults to none)
-- `-clean_resource_names '<string>'`: comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
+- `-clean_resource_names '<string list>'`: comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
 
 ## Examples
 

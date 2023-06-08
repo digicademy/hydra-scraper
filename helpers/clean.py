@@ -57,183 +57,95 @@ def clean_request(arguments:list) -> dict:
         ]:
             echo_help()
 
-        # Check other requests to modify the request dictionary if necessary
+        # Check requests and modify the request dictionary accordingly
         elif '-download' in arguments:
-            pass
 
-
-
-
-
-
-
-
-
-
-
-            '''
-
-
-            # 'hydra' is requested and required fields are provided
-            if '-url' in arguments:
-                request['routine'] = 'hydra'
-
-                # Check '-url' key/value pair
-                value_index = arguments.index('-url') + 1
-                if len(arguments) >= value_index:
-                    value = arguments[value_index]
-                    if url(value):
-                        request['url'] = value
-                    else:
-                        raise ValueError('Hydra call uses a faulty URL.')
-                else:
-                    raise ValueError('Hydra call is missing a URL.')
-
-                # Check '-folder' key/value pair
-                if '-folder' in arguments:
-                    value_index = arguments.index('-folder') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            request['folder'] = value
-                        else:
-                            raise ValueError('Hydra call uses a faulty folder path.')
-                    else:
-                        raise ValueError('Hydra call is missing a folder path.')
-                else:
-                    
-
-                # Check '-list' key/value pair
-                if '-list' in arguments:
-                    value_index = arguments.index('-list') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            request['list'] = value
-                        else:
-                            raise ValueError('Hydra call uses a faulty list-file path.')
-                    else:
-                        raise ValueError('Hydra call is missing a list-file path.')
-                else:
-                    request['list'] = 'beacon.txt'
-
-            # Throw error if required attribute is missing
-            else:
-                raise IndexError('Hydra call is missing a required attribute.')
-
-            # 'beacon' is requested and required fields are provided
-            elif arguments[0] in arguments_beacon:
-            if '-file' in arguments:
-                request['routine'] = 'beacon'
-
-                # Check '-file' key/value pair
-                value_index = arguments.index('-file') + 1
-                if len(arguments) >= value_index:
-                    value = arguments[value_index]
-                    if isinstance(value, str):
-                        request['file'] = value
-                    else:
-                        raise ValueError('Beacon call uses a faulty file path.')
-                else:
-                    raise ValueError('Beacon call is missing a file path.')
-
-                # Check '-folder' key/value pair
-                if '-folder' in arguments:
-                    value_index = arguments.index('-folder') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            request['folder'] = value
-                        else:
-                            raise ValueError('Beacon call uses a faulty folder path.')
-                    else:
-                        raise ValueError('Beacon call is missing a folder path.')
-                else:
-                    timestamp = datetime.now()
-                    timestamp = timestamp.strftime('%Y-%m-%d %H:%M')
-                    timestamp = str(timestamp)
-                    request['folder'] = str(timestamp)
-
-                # Check '-replace' key/value pair
-                if '-replace' in arguments:
-                    value_index = arguments.index('-replace') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            request['replace'] = value
-                        else:
-                            raise ValueError('Beacon call uses a faulty replacement string.')
-                    else:
-                        raise ValueError('Beacon call is missing a replacement string.')
-                else:
-                    request['replace'] = ''
-
-                # Check '-with' key/value pair
-                if '-with' in arguments:
-                    value_index = arguments.index('-with') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            request['with'] = value
-                        else:
-                            raise ValueError('Beacon call uses a faulty replacement string')
-                    else:
-                        raise ValueError('Beacon call is missing a replacement string.')
-                else:
-                    request['with'] = ''
-
-                # Check '-add' key/value pair
-                if '-add' in arguments:
-                    value_index = arguments.index('-add') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            request['add'] = value
-                        else:
-                            raise ValueError('Beacon call uses a faulty string to add.')
-                    else:
-                        raise ValueError('Beacon call is missing a string to add.')
-                else:
-                    request['add'] = ''
-
-                # Check '-clean_names' key/value pair
-                if '-clean_names' in arguments:
-                    value_index = arguments.index('-clean_names') + 1
-                    if len(arguments) >= value_index:
-                        value = arguments[value_index]
-                        if isinstance(value, str):
-                            if ', ' in value:
-                                request['clean_names'] = value.split(', ')
-                            elif ',' in value:
-                                request['clean_names'] = value.split(',')
-                            else:
-                                request['clean_names'] = [ value ]
-                        else:
-                            raise ValueError('Beacon call uses a faulty name-cleaning string.')
-                    else:
-                        raise ValueError('Beacon call is missing a name-cleaning string.')
-                else:
-                    request['clean_names'] = []
-
-            # Throw an error if required attribute is missing
-            else:
-                raise IndexError('Beacon call is missing a required attribute.')
-
-
-            '''
-
-
-
-
-
-
-
+            # Go through each key/value pair
+            request = clean_argument(request, arguments, 'download', 'list')
+            request = clean_argument(request, arguments, 'url', 'url')
+            request = clean_argument(request, arguments, 'file', 'str')
+            request = clean_argument(request, arguments, 'folder', 'str')
+            request = clean_argument(request, arguments, 'resource_url_replace', 'str')
+            request = clean_argument(request, arguments, 'resource_url_replace_with', 'str')
+            request = clean_argument(request, arguments, 'resource_url_add', 'str')
+            request = clean_argument(request, arguments, 'clean_resource_names', 'list')
 
         # Throw error if there are options but '-download' is not one of them
         else:
             raise ValueError('Hydra Scraper called with invalid options.')
+        
+        # Check requirements for the Hydra class
+        if 'lists' in request['download'] or 'list_triples' in request['download'] or 'beacon' in request['download']:
+            if request['url'] == None:
+                raise ValueError('Hydra Scraper called without valid URL.')
+
+        # Check requirements for the Beacon class
+        elif 'resources' in request['download'] or 'resource_triples' in request['download']:
+            if request['url'] == None and request['file'] == None:
+                raise ValueError('Hydra Scraper called without valid URL or file name.')
+
+        # No valid download requests
+        else:
+            raise ValueError('Hydra Scraper called without valid download requests.')
 
     # Return the request dictionary
+    return request
+
+
+def clean_argument(request:dict, arguments:list, key:str, evaluation:str = None) -> dict:
+    '''
+    Checks the value of a command-line argument, validates it, and adds it to the request dictionary
+
+        Parameters:
+            request (dict): old request dictionary
+            arguments (list): command line arguments
+            key (str): key to find the right value
+            evaluation (str): type of evaluation to run (url, )
+
+        Returns:
+            dict: revised request dictionary
+    '''
+
+    # Retrieve argument value
+    value_index = arguments.index('-' + key) + 1
+    if len(arguments) >= value_index:
+        value = arguments[value_index]
+
+        # Perform a string evaluation
+        if evaluation == 'str':
+            if isinstance(value, str):
+                request[key] = value
+            else:
+                raise ValueError('The command-line argument -' + key + ' uses a malformed string.')
+
+        # Perform a comma-separated list evaluation
+        elif evaluation == 'list':
+            if isinstance(value, str):
+                if ', ' in value:
+                    request[key] = value.split(', ')
+                elif ',' in value:
+                    request[key] = value.split(',')
+                else:
+                    request[key] = [ value ]
+            else:
+                raise ValueError('The command-line argument -' + key + ' uses a malformed comma-separated list.')
+
+        # Perform a URL evaluation
+        elif evaluation == 'url':
+            if url(value):
+                request[key] = value
+            else:
+                raise ValueError('The command-line argument -' + key + ' uses a malformed URL.')
+            
+        # Perform no evaluation
+        else:
+            pass
+        
+    # Throw error if there is no value for the key 
+    else:
+        raise ValueError('The command-line argument -' + key + ' is missing a value.')
+    
+    # Return request dictionary
     return request
 
 
