@@ -32,7 +32,18 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
 
 ## Examples
 
-The commands listed below illustrate possible command-line arguments. They refer to specific projects, but should work with any Hydra-paginated API in an RDF-comptabile format.
+The commands listed below illustrate possible command-line arguments. They refer to specific projects that use this script, but the commands should work with any Hydra-paginated API in an RDF-comptabile format.
+
+### NFDI4Culture
+
+Grab all portal data:
+
+```
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle' -clean_resource_names 'https://nfdi4culture.de/resource/,.ttl'
+```
+
+
+
 
 **CVMA: all embedded metadata lists**
 
@@ -70,12 +81,6 @@ python go.py -download 'lists,beacon,resources' -url 'https://corpusvitrearum.de
 python go.py -download 'beacon,resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
-**NFDI4Culture: all Turtle lists and resources**
-
-```
-python go.py -download 'lists,beacon,resources' -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle' -clean_resource_names 'https://nfdi4culture.de/resource/,.ttl'
-```
-
 ## Development
 
 ## Roadmap
@@ -86,6 +91,8 @@ python go.py -download 'lists,beacon,resources' -url 'https://nfdi4culture.de/re
 
 **Possible improvements**
 
-- Package the script?
-- Add option to get only CGIF triples?
-- Add option to convert LIDO to CGIF triples (using XTriples, XSLT, or lxml)?
+- Enable returning a JSON response (dateModified, number of resources, errors) instead of a command-line report?
+- Enable checking for `schema:dateModified` in the beginning?
+- Package the script and move the download folder?
+- Add filters for CGIF triples?
+- Add conversion from LIDO to CGIF triples via lxml, RML, XSLT, or XTriples?

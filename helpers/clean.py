@@ -59,6 +59,7 @@ def clean_request(arguments:list) -> dict:
 
         # Check requests and modify the request dictionary accordingly
         elif '-download' in arguments:
+            echo_note('')
 
             # Go through each key/value pair
             request = clean_argument(request, arguments, 'download', 'list')
@@ -73,7 +74,7 @@ def clean_request(arguments:list) -> dict:
         # Throw error if there are options but '-download' is not one of them
         else:
             raise ValueError('Hydra Scraper called with invalid options.')
-        
+
         # Check requirements for the Hydra class
         if 'lists' in request['download'] or 'list_triples' in request['download'] or 'beacon' in request['download']:
             if request['url'] == None:
