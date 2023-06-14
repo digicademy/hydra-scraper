@@ -48,7 +48,7 @@ Get **CGIF data** from an API entry point:
 python go.py -download 'list_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded'
 ```
 
-To make the next example workable, produce a **beacon file**:
+To prepare for the next example, produce a **beacon file**:
 
 ```
 python go.py -download 'beacon' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded'

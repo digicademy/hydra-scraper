@@ -61,7 +61,7 @@ class Beacon:
             return 'Processed list of individual resources'
 
 
-    def __modify_resource_urls(self, resources:list, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = '') -> list:
+    def __modify_resource_urls(self, resources:list, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
         '''
         Mofifies the list of individual resource URLs on demand
 
@@ -70,16 +70,13 @@ class Beacon:
                 resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
                 resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
                 resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
-            
-            Returns:
-                list: Modified list of resources
         '''
 
         # Empty list for revised URLs
         modified_resources = []
 
         # Check each URL in the list
-        for url in self.resources:
+        for url in resources:
             if resource_url_replace != '':
                 url = url.replace(resource_url_replace, resource_url_replace_with)
             if resource_url_add != '':
@@ -114,13 +111,12 @@ class Beacon:
         echo_progress('Retrieving individual resources', 0, 100)
 
         # If requested, get list of individual resources from beacon file
-        # TODO The list of resources is turned to None here
         if beacon_file != '':
             self.resources = read_list(beacon_file)
 
         # Replace or augment strings in resource URLs if requested
         if resource_url_replace != '' or resource_url_add != '':
-            self.resources = self.__modify_resource_urls(self.resources, resource_url_replace, resource_url_replace_with, resource_url_add)
+            self.__modify_resource_urls(self.resources, resource_url_replace, resource_url_replace_with, resource_url_add)
 
         # Throw error if resource list is empty
         if self.resources == []:
