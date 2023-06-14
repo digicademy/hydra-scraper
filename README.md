@@ -36,46 +36,57 @@ The commands listed below illustrate possible command-line arguments. They refer
 
 ### NFDI4Culture
 
-Grab all portal data as triples:
+Grab all **portal data** as triples:
 
 ```
 python go.py -download 'list_triples' -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle'
 ```
 
-
-
-
-**CVMA: all embedded metadata lists**
+Get **CGIF data** from an API entry point:
 
 ```
-python go.py -download 'lists' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+python go.py -download 'list_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded'
 ```
 
-**CVMA: all JSON-LD lists and resources**
+To make the next example workable, produce a **beacon file**:
 
 ```
-python go.py -download 'lists,beacon,resources' -url 'https://corpusvitrearum.de/id/about.json' -folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
+python go.py -download 'beacon' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded'
 ```
 
-**CVMA: all RDF/XML lists and resources**
+Get **CGIF data from a beacon** file:
 
 ```
-python go.py -download 'lists,beacon,resources' -url 'https://corpusvitrearum.de/id/about.rdf' -folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
+python go.py -download 'resource_triples' -file 'downloads/cvma-embedded/beacon.txt' -folder 'cvma-embedded'
 ```
 
-**CVMA: all Turtle lists and resources**
+### Corpus Vitrearum Germany
+
+All available **JSON-LD** data:
 
 ```
-python go.py -download 'lists,beacon,resources' -url 'https://corpusvitrearum.de/id/about.ttl' -folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
+python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.json' -folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
 ```
 
-**CVMA: all CGIF lists and resources**
+All available **RDF/XML** data:
 
 ```
-python go.py -download 'lists,beacon,resources' -url 'https://corpusvitrearum.de/id/about.cgif' -folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
+python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.rdf' -folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
 ```
 
-**CVMA: all LIDO resources**
+All available **Turtle** data:
+
+```
+python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.ttl' -folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
+```
+
+All available **CGIF (JSON-LD)** data:
+
+```
+python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.cgif' -folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
+```
+
+*All available **LIDO** data:
 
 ```
 python go.py -download 'beacon,resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
@@ -85,14 +96,15 @@ python go.py -download 'beacon,resources' -url 'https://corpusvitrearum.de/cvma-
 
 ## Roadmap
 
+- Remove Hydra pagination from triples
 - Add URL composition feature of the Beacon standard
+- Enable checking `schema:dateModified` beforehand
+- Implement a JSON return (including dateModified, number of resources, errors)
 - Re-add the interactive mode
 - Re-add a `-csv` option and remove leftover file
 
 **Possible improvements**
 
-- Enable returning a JSON response (dateModified, number of resources, errors) instead of a command-line report?
-- Enable checking for `schema:dateModified` in the beginning?
 - Package the script and move the download folder?
-- Add filters for CGIF triples?
 - Add conversion from LIDO to CGIF triples via lxml, RML, XSLT, or XTriples?
+- Add triple filter for CGIF?
