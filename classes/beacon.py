@@ -61,41 +61,12 @@ class Beacon:
             return 'Processed list of individual resources'
 
 
-    def __modify_resource_urls(self, resources:list, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
-        '''
-        Mofifies the list of individual resource URLs on demand
-
-            Parameters:
-                resources (list): List of resource URLs to modify
-                resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
-                resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
-                resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
-        '''
-
-        # Empty list for revised URLs
-        modified_resources = []
-
-        # Check each URL in the list
-        for url in resources:
-            if resource_url_replace != '':
-                url = url.replace(resource_url_replace, resource_url_replace_with)
-            if resource_url_add != '':
-                url = url + resource_url_add
-            modified_resources.append(url)
-            
-        # Use the revised URLs instead of the original
-        self.resources = modified_resources
-
-
-    def populate(self, save_original_files:bool = True, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = '', clean_resource_urls:list = [], beacon_file:str = ''):
+    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = ''):
         '''
         Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
 
             Parameters:
                 save_original_files (bool, optional): Switch to also save original files on download, defaults to True
-                resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
-                resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
-                resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
                 clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
                 beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
         '''
@@ -113,10 +84,6 @@ class Beacon:
         # If requested, get list of individual resources from beacon file
         if beacon_file != '':
             self.resources = read_list(beacon_file)
-
-        # Replace or augment strings in resource URLs if requested
-        if resource_url_replace != '' or resource_url_add != '':
-            self.__modify_resource_urls(self.resources, resource_url_replace, resource_url_replace_with, resource_url_add)
 
         # Throw error if resource list is empty
         if self.resources == []:

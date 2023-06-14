@@ -35,7 +35,7 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
         save_lists = True
     else:
         save_lists = False
-    hydra.populate(save_lists)
+    hydra.populate(save_lists, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
     # Compile a beacon list if requested
     if 'beacon' in request['download']:
@@ -47,6 +47,11 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
 
     # Add status message
     status.extend(hydra.status)
+
+# Mini Hydra routine if Beacon logic is requested but no beacon file is given
+elif request['file'] == '':
+    hydra = Hydra(request['folder'], request['url'])
+    hydra.populate(False, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
 # Set up beacon file routine if required
 if 'resources' in request['download'] or 'resource_triples' in request['download']:
@@ -62,7 +67,7 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
         save_resources = True
     else:
         save_resources = False
-    beacon.populate(save_resources, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'], request['clean_resource_names'], request['file'])
+    beacon.populate(save_resources, request['clean_resource_names'], request['file'])
 
     # Compile resource triples if requested
     if 'resource_triples' in request['download']:

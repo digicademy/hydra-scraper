@@ -25,9 +25,9 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
 - `-url '<url>'`: use this entry-point URL to scrape content
 - `-file '<path to file>'`: use the URLs contained in this beacon file to scrape content
 - `-folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
-- `-resource_url_replace '<string>'`: before downloading, replace this string in each resource URL (defaults to none)
-- `-resource_url_replace_with '<string>'`: before downloading, replace the previous string in each resource URL with this one (defaults to none)
-- `-resource_url_add '<string>'`: before downloading, add this string to the end of each resource URL (defaults to none)
+- `-resource_url_replace '<string>'`: when listing resources, replace this string in each URL (defaults to none)
+- `-resource_url_replace_with '<string>'`: when listing resources, replace the previous string in each URL with this one (defaults to none)
+- `-resource_url_add '<string>'`: when listing resources, add this string to the end of each URL (defaults to none)
 - `-clean_resource_names '<string list>'`: comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
 
 ## Examples
@@ -89,7 +89,7 @@ python go.py -download 'lists,list_resources,beacon,resources,resource_triples' 
 *All available **LIDO** data:
 
 ```
-python go.py -download 'beacon,resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
+python go.py -download 'resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
 ## Development
