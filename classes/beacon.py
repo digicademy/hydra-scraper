@@ -24,6 +24,7 @@ class Beacon:
 
 
     # Variables
+    status = []
     populated = None
     triples = Graph()
     resources = []
@@ -89,7 +90,7 @@ class Beacon:
         self.resources = modified_resources
 
 
-    def populate(self, save_original_files:bool = True, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = '', clean_resource_urls:list = [], beacon_file:str = '') -> dict:
+    def populate(self, save_original_files:bool = True, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = '', clean_resource_urls:list = [], beacon_file:str = ''):
         '''
         Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
 
@@ -100,9 +101,6 @@ class Beacon:
                 resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
                 clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
                 beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
-
-            Returns:
-                dict: Status report with 'success' reporting a bool value and 'reason' giving an explanatory string
         '''
 
         # Notify object that it is being populated
@@ -116,6 +114,7 @@ class Beacon:
         echo_progress('Retrieving individual resources', 0, 100)
 
         # If requested, get list of individual resources from beacon file
+        # TODO The list of resources is turned to None here
         if beacon_file != '':
             self.resources = read_list(beacon_file)
 
@@ -126,7 +125,7 @@ class Beacon:
         # Throw error if resource list is empty
         if self.resources == []:
             status_report['success'] = False
-            status_report['reason'] = 'There were not resources to retrieve.'
+            status_report['reason'] = 'There were no resources to retrieve.'
 
         # Count number of resources
         else:
@@ -149,8 +148,8 @@ class Beacon:
                             file_name = str(number)
                         else:
                             file_name = resource_url
-                            for clean_name in self.clean_names:
-                                file_name = file_name.replace(clean_name, '')
+                            for clean_resource_url in clean_resource_urls:
+                                file_name = file_name.replace(clean_resource_url, '')
 
                         # Save file
                         file_path = file_folder + '/' + file_name + '.' + resource['file_extension']
@@ -186,22 +185,18 @@ class Beacon:
         self.populated = True
 
         # Provide final status
-        return status_report
+        self.status.append(status_report)
 
 
-    def save_triples(self, file_name:str = 'resources') -> dict:
+    def save_triples(self, file_name:str = 'resources'):
         '''
         Saves all downloaded triples into a single Turtle file
 
             Parameters:
                 file_name (str, optional): Name of the triple file without a file extension, defaults to 'resources'
-
-            Returns:
-                dict: Status report with 'success' reporting a bool value and 'reason' giving an explanatory string
         '''
 
         # Provide initial status
-        echo_progress('Saving list of resource triples', 0, 100)
         status_report = {
             'success': False,
             'reason': ''
@@ -211,6 +206,9 @@ class Beacon:
         if self.object_populated != True:
             status_report['reason'] = 'A list of triples can only be written when the resources were read.'
         else:
+
+            # Initial progress
+            echo_progress('Saving list of resource triples', 0, 100)
 
             # Compile file if there are triples
             if len(self.triples):
@@ -225,6 +223,8 @@ class Beacon:
             else:
                 status_report['reason'] = 'No resource triples to list in a Turtle file.'
 
+            # Final progress
+            echo_progress('Saving list of resource triples', 100, 100)
+
         # Provide final status
-        echo_progress('Saving list of resource triples', 100, 100)
-        return status_report
+        self.status.append(status_report)

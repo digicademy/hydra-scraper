@@ -30,6 +30,7 @@ class Hydra:
 
 
     # Variables
+    status = []
     populated = None
     triples = Graph()
     resources = []
@@ -55,6 +56,7 @@ class Hydra:
         # Assign variables
         self.folder = config['download_base'] + '/' + folder
         self.entry_point_url = entry_point_url
+        self.current_list_url = entry_point_url
         self.next_list_url = entry_point_url
 
 
@@ -103,15 +105,12 @@ class Hydra:
         return result
 
 
-    def populate(self, save_original_files:bool = True) -> dict:
+    def populate(self, save_original_files:bool = True):
         '''
         Pages through the Hydra API, populates the object, and optionally stores the original files in the process
 
             Parameters:
                 save_original_files (bool, optional): Switch to also save original files on download, defaults to True
-
-            Returns:
-                dict: Status report with 'success' reporting a bool value and 'reason' giving an explanatory string
         '''
 
         # Notify object that it is being populated
@@ -122,7 +121,6 @@ class Hydra:
             'success': True,
             'reason': 'All lists retrieved successfully.'
         }
-        echo_progress('Retrieving API lists', 0, 100)
 
         # Main loop to retrieve list files
         number = 0
@@ -156,8 +154,8 @@ class Hydra:
                 break
 
             # Add each individual resource URL to main resource list
-            self.resources.extend(self.__get_triple(HYDRA.member))
-            self.resources.extend(self.__get_triple(SCHEMA.item))
+            self.resources.extend(self.__get_triple(HYDRA.member, True))
+            self.resources.extend(self.__get_triple(SCHEMA.item, True))
 
             # Get total number of items per list (only makes sense on first page)
             if number == 1:
@@ -201,18 +199,15 @@ class Hydra:
         self.populated = True
 
         # Provide final status
-        return status_report
+        self.status.append(status_report)
 
 
-    def save_beacon(self, file_name:str = 'beacon') -> dict:
+    def save_beacon(self, file_name:str = 'beacon'):
         '''
         Lists all individual resources in a beacon file
 
             Parameters:
                 file_name (str, optional): Name of the beacon file without a file extension, defaults to 'beacon'
-
-            Returns:
-                dict: Status report with 'success' reporting a bool value and 'reason' giving an explanatory string
         '''
 
         # Provide initial status
@@ -220,12 +215,14 @@ class Hydra:
             'success': False,
             'reason': ''
         }
-        echo_progress('Saving beacon file', 0, 100)
 
         # Prevent routine if object is not populated yet
         if self.populated != True:
             status_report['reason'] = 'A beacon file can only be written when the API was read.'
         else:
+
+            # Initial progress
+            echo_progress('Saving beacon file', 0, 100)
 
             # Save file if there are resources
             if self.resources != []:
@@ -240,20 +237,19 @@ class Hydra:
             else:
                 status_report['reason'] = 'No resources to list in a beacon file.'
 
+            # Final progress
+            echo_progress('Saving beacon file', 100, 100)
+
         # Provide final status
-        echo_progress('Saving beacon file', 100, 100)
-        return status_report
+        self.status.append(status_report)
 
 
-    def save_triples(self, file_name:str = 'lists') -> dict:
+    def save_triples(self, file_name:str = 'lists'):
         '''
         Saves all downloaded triples into a single Turtle file
 
             Parameters:
                 file_name (str, optional): Name of the triple file without a file extension, defaults to 'lists'
-
-            Returns:
-                dict: Status report with 'success' reporting a bool value and 'reason' giving an explanatory string
         '''
 
         # Provide initial status
@@ -261,12 +257,14 @@ class Hydra:
             'success': False,
             'reason': ''
         }
-        echo_progress('Saving list of API triples', 0, 100)
 
         # Prevent routine if object is not populated yet
         if self.populated != True:
             status_report['reason'] = 'A list of triples can only be written when the API was read.'
         else:
+
+            # Initial progress
+            echo_progress('Saving list of API triples', 0, 100)
 
             # Compile file if there are triples
             if len(self.triples):
@@ -281,6 +279,8 @@ class Hydra:
             else:
                 status_report['reason'] = 'No API triples to list in a Turtle file.'
 
+            # Final progress
+            echo_progress('Saving list of API triples', 100, 100)
+
         # Provide final status
-        echo_progress('Saving list of API triples', 100, 100)
-        return status_report
+        self.status.append(status_report)

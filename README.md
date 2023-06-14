@@ -36,10 +36,10 @@ The commands listed below illustrate possible command-line arguments. They refer
 
 ### NFDI4Culture
 
-Grab all portal data:
+Grab all portal data as triples:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle' -clean_resource_names 'https://nfdi4culture.de/resource/,.ttl'
+python go.py -download 'list_triples' -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle'
 ```
 
 

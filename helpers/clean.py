@@ -30,8 +30,8 @@ def clean_request(arguments:list) -> dict:
     # Set up an empty request dictionary
     request = {
         'download': [], # May contain lists, list_triples, beacon, resources, resource_triples
-        'url': None,
-        'file': None,
+        'url': '',
+        'file': '',
         'folder': current_timestamp(),
         'resource_url_replace': '',
         'resource_url_replace_with': '',
@@ -107,44 +107,47 @@ def clean_argument(request:dict, arguments:list, key:str, evaluation:str = None)
             dict: revised request dictionary
     '''
 
-    # Retrieve argument value
-    value_index = arguments.index('-' + key) + 1
-    if len(arguments) >= value_index:
-        value = arguments[value_index]
+    # Check if argument key is used
+    if '-' + key in arguments:
 
-        # Perform a string evaluation
-        if evaluation == 'str':
-            if isinstance(value, str):
-                request[key] = value
-            else:
-                raise ValueError('The command-line argument -' + key + ' uses a malformed string.')
+        # Retrieve argument value
+        value_index = arguments.index('-' + key) + 1
+        if len(arguments) >= value_index:
+            value = arguments[value_index]
 
-        # Perform a comma-separated list evaluation
-        elif evaluation == 'list':
-            if isinstance(value, str):
-                if ', ' in value:
-                    request[key] = value.split(', ')
-                elif ',' in value:
-                    request[key] = value.split(',')
+            # Perform a string evaluation
+            if evaluation == 'str':
+                if isinstance(value, str):
+                    request[key] = value
                 else:
-                    request[key] = [ value ]
-            else:
-                raise ValueError('The command-line argument -' + key + ' uses a malformed comma-separated list.')
+                    raise ValueError('The command-line argument -' + key + ' uses a malformed string.')
 
-        # Perform a URL evaluation
-        elif evaluation == 'url':
-            if url(value):
-                request[key] = value
+            # Perform a comma-separated list evaluation
+            elif evaluation == 'list':
+                if isinstance(value, str):
+                    if ', ' in value:
+                        request[key] = value.split(', ')
+                    elif ',' in value:
+                        request[key] = value.split(',')
+                    else:
+                        request[key] = [ value ]
+                else:
+                    raise ValueError('The command-line argument -' + key + ' uses a malformed comma-separated list.')
+
+            # Perform a URL evaluation
+            elif evaluation == 'url':
+                if url(value):
+                    request[key] = value
+                else:
+                    raise ValueError('The command-line argument -' + key + ' uses a malformed URL.')
+                
+            # Perform no evaluation
             else:
-                raise ValueError('The command-line argument -' + key + ' uses a malformed URL.')
+                pass
             
-        # Perform no evaluation
+        # Throw error if there is no value for the key 
         else:
-            pass
-        
-    # Throw error if there is no value for the key 
-    else:
-        raise ValueError('The command-line argument -' + key + ' is missing a value.')
+            raise ValueError('The command-line argument -' + key + ' is missing a value.')
     
     # Return request dictionary
     return request

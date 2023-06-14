@@ -23,31 +23,34 @@ request = clean_request(argv[1:])
 job_folder = config['download_base'] + '/' + request['folder']
 create_folder(job_folder)
 
-# Set up an empty status list
+# Set up status messages
 status = []
 
 # Set up Hydra API routine if required
 if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_triples' in request['download']:
-    hydra = Hydra(request['url'], request['folder'])
+    hydra = Hydra(request['folder'], request['url'])
 
     # Populate the object, and download each API list if requested
     if 'lists' in request['download']:
         save_lists = True
     else:
         save_lists = False
-    status.append(hydra.populate(save_lists))
+    hydra.populate(save_lists)
 
     # Compile a beacon list if requested
     if 'beacon' in request['download']:
-        status.append(hydra.save_beacon())
+        hydra.save_beacon()
 
     # Compile list triples if requested
     if 'list_triples' in request['download']:
-        status.append(hydra.save_triples())
+        hydra.save_triples()
+
+    # Add status message
+    status.extend(hydra.status)
 
 # Set up beacon file routine if required
 if 'resources' in request['download'] or 'resource_triples' in request['download']:
-    
+
     # Use previous resource list if present
     if hydra.resources:
         beacon = Beacon(request['folder'], hydra.resources)
@@ -59,11 +62,14 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
         save_resources = True
     else:
         save_resources = False
-    status.append(beacon.populate(save_resources, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'], request['clean_resource_names'], request['file']))
+    beacon.populate(save_resources, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'], request['clean_resource_names'], request['file'])
 
     # Compile resource triples if requested
     if 'resource_triples' in request['download']:
-        status.append(beacon.save_triples())
+        beacon.save_triples()
+
+    # Add status message
+    status.extend(beacon.status)
 
 # Compile a report string
 report = 'Done!'
