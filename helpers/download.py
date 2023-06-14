@@ -7,19 +7,21 @@
 
 
 # Import libraries
-from os import linesep
 from urllib.request import urlopen
+
+# Import script modules
+from helpers.clean import clean_lines
 
 
 def download_file(url:str) -> dict:
     '''
-    Downloads a file from a URL and returns the content
+    Retrieves a file from a URL and returns the content
 
         Parameters:
             url (str): URL to download the file from
 
         Returns:
-            dict: 'file_extension' and 'content' of the downloaded file
+            dict: Provides 'file_type', 'file_extension' and 'content' of the retrieved file
     '''
 
     # Retrieve URL content
@@ -51,12 +53,7 @@ def download_file(url:str) -> dict:
                         content = content[embedded_jsonld_start:embedded_jsonld_end]
 
                         # Remove empty lines
-                        content = linesep.join(
-                            [
-                                line for line in content.splitlines()
-                                if line.strip()
-                            ]
-                        )
+                        content = clean_lines(content)
 
             # Structure the data
             simple_response = {
@@ -130,8 +127,9 @@ def determine_file_type(headers:dict, getFileExtension:bool = False) -> str:
         file_extension = 'nt'
 
     # Non-RDF file types that may be useful
+    # When you add a file type here, make sure you also list it in the config dictionary
     elif 'application/xml' in content_type:
-        file_type = 'xml'
+        file_type = 'lido'
         file_extension = 'xml'
     else:
         raise Exception('Hydra Scraper does not recognise this file type.')

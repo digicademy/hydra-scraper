@@ -1,4 +1,4 @@
-# Class to manage scraping a beacon list of resources
+# Class to manage scraping a list of individual resources
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -6,14 +6,17 @@
 # LICENSE.txt file that was distributed with this source code.
 
 
+# Import libraries
+from rdflib import Graph
+from time import sleep
+
 # Import script modules
 from helpers.config import *
 from helpers.download import download_file
+from helpers.fileio import create_folder
 from helpers.fileio import read_list
 from helpers.fileio import save_file
-from helpers.status import echo_note
 from helpers.status import echo_progress
-from time import sleep
 
 
 # Base class for a beacon list to process
@@ -21,38 +24,27 @@ class Beacon:
 
 
     # Variables
-    file_path = ''
-    folder = ''
-    replace = ''
-    replace_with = ''
-    add = ''
-    clean_names = []
+    status = []
+    populated = None
+    triples = Graph()
     resources = []
+    folder = ''
     number_of_resources = 0
     missing_resources = 0
-    done = None
 
 
-    def __init__(self, file_path:str, folder:str, replace:str = '', replace_with:str = '', add:str = '', clean_names:list = []):
+    def __init__(self, folder:str, resources:list = []):
         '''
-        Sets up a beacon list to process
+        Sets up a list of resources to process
 
             Parameters:
-                file_path (str): Path to the beacon file
-                folder (str): Name of the downloads subfolder to store individual resources at
-                replace (str, optional): String to replace in listed URLs before downloading a resource
-                replace_with (str, optional): String to use as a replacement before downloading a resource
-                add (str, optional): String to add to each URL before downloading a resource
-                clean_names (list, optional): List of substrings to remove in the final URLs to result in a resource's file name
+                folder (str): Name of the downloads subfolder to store files in
+                resources (list, optional): List of resources to retrieve, defaults to empty list
         '''
 
         # Assign variables
-        self.file_path = file_path
-        self.folder = folder
-        self.replace = replace
-        self.replace_with = replace_with
-        self.add = add
-        self.clean_names = clean_names
+        self.folder = config['download_base'] + '/' + folder
+        self.resources = resources
 
 
     def __str__(self):
@@ -61,117 +53,178 @@ class Beacon:
         '''
 
         # Put together a string
-        if self.done == None:
-            return 'Beacon list to be read at ' + self.file_path
-        elif self.done == False:
-            return 'Beacon list at ' + self.file_path + ' being processed'
-        elif self.done == True:
-            return 'Processed beacon list from ' + self.file_path
+        if self.populated == None:
+            return 'List of individual resources to be retrieved'
+        elif self.populated == False:
+            return 'List of individual resources currently being processed'
+        elif self.populated == True:
+            return 'Processed list of individual resources'
 
 
-    def __list_resources(self):
+    def __modify_resource_urls(self, resources:list, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = '') -> list:
         '''
-        Generates a Python list of individual resources from a beacon file
-        '''
-
-        # Get file content and check each entry
-        resources = read_list(self.file_path)
-        revised_resources = []
-        if resources != None:
-            for resource in resources:
-
-                # Replace string if requested
-                if self.replace != '':
-                    resource = resource.replace(self.replace, self.replace_with)
-
-                # Add string if requested
-                if self.add != '':
-                    resource = resource + self.add
-
-                revised_resources.append(resource)
-
-            # Save number of resources
-            self.number_of_resources = len(revised_resources)
-
-        # Save list
-        self.resources = revised_resources
-    
-
-    def __download_resource(self, number:int, url:str):
-        '''
-        Downloads an individual resource
+        Mofifies the list of individual resource URLs on demand
 
             Parameters:
-                number (int): Index number of the resource to download
-                url (str): URL of the resource to download
+                resources (list): List of resource URLs to modify
+                resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
+                resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
+                resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
+            
+            Returns:
+                list: Modified list of resources
         '''
 
-        # Construct file name as number or as cleaned-up URL if requested
-        if self.clean_names == []:
-            file_name = str(number)
+        # Empty list for revised URLs
+        modified_resources = []
+
+        # Check each URL in the list
+        for url in self.resources:
+            if resource_url_replace != '':
+                url = url.replace(resource_url_replace, resource_url_replace_with)
+            if resource_url_add != '':
+                url = url + resource_url_add
+            modified_resources.append(url)
+            
+        # Use the revised URLs instead of the original
+        self.resources = modified_resources
+
+
+    def populate(self, save_original_files:bool = True, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = '', clean_resource_urls:list = [], beacon_file:str = ''):
+        '''
+        Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
+
+            Parameters:
+                save_original_files (bool, optional): Switch to also save original files on download, defaults to True
+                resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
+                resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
+                resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
+                clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
+                beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
+        '''
+
+        # Notify object that it is being populated
+        self.populated = False
+
+        # Provide initial status
+        status_report = {
+            'success': True,
+            'reason': 'All resources retrieved successfully.'
+        }
+        echo_progress('Retrieving individual resources', 0, 100)
+
+        # If requested, get list of individual resources from beacon file
+        # TODO The list of resources is turned to None here
+        if beacon_file != '':
+            self.resources = read_list(beacon_file)
+
+        # Replace or augment strings in resource URLs if requested
+        if resource_url_replace != '' or resource_url_add != '':
+            self.resources = self.__modify_resource_urls(self.resources, resource_url_replace, resource_url_replace_with, resource_url_add)
+
+        # Throw error if resource list is empty
+        if self.resources == []:
+            status_report['success'] = False
+            status_report['reason'] = 'There were no resources to retrieve.'
+
+        # Count number of resources
         else:
-            file_name = url
-            for clean_name in self.clean_names:
-                file_name = file_name.replace(clean_name, '')
+            self.number_of_resources = len(self.resources)
 
-        # Download resource
-        download = download_file(url)
-        if download != None:
+            # Main loop to retrieve resource files
+            for number, resource_url in enumerate(self.resources, start = 1):
 
-            # Set file path accordingly
-            file_extension = download['file_extension']
-            file_path = config['download_base'] + '/' + self.folder + '/resources/' + file_name + '.' + file_extension
+                # Retrieve file
+                resource = download_file(resource_url)
+                if resource != None:
 
-            # Save file
-            save_file(download['content'], file_path)
+                    # Optionally save file
+                    if save_original_files:
+                        file_folder = self.folder + '/resources'
+                        create_folder(file_folder)
 
-        # Report if download failed
-        else:
-            self.missing_resources += 1
+                        # Clean up file name if required
+                        if clean_resource_urls == []:
+                            file_name = str(number)
+                        else:
+                            file_name = resource_url
+                            for clean_resource_url in clean_resource_urls:
+                                file_name = file_name.replace(clean_resource_url, '')
 
-        # Display progress indicator and add delay to avoid getting blocked be server
-        echo_progress('Downloading resources from the list', number, self.number_of_resources)
-        sleep(config['download_delay'])
+                        # Save file
+                        file_path = file_folder + '/' + file_name + '.' + resource['file_extension']
+                        save_file(resource['content'], file_path)
+                        status_report['reason'] = 'All resources saved to download folder.'
 
-
-    def process(self):
-        '''
-        Downloads each resource from the beacon list
-        '''
-
-        # Get list of resources
-        self.__list_resources()
-        if self.resources != None and self.resources != []:
-            self.done = False
-
-            # Provide initial status
-            echo_progress('Downloading resources from the list', 0, 100)
-
-            # Download each resource
-            for index, resource in enumerate(self.resources, start = 1):
-                self.__download_resource(index, resource)
-
-            # Report new status as...
-            if self.missing_resources > 0:
-
-                # ...failed
-                if self.missing_resources >= self.number_of_resources:
-                    raise FileNotFoundError('All resources listed in the beacon were missing.')
-                
-                # ...successful with exceptions
+                # Report if download failed
                 else:
-                    self.done = True
-                    echo_note('\nDone! Resources saved to the download folder, but ' + str(self.missing_resources) + ' were missing.\n')
+                    self.missing_resources += 1
+                    continue
 
-            # ...successful
-            else:
-                self.done = True
-                echo_note('\nDone! All resources saved to the download folder.\n')
+                # Add triples to object storage
+                if resource['file_type'] not in config['non_rdf_formats']:
+                    try:
+                        self.triples.parse(data=resource['content'], format=resource['file_type'])
+                    except:
+                        status_report['success'] = False
+                        status_report['reason'] = 'At least one resource could not be parsed as RDF-style data.'
+                        break
 
-        # Throw error if beacon file is empty
-        elif self.resources == []:
-            raise ValueError('The beacon list is empty.')
+                # Report any failed state
+                if self.missing_resources >= self.number_of_resources:
+                    status_report['success'] = False
+                    status_report['reason'] = 'All resources were missing.'
+                elif self.missing_resources > 0:
+                    status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
 
-        # Throw error if beacon file could not be read
+                # Delay next retrieval to avoid a server block
+                echo_progress('Retrieving individual resources', number, self.number_of_resources)
+                sleep(config['download_delay'])
+
+        # Notify object that it is populated
+        self.populated = True
+
+        # Provide final status
+        self.status.append(status_report)
+
+
+    def save_triples(self, file_name:str = 'resources'):
+        '''
+        Saves all downloaded triples into a single Turtle file
+
+            Parameters:
+                file_name (str, optional): Name of the triple file without a file extension, defaults to 'resources'
+        '''
+
+        # Provide initial status
+        status_report = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Prevent routine if object is not populated yet
+        if self.object_populated != True:
+            status_report['reason'] = 'A list of triples can only be written when the resources were read.'
         else:
-            raise FileNotFoundError('The beacon list is not available.')
+
+            # Initial progress
+            echo_progress('Saving list of resource triples', 0, 100)
+
+            # Compile file if there are triples
+            if len(self.triples):
+                file_path = self.folder + '/' + file_name + '.ttl'
+                self.triples.serialize(destination=file_path, format='turtle')
+
+                # Compile success status
+                status_report['success'] = True
+                status_report['reason'] = 'All resource triples listed in a Turtle file.'
+
+            # Report if there are no resources
+            else:
+                status_report['reason'] = 'No resource triples to list in a Turtle file.'
+
+            # Final progress
+            echo_progress('Saving list of resource triples', 100, 100)
+
+        # Provide final status
+        self.status.append(status_report)

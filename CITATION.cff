@@ -13,19 +13,19 @@ authors:
 repository-code: >-
   https://gitlab.rlp.net/adwmainz/digicademy/cvma/hydra-scraper
 abstract: >-
-  This simple scraper for APIs that use Hydra pagination was
-  originally developed as part of the Corpus Vitrearum
-  Germany (CVMA) at the Academy of Sciences and Literature
-  Mainz. The idea was to provide a basic toolset that can
-  pull data from resource lists as well as individual
-  resource pages in RDF-compatible formats such as JSON-LD
-  or Turtle. Command-line calls can be combined and adapted
-  to build fully-fledged scraping mechanisms.
+  This simple scraper for APIs that use Hydra pagination
+  provides a toolset to pull data from resource lists as
+  well as individual resources in RDF-compatible formats
+  such as JSON-LD or Turtle. Command-line calls can be
+  combined and adapted to build fully-fledged scraping
+  mechanisms. The script was originally developed as an API
+  testing tool for of the Corpus Vitrearum Germany (CVMA)
+  at the Academy of Sciences and Literature Mainz.
 keywords:
   - scraping
   - Hydra Core Vocabulary
   - API
   - Python
 license: MIT
-version: 0.7.5
-date-released: '2023-06-05'
+version: 0.8.0
+date-released: '2023-06-14'
