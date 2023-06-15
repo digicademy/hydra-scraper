@@ -65,28 +65,28 @@ python go.py -download 'resource_triples' -file 'downloads/cvma-embedded/beacon.
 All available **JSON-LD** data:
 
 ```
-python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.json' -folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.json' -folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
 ```
 
 All available **RDF/XML** data:
 
 ```
-python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.rdf' -folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.rdf' -folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
 ```
 
 All available **Turtle** data:
 
 ```
-python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.ttl' -folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.ttl' -folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
 ```
 
 All available **CGIF (JSON-LD)** data:
 
 ```
-python go.py -download 'lists,list_resources,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.cgif' -folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.cgif' -folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
 ```
 
-*All available **LIDO** data:
+All available **LIDO** data:
 
 ```
 python go.py -download 'resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'

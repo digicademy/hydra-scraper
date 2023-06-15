@@ -166,7 +166,7 @@ class Beacon:
         }
 
         # Prevent routine if object is not populated yet
-        if self.object_populated != True:
+        if self.populated != True:
             status_report['reason'] = 'A list of triples can only be written when the resources were read.'
         else:
 
