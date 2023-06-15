@@ -31,6 +31,7 @@ class Beacon:
     folder = ''
     number_of_resources = 0
     missing_resources = 0
+    non_rdf_resources = 0
 
 
     def __init__(self, folder:str, resources:list = []):
@@ -129,16 +130,19 @@ class Beacon:
                     try:
                         self.triples.parse(data=resource['content'], format=resource['file_type'])
                     except:
-                        status_report['success'] = False
-                        status_report['reason'] = 'At least one resource could not be parsed as RDF-style data.'
-                        break
+                        self.non_rdf_resources += 1
+                        continue
 
                 # Report any failed state
                 if self.missing_resources >= self.number_of_resources:
                     status_report['success'] = False
                     status_report['reason'] = 'All resources were missing.'
+                elif self.missing_resources > 0 and self.non_rdf_resources > 0:
+                    status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
                 elif self.missing_resources > 0:
                     status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
+                elif self.non_rdf_resources > 0:
+                    status_report['reason'] = 'Resources retrieved, but ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
 
                 # Delay next retrieval to avoid a server block
                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
