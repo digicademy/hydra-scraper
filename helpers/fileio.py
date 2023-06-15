@@ -57,21 +57,23 @@ def read_list(file_path:str) -> list:
     # Open file
     try:
         f = open(file_path, 'r')
+        content = f.read()
 
         # Clean empty lines and comments
-        f = clean_lines(f)
+        content = clean_lines(content)
+        lines = iter(content.splitlines())
 
         # Add each line to list
         entries = []
-        for entry in f:
-            entries.append(entry)
+        for line in lines:
+            entries.append(line)
 
         # Return list
         return entries
     
     # Report if file is not found
     except:
-        return None
+        return []
 
 
 def create_folder(folder_name:str):

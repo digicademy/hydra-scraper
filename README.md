@@ -45,22 +45,22 @@ python go.py -download 'list_triples' -url 'https://nfdi4culture.de/resource.ttl
 Get **CGIF data** from an API entry point:
 
 ```
-python go.py -download 'list_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded'
-```
-
-To prepare for the next example, produce a **beacon file**:
-
-```
-python go.py -download 'beacon' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded'
+python go.py -download 'list_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'sample-cgif'
 ```
 
 Get **CGIF data from a beacon** file:
 
 ```
-python go.py -download 'resource_triples' -file 'downloads/cvma-embedded/beacon.txt' -folder 'cvma-embedded'
+python go.py -download 'resource_triples' -file 'downloads/sample-cgif/beacon.txt' -folder 'sample-cgif'
 ```
 
 ### Corpus Vitrearum Germany
+
+All available **embedded metadata**:
+
+```
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+```
 
 All available **JSON-LD** data:
 

@@ -53,14 +53,18 @@ elif request['file'] == '':
     hydra = Hydra(request['folder'], request['url'])
     hydra.populate(False, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
+# Mark absence of hydra object if beacon file is present
+else:
+    hydra = False
+
 # Set up beacon file routine if required
 if 'resources' in request['download'] or 'resource_triples' in request['download']:
 
     # Use previous resource list if present
-    if hydra.resources:
-        beacon = Beacon(request['folder'], hydra.resources)
-    else:
+    if hydra == False:
         beacon = Beacon(request['folder'])
+    else:
+        beacon = Beacon(request['folder'], hydra.resources)
 
     # Populate the object, and download each resource if requested
     if 'resources' in request['download']:
