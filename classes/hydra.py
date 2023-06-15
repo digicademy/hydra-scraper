@@ -101,11 +101,12 @@ class Hydra:
         self.resources = modified_resources
 
 
-    def __get_triple(self, predicate:str, list_items:bool = False) -> str | int:
+    def __get_triple(self, graph:object, predicate:str, list_items:bool = False) -> str | int:
         '''
         Helper function to return a single object or a list of objects from triples
 
             Parameters:
+                graph (object): Graph to perform the get request on
                 predicate (str): Predicate to find in all triples
                 list_items (bool, optional): Switch to determine whether to return a list or a single item, defaults to False
 
@@ -114,7 +115,7 @@ class Hydra:
         '''
 
         # Find triples
-        triples = self.triples.objects(None, predicate, unique=True)
+        triples = graph.objects(None, predicate, unique=True)
 
         # Find a single item
         if list_items == False:
@@ -177,15 +178,16 @@ class Hydra:
 
             # Add triples to object storage
             try:
-                self.triples.parse(data=hydra['content'], format=hydra['file_type'])
+                hydra_triples = Graph()
+                hydra_triples.parse(data=hydra['content'], format=hydra['file_type'])
             except:
                 status_report['success'] = False
                 status_report['reason'] = 'The Hydra API could not be parsed as RDF-style data.'
                 break
 
             # Add each individual resource URL to main resource list
-            self.resources.extend(self.__get_triple(HYDRA.member, True))
-            self.resources.extend(self.__get_triple(SCHEMA.item, True))
+            self.resources.extend(self.__get_triple(hydra_triples, HYDRA.member, True))
+            self.resources.extend(self.__get_triple(hydra_triples, SCHEMA.item, True))
 
             # Get total number of items per list (only makes sense on first page)
             if number == 1:
@@ -197,9 +199,9 @@ class Hydra:
                     break
 
             # Retrieve URL of current, next, and final list
-            self.current_list_url = self.__get_triple(HYDRA.view)
-            self.next_list_url = self.__get_triple(HYDRA.next)
-            self.final_list_url = self.__get_triple(HYDRA.last)
+            self.current_list_url = self.__get_triple(hydra_triples, HYDRA.view)
+            self.next_list_url = self.__get_triple(hydra_triples, HYDRA.next)
+            self.final_list_url = self.__get_triple(hydra_triples, HYDRA.last)
 
             # Throw error if the API is paginated but there is no final list
             if self.next_list_url != '' and self.final_list_url == '':
@@ -208,17 +210,20 @@ class Hydra:
                 break
 
             # Get total number of resources and calculate number of lists
-            self.number_of_resources = int(self.__get_triple(HYDRA.totalItems))
+            self.number_of_resources = int(self.__get_triple(hydra_triples, HYDRA.totalItems))
             self.number_of_lists = int(ceil(self.number_of_resources / self.resources_per_list))
 
             # Remove pagination info from triples, but leave HYDRA.collection and HYDRA.member intact
-            self.triples.remove((None, HYDRA.totalItems, None))
-            self.triples.remove((None, HYDRA.view, None))
-            self.triples.remove((None, HYDRA.first, None))
-            self.triples.remove((None, HYDRA.last, None))
-            self.triples.remove((None, HYDRA.next, None))
-            self.triples.remove((None, HYDRA.previous, None))
-            self.triples.remove((None, RDF.type, HYDRA.PartialCollectionView))
+            hydra_triples.remove((None, HYDRA.totalItems, None))
+            hydra_triples.remove((None, HYDRA.view, None))
+            hydra_triples.remove((None, HYDRA.first, None))
+            hydra_triples.remove((None, HYDRA.last, None))
+            hydra_triples.remove((None, HYDRA.next, None))
+            hydra_triples.remove((None, HYDRA.previous, None))
+            hydra_triples.remove((None, RDF.type, HYDRA.PartialCollectionView))
+
+            # Add list triples to object triples
+            self.triples = self.triples + hydra_triples
 
             # Delay next retrieval to avoid a server block
             echo_progress('Retrieving API lists', number, self.number_of_lists)
