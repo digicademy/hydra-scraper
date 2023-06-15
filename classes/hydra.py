@@ -21,6 +21,7 @@ from helpers.fileio import save_list
 from helpers.status import echo_progress
 
 # Define namespaces
+from rdflib.namespace import RDF
 HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
 SCHEMA = Namespace('http://schema.org/')
 
@@ -209,6 +210,15 @@ class Hydra:
             # Get total number of resources and calculate number of lists
             self.number_of_resources = int(self.__get_triple(HYDRA.totalItems))
             self.number_of_lists = int(ceil(self.number_of_resources / self.resources_per_list))
+
+            # Remove pagination info from triples, but leave HYDRA.collection and HYDRA.member intact
+            self.triples.remove((None, HYDRA.totalItems, None))
+            self.triples.remove((None, HYDRA.view, None))
+            self.triples.remove((None, HYDRA.first, None))
+            self.triples.remove((None, HYDRA.last, None))
+            self.triples.remove((None, HYDRA.next, None))
+            self.triples.remove((None, HYDRA.previous, None))
+            self.triples.remove((None, RDF.type, HYDRA.PartialCollectionView))
 
             # Delay next retrieval to avoid a server block
             echo_progress('Retrieving API lists', number, self.number_of_lists)

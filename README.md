@@ -96,7 +96,6 @@ python go.py -download 'resources' -url 'https://corpusvitrearum.de/cvma-digital
 
 ## Roadmap
 
-- Remove Hydra pagination from triples
 - Add URL composition feature of the Beacon standard
 - Enable checking `schema:dateModified` beforehand
 - Implement a JSON return (including dateModified, number of resources, errors)
@@ -105,6 +104,6 @@ python go.py -download 'resources' -url 'https://corpusvitrearum.de/cvma-digital
 
 **Possible improvements**
 
-- Package the script and move the download folder?
+- Package the script and move the download folder somewhere else?
 - Add conversion from LIDO to CGIF triples via lxml, RML, XSLT, or XTriples?
 - Add triple filter for CGIF?
