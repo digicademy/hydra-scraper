@@ -16,7 +16,7 @@
 
 # Configuration dictionary to use in the script
 config = {
-    'download_delay': 0.05,
+    'download_delay': 0.02,
     'download_base': 'downloads',
     'max_paginated_lists': 500,
     'non_rdf_formats': [

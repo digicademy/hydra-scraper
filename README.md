@@ -89,10 +89,18 @@ python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -u
 All available **LIDO** data:
 
 ```
-python go.py -download 'resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
+python go.py -download 'beacon,resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
 ## Development
+
+This package has three main areas:
+
+1. The file `go.py` provides the main logic of a scraping run.
+2. It relies on several `helpers` that provide basic functions such as cleaning up request arguments, saving files, printing status updates, or providing configuration options throughout the package.
+3. The two classes `Hydra` and `Beacon` do the heavy lifting of paging through an API entry point or a (beacon) list of individual resources, respectively. In addition to a standard initialisation, both classes have a `populate()` function that retrieves and saves data. Additional functions may then carry out further tasks such as saving a beacon list or saving collected triples.
+
+If you change the code, please remember to document each function and walk other users through significant steps.
 
 ## Roadmap
 
