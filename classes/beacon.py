@@ -31,7 +31,9 @@ class Beacon:
     folder = ''
     number_of_resources = 0
     missing_resources = 0
+    missing_resources_list = []
     non_rdf_resources = 0
+    non_rdf_resources_list = []
 
 
     def __init__(self, folder:str, resources:list = []):
@@ -123,6 +125,7 @@ class Beacon:
                 # Report if download failed
                 else:
                     self.missing_resources += 1
+                    self.missing_resources_list.append(resource_url)
                     continue
 
                 # Add triples to object storage
@@ -131,6 +134,7 @@ class Beacon:
                         self.triples.parse(data=resource['content'], format=resource['file_type'])
                     except:
                         self.non_rdf_resources += 1
+                        self.non_rdf_resources_list.append(resource_url)
                         continue
 
                 # Report any failed state
@@ -139,10 +143,14 @@ class Beacon:
                     status_report['reason'] = 'All resources were missing.'
                 elif self.missing_resources > 0 and self.non_rdf_resources > 0:
                     status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
+                    status_report['missing'] = self.missing_resources_list
+                    status_report['non_rdf'] = self.non_rdf_resources_list
                 elif self.missing_resources > 0:
                     status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
+                    status_report['missing'] = self.missing_resources_list
                 elif self.non_rdf_resources > 0:
                     status_report['reason'] = 'Resources retrieved, but ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
+                    status_report['non_rdf'] = self.non_rdf_resources_list
 
                 # Delay next retrieval to avoid a server block
                 echo_progress('Retrieving individual resources', number, self.number_of_resources)

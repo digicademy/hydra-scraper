@@ -80,13 +80,19 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
     # Add status message
     status.extend(beacon.status)
 
-# Compile a report string
+# Compile a report string (success, reason, missing, non_rdf)
 report = 'Done!'
 for entry in status:
     if entry['success'] == False:
         report = 'Something went wrong!'
 for entry in status:
     report = report + ' ' + entry['reason']
+for entry in status:
+    if 'missing' in entry:
+        report = report + '\n\nMissing files:\n- ' + '\n- '.join(entry['missing'])
+for entry in status:
+    if 'non_rdf' in entry:
+        report = report + '\n\nNot RDF-compatible:\n- ' + '\n- '.join(entry['non_rdf'])
 
 # Provide final report
 echo_note('\n' + report + '\n')

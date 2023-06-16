@@ -32,7 +32,7 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
 
 ## Examples
 
-The commands listed below illustrate possible command-line arguments. They refer to specific projects that use this script, but the commands should work with any Hydra-paginated API in an RDF-comptabile format.
+The commands listed below illustrate possible command-line arguments. They refer to specific projects that use this script, but the commands should work with any Hydra-paginated API in an RDF-comptabile format. Depending on your operating system, you may need to use `python3` instead of `python`.
 
 ### NFDI4Culture
 
