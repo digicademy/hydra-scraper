@@ -1,9 +1,10 @@
 # Hydra Scraper
 
 - Description: comprehensive scraper for APIs with Hydra pagination and file dumps
-- Author: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de))
+- Authors: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de)), Hydra Scraper contributors
 - Requirements: `python3`, `python3-validators` (0.20.x), `python3-rdflib` (6.x.x)
-- License: MIT
+- Code of conduct: Contributor Covenant
+- Licence: MIT
 - Version: 0.8.1
 
 This scraper provides a command-line toolset to pull data from various sources,
@@ -32,11 +33,11 @@ interactive mode. Alternatively, use the configuration options listed below to
 run the script without interaction.
 
 - `-download '<string list>'`: comma-separated list of requests, possible values:
-  - `lists`: all Hydra-paginated lists (requires `-url`)
-  - `list_triples`: all RDF triples in a Hydra API (requires`-url`)
-  - `beacon`: beacon file of all resources listed in a Hydra API (requires `-url`)
-  - `resources`: all resources listed in a Hydra API or a beacon file (requires `-url` or `-file`)
-  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-url` or `-file`)
+  - `lists`: all Hydra-paginated lists (requires `-source_url`)
+  - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
+  - `beacon`: beacon file of all resources listed in a Hydra API (requires `-source_url`)
+  - `resources`: all resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
+  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content
 - `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
 - `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
