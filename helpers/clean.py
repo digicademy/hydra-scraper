@@ -30,9 +30,9 @@ def clean_request(arguments:list) -> dict:
     # Set up an empty request dictionary
     request = {
         'download': [], # May contain lists, list_triples, beacon, resources, resource_triples
-        'url': '',
-        'file': '',
-        'folder': current_timestamp(),
+        'source_url': '',
+        'source_file': '',
+        'taget_folder': current_timestamp(),
         'resource_url_replace': '',
         'resource_url_replace_with': '',
         'resource_url_add': '',
@@ -63,9 +63,9 @@ def clean_request(arguments:list) -> dict:
 
             # Go through each key/value pair
             request = clean_argument(request, arguments, 'download', 'list')
-            request = clean_argument(request, arguments, 'url', 'url')
-            request = clean_argument(request, arguments, 'file', 'str')
-            request = clean_argument(request, arguments, 'folder', 'str')
+            request = clean_argument(request, arguments, 'source_url', 'url')
+            request = clean_argument(request, arguments, 'source_file', 'str')
+            request = clean_argument(request, arguments, 'target_folder', 'str')
             request = clean_argument(request, arguments, 'resource_url_replace', 'str')
             request = clean_argument(request, arguments, 'resource_url_replace_with', 'str')
             request = clean_argument(request, arguments, 'resource_url_add', 'str')
@@ -77,13 +77,13 @@ def clean_request(arguments:list) -> dict:
 
         # Check requirements for the Hydra class
         if 'lists' in request['download'] or 'list_triples' in request['download'] or 'beacon' in request['download']:
-            if request['url'] == None:
-                raise ValueError('Hydra Scraper called without valid URL.')
+            if request['source_url'] == None:
+                raise ValueError('Hydra Scraper called without valid source URL.')
 
         # Check requirements for the Beacon class
         elif 'resources' in request['download'] or 'resource_triples' in request['download']:
-            if request['url'] == None and request['file'] == None:
-                raise ValueError('Hydra Scraper called without valid URL or file name.')
+            if request['source_url'] == None and request['source_file'] == None:
+                raise ValueError('Hydra Scraper called without valid source URL or file name.')
 
         # No valid download requests
         else:
@@ -101,7 +101,7 @@ def clean_argument(request:dict, arguments:list, key:str, evaluation:str = None)
             request (dict): old request dictionary
             arguments (list): command line arguments
             key (str): key to find the right value
-            evaluation (str): type of evaluation to run (url, )
+            evaluation (str): type of evaluation to run ('url', 'str', 'list')
 
         Returns:
             dict: revised request dictionary

@@ -35,7 +35,7 @@ class Hydra:
     populated = None
     triples = Graph()
     resources = []
-    folder = ''
+    target_folder = ''
     entry_point_url = ''
     current_list_url = ''
     next_list_url = ''
@@ -45,17 +45,17 @@ class Hydra:
     number_of_lists = 0
 
 
-    def __init__(self, folder:str, entry_point_url:str):
+    def __init__(self, target_folder:str, entry_point_url:str):
         '''
         Sets up a Hydra entry point to process
 
             Parameters:
-                folder (str): Name of the downloads subfolder to store files in
+                target_folder (str): Name of the downloads subfolder to store files in
                 entry_point_url (str): URL to use as an entry point for a scraping run
         '''
 
         # Assign variables
-        self.folder = config['download_base'] + '/' + folder
+        self.target_folder = config['download_base'] + '/' + target_folder
         self.entry_point_url = entry_point_url
         self.current_list_url = entry_point_url
         self.next_list_url = entry_point_url
@@ -164,7 +164,7 @@ class Hydra:
 
                 # Optionally save file
                 if save_original_files:
-                    file_folder = self.folder + '/lists'
+                    file_folder = self.target_folder + '/lists'
                     create_folder(file_folder)
                     file_path = file_folder + '/' + str(number) + '.' + hydra['file_extension']
                     save_file(hydra['content'], file_path)
@@ -274,7 +274,7 @@ class Hydra:
 
             # Save file if there are resources
             if self.resources != []:
-                file_path = self.folder + '/' + file_name + '.txt'
+                file_path = self.target_folder + '/' + file_name + '.txt'
                 save_list(file_path, self.resources)
 
                 # Compile success status
@@ -316,7 +316,7 @@ class Hydra:
 
             # Compile file if there are triples
             if len(self.triples):
-                file_path = self.folder + '/' + file_name + '.ttl'
+                file_path = self.target_folder + '/' + file_name + '.ttl'
                 self.triples.serialize(destination=file_path, format='turtle')
 
                 # Compile success status

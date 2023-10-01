@@ -70,11 +70,11 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
     resource_triples: all RDF triples in resources listed in a Hydra API or a beacon file (requires -url or -file)
 
--url '<url>': use this entry-point URL to scrape content
+-source_url '<url>': use this entry-point URL to scrape content
 
--file '<path to file>': use the URLs contained in this beacon file to scrape content
+-source_file '<path to file>': use the URLs contained in this beacon file to scrape content
 
--folder '<name of folder>': download everything into this subfolder of `downloads` (defaults to timestamp)
+-taget_folder '<name of folder>': download everything into this subfolder of `downloads` (defaults to timestamp)
 
 -resource_url_replace '<string>': before downloading, replace this string in each resource URL (defaults to none)
 

@@ -22,9 +22,9 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
   - `beacon`: beacon file of all resources listed in a Hydra API (requires `-url`)
   - `resources`: all resources listed in a Hydra API or a beacon file (requires `-url` or `-file`)
   - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-url` or `-file`)
-- `-url '<url>'`: use this entry-point URL to scrape content
-- `-file '<path to file>'`: use the URLs contained in this beacon file to scrape content
-- `-folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
+- `-source_url '<url>'`: use this entry-point URL to scrape content
+- `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
+- `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
 - `-resource_url_replace '<string>'`: when listing resources, replace this string in each URL (defaults to none)
 - `-resource_url_replace_with '<string>'`: when listing resources, replace the previous string in each URL with this one (defaults to none)
 - `-resource_url_add '<string>'`: when listing resources, add this string to the end of each URL (defaults to none)
@@ -39,19 +39,19 @@ The commands listed below illustrate possible command-line arguments. They refer
 Grab all **portal data** as triples:
 
 ```
-python go.py -download 'list_triples' -url 'https://nfdi4culture.de/resource.ttl' -folder 'n4c-turtle'
+python go.py -download 'list_triples' -source_url 'https://nfdi4culture.de/resource.ttl' -target_folder 'n4c-turtle'
 ```
 
 Get **CGIF data** from an API entry point:
 
 ```
-python go.py -download 'list_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'sample-cgif'
+python go.py -download 'list_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'sample-cgif'
 ```
 
 Get **CGIF data from a beacon** file:
 
 ```
-python go.py -download 'resource_triples' -file 'downloads/sample-cgif/beacon.txt' -folder 'sample-cgif'
+python go.py -download 'resource_triples' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif'
 ```
 
 ### Corpus Vitrearum Germany
@@ -59,37 +59,37 @@ python go.py -download 'resource_triples' -file 'downloads/sample-cgif/beacon.tx
 All available **embedded metadata**:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
 ```
 
 All available **JSON-LD** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.json' -folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
 ```
 
 All available **RDF/XML** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.rdf' -folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.rdf' -target_folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
 ```
 
 All available **Turtle** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.ttl' -folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.ttl' -target_folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
 ```
 
 All available **CGIF (JSON-LD)** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -url 'https://corpusvitrearum.de/id/about.cgif' -folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.cgif' -target_folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
 ```
 
 All available **LIDO** data:
 
 ```
-python go.py -download 'beacon,resources' -url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
+python go.py -download 'beacon,resources' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
 ## Development
@@ -104,14 +104,14 @@ If you change the code, please remember to document each function and walk other
 
 ## Roadmap
 
-- Add URL composition feature of the Beacon standard
-- Enable checking `schema:dateModified` beforehand
+- Add a (regex?) filter option to exclude certain files and check CVMA API issues
+- Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
+- Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
+- Allow harvesting from local files
+- Allow filtering triples for CGIF, add any quality assurance that is needed
+- Allow usage of OAI-PMH APIs to produce beacon lists
 - Re-add the interactive mode
 - Re-add a `-csv` option and remove leftover file
-
-**Possible improvements**
-
-- Package the script and move the download folder somewhere else?
-- Add conversion from LIDO to CGIF triples via lxml, RML, XSLT, or XTriples?
-- Add triple filter for CGIF?
+- Add URL composition feature of the Beacon standard
+- Possibly package the script and move the download folder somewhere else

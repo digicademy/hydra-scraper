@@ -28,7 +28,7 @@ class Beacon:
     populated = None
     triples = Graph()
     resources = []
-    folder = ''
+    target_folder = ''
     number_of_resources = 0
     missing_resources = 0
     missing_resources_list = []
@@ -36,17 +36,17 @@ class Beacon:
     non_rdf_resources_list = []
 
 
-    def __init__(self, folder:str, resources:list = []):
+    def __init__(self, target_folder:str, resources:list = []):
         '''
         Sets up a list of resources to process
 
             Parameters:
-                folder (str): Name of the downloads subfolder to store files in
+                target_folder (str): Name of the downloads subfolder to store files in
                 resources (list, optional): List of resources to retrieve, defaults to empty list
         '''
 
         # Assign variables
-        self.folder = config['download_base'] + '/' + folder
+        self.target_folder = config['download_base'] + '/' + target_folder
         self.resources = resources
 
 
@@ -106,7 +106,7 @@ class Beacon:
 
                     # Optionally save file
                     if save_original_files:
-                        file_folder = self.folder + '/resources'
+                        file_folder = self.target_folder + '/resources'
                         create_folder(file_folder)
 
                         # Clean up file name if required
@@ -187,7 +187,7 @@ class Beacon:
 
             # Compile file if there are triples
             if len(self.triples):
-                file_path = self.folder + '/' + file_name + '.ttl'
+                file_path = self.target_folder + '/' + file_name + '.ttl'
                 self.triples.serialize(destination=file_path, format='turtle')
 
                 # Compile success status
