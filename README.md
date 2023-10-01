@@ -1,20 +1,35 @@
 # Hydra Scraper
 
-- Description: simple scraper for APIs with Hydra pagination
+- Description: comprehensive scraper for APIs with Hydra pagination and file dumps
 - Author: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de))
 - Requirements: `python3`, `python3-validators` (0.20.x), `python3-rdflib` (6.x.x)
 - License: MIT
-- Version: 0.8.0
+- Version: 0.8.1
 
-This simple scraper for APIs that use Hydra pagination provides a toolset to pull data from resource lists as well as individual resources in RDF-compatible formats such as JSON-LD or Turtle. Command-line calls can be combined and adapted to build fully-fledged scraping mechanisms. The script was originally developed as an API testing tool for of the Corpus Vitrearum Germany (CVMA) at the Academy of Sciences and Literature Mainz.
+This scraper provides a command-line toolset to pull data from various sources,
+such as Hydra paginated APIs, beacon files, or local file dumps. The tool
+differentiates between resource lists and individual resource files in
+RDF-compatible formats such as JSON-LD or Turtle, but it can also handle, for
+example, LIDO files. Command-line calls can be combined and adapted to build
+fully-fledged scraping mechanisms, including the ability output a set of
+triples. The script was originally developed as an API testing tool for of the
+Corpus Vitrearum Germany (CVMA) at the Academy of Sciences and Literature
+Mainz. It was later expanded to add functionality around the
+[Culture Graph Interchange Format](https://docs.nfdi4culture.de/ta5-cgif-specification)
+(CGIF).
 
 ## Setup
 
-To use this script, simply clone this repository (e.g. via `git clone https://gitlab.rlp.net/adwmainz/digicademy/cvma/hydra-scraper.git` or the SSH equivalent). Open a terminal in the resulting folder to run the script as described below.
+To use this script, simply clone this repository (e.g. via `git clone
+https://github.com/digicademy/hydra-scraper.git` or the SSH
+equivalent). Open a terminal in the resulting folder to run the script as
+described below.
 
 ## Usage
 
-This scraper is a command-line tool. Use `python go.py` to run the script in interactive mode. Alternatively, use the configuration options listed below to run the script without interaction.
+This scraper is a command-line tool. Use `python go.py` to run the script in
+interactive mode. Alternatively, use the configuration options listed below to
+run the script without interaction.
 
 - `-download '<string list>'`: comma-separated list of requests, possible values:
   - `lists`: all Hydra-paginated lists (requires `-url`)
@@ -32,7 +47,10 @@ This scraper is a command-line tool. Use `python go.py` to run the script in int
 
 ## Examples
 
-The commands listed below illustrate possible command-line arguments. They refer to specific projects that use this script, but the commands should work with any Hydra-paginated API in an RDF-comptabile format. Depending on your operating system, you may need to use `python3` instead of `python`.
+The commands listed below illustrate possible command-line arguments. They
+refer to specific projects that use this script, but the commands should work
+with any Hydra-paginated API in an RDF-comptabile format. Depending on your
+operating system, you may need to use `python3` instead of `python`.
 
 ### NFDI4Culture
 
