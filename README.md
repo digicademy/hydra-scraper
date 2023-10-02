@@ -1,11 +1,6 @@
 # Hydra Scraper
 
-- Description: comprehensive scraper for APIs with Hydra pagination and file dumps
-- Authors: Jonatan Jalle Steller ([jonatan.steller@adwmainz.de](mailto:jonatan.steller@adwmainz.de)), Hydra Scraper contributors
-- Requirements: `python3`, `python3-validators` (0.20.x), `python3-rdflib` (6.x.x)
-- Code of conduct: Contributor Covenant
-- Licence: MIT
-- Version: 0.8.1
+**Comprehensive scraper for APIs with Hydra pagination as well as file dumps.**
 
 This scraper provides a command-line toolset to pull data from various sources,
 such as Hydra paginated APIs, beacon files, or local file dumps. The tool
@@ -19,10 +14,17 @@ Mainz. It was later expanded to add functionality around the
 [Culture Graph Interchange Format](https://docs.nfdi4culture.de/ta5-cgif-specification)
 (CGIF).
 
-## Setup
+## Licence
 
-To use this script, make sure your system fits the requirements listed above.
-Then clone this repository (e.g. via `git clone https://github.com/digicademy/hydra-scraper.git`
+Written and maintained by [Jonatan Jalle Steller](mailto:jonatan.steller@adwmainz.de).
+
+This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
+
+## Installation
+
+To use this script, make sure your system has a working `python` (3.x.x) as well as the
+packages `validators` (0.20.x) and `rdflib` (6.x.x) installed. Then clone this
+repository (e.g. via `git clone https://github.com/digicademy/hydra-scraper.git`
 or the SSH equivalent). Open a terminal in the resulting folder to run the
 script as described below.
 
@@ -112,7 +114,7 @@ All available **LIDO** data:
 python go.py -download 'beacon,resources' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
-## Development
+## Contributing
 
 This package has three main areas:
 
@@ -120,11 +122,10 @@ This package has three main areas:
 2. It relies on several `helpers` that provide basic functions such as cleaning up request arguments, saving files, printing status updates, or providing configuration options throughout the package.
 3. The two classes `Hydra` and `Beacon` do the heavy lifting of paging through an API entry point or a (beacon) list of individual resources, respectively. In addition to a standard initialisation, both classes have a `populate()` function that retrieves and saves data. Additional functions may then carry out further tasks such as saving a beacon list or saving collected triples.
 
-If you change the code, please remember to document each function and walk other users through significant steps.
+If you change the code, please remember to document each function and walk other users through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
 
 ## Roadmap
 
-- Check CVMA API issues
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
@@ -134,4 +135,4 @@ If you change the code, please remember to document each function and walk other
 - Re-add the interactive mode
 - Re-add a `-csv` option and remove leftover file
 - Add URL composition feature of the Beacon standard
-- Possibly package the script and move the download folder somewhere else
+- Properly package the script and use the system's download folder
