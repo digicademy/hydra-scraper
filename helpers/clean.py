@@ -33,6 +33,7 @@ def clean_request(arguments:list) -> dict:
         'source_url': '',
         'source_file': '',
         'taget_folder': current_timestamp(),
+        'resource_url_filter': '',
         'resource_url_replace': '',
         'resource_url_replace_with': '',
         'resource_url_add': '',
@@ -66,6 +67,7 @@ def clean_request(arguments:list) -> dict:
             request = clean_argument(request, arguments, 'source_url', 'url')
             request = clean_argument(request, arguments, 'source_file', 'str')
             request = clean_argument(request, arguments, 'target_folder', 'str')
+            request = clean_argument(request, arguments, 'resource_url_filter', 'str')
             request = clean_argument(request, arguments, 'resource_url_replace', 'str')
             request = clean_argument(request, arguments, 'resource_url_replace_with', 'str')
             request = clean_argument(request, arguments, 'resource_url_add', 'str')

@@ -2,5 +2,6 @@
 
 ## 0.8.1
 
-- Add a code of conduct
+- Add code of conduct
 - Use speaking command-line arguments
+- Add option to filter resource downloads by string

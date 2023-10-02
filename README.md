@@ -21,10 +21,10 @@ Mainz. It was later expanded to add functionality around the
 
 ## Setup
 
-To use this script, simply clone this repository (e.g. via `git clone
-https://github.com/digicademy/hydra-scraper.git` or the SSH
-equivalent). Open a terminal in the resulting folder to run the script as
-described below.
+To use this script, make sure your system fits the requirements listed above.
+Then clone this repository (e.g. via `git clone https://github.com/digicademy/hydra-scraper.git`
+or the SSH equivalent). Open a terminal in the resulting folder to run the
+script as described below.
 
 ## Usage
 
@@ -41,6 +41,7 @@ run the script without interaction.
 - `-source_url '<url>'`: use this entry-point URL to scrape content
 - `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
 - `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
+- `-resource_url_filter '<regular expression>'`: when listing resources, apply this string as a filter (defaults to none)
 - `-resource_url_replace '<string>'`: when listing resources, replace this string in each URL (defaults to none)
 - `-resource_url_replace_with '<string>'`: when listing resources, replace the previous string in each URL with this one (defaults to none)
 - `-resource_url_add '<string>'`: when listing resources, add this string to the end of each URL (defaults to none)
@@ -84,25 +85,25 @@ python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -s
 All available **JSON-LD** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.json'
 ```
 
 All available **RDF/XML** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.rdf' -target_folder 'cvma-rdfxml' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.rdf' -target_folder 'cvma-rdfxml' -resource_url_filter 'https://corpusvitrearum.de/id/F' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.rdf'
 ```
 
 All available **Turtle** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.ttl' -target_folder 'cvma-turtle' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.ttl' -target_folder 'cvma-turtle' -resource_url_filter 'https://corpusvitrearum.de/id/F' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.ttl'
 ```
 
 All available **CGIF (JSON-LD)** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.cgif' -target_folder 'cvma-cgif' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.cgif' -target_folder 'cvma-cgif' -resource_url_filter 'https://corpusvitrearum.de/id/F' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
 ```
 
 All available **LIDO** data:
@@ -123,7 +124,7 @@ If you change the code, please remember to document each function and walk other
 
 ## Roadmap
 
-- Add a (regex?) filter option to exclude certain files and check CVMA API issues
+- Check CVMA API issues
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF

@@ -75,12 +75,13 @@ class Hydra:
             return 'Processed Hydra entry point at ' + self.entry_point_url
 
 
-    def __modify_resource_urls(self, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
+    def __modify_resource_urls(self, resource_url_filter:str = '', resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
         '''
         Mofifies the list of individual resource URLs on demand
 
             Parameters:
                 resources (list): List of resource URLs to modify
+                resource_url_filter (str, optional): String applied to filter resource URLs, defaults to an empty string
                 resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
                 resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
                 resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
@@ -91,11 +92,15 @@ class Hydra:
 
         # Check each URL in the list
         for url in self.resources:
-            if resource_url_replace != '':
-                url = url.replace(resource_url_replace, resource_url_replace_with)
-            if resource_url_add != '':
-                url = url + resource_url_add
-            modified_resources.append(url)
+            if resource_url_filter != '':
+                if resource_url_filter not in url:
+                    url = ''
+            if url != '':
+                if resource_url_replace != '':
+                    url = url.replace(resource_url_replace, resource_url_replace_with)
+                if resource_url_add != '':
+                    url = url + resource_url_add
+                modified_resources.append(url)
             
         # Use the revised URLs instead of the original
         self.resources = modified_resources
@@ -133,12 +138,13 @@ class Hydra:
         return result
 
 
-    def populate(self, save_original_files:bool = True, resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
+    def populate(self, save_original_files:bool = True, resource_url_filter:str = '', resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
         '''
         Pages through the Hydra API, populates the object, and optionally stores the original files in the process
 
             Parameters:
                 save_original_files (bool, optional): Switch to also save original files on download, defaults to True
+                resource_url_filter (str, optional): String applied to filter resource URLs, defaults to an empty string
                 resource_url_replace (str, optional): String to replace in resource URLs, defaults to an empty string
                 resource_url_replace_with (str, optional): String to use as a replacement in resource URLs, defaults to an empty string
                 resource_url_add (str, optional): String to add to each resource URL, defaults to an empty string
@@ -239,9 +245,9 @@ class Hydra:
                 status_report['reason'] = 'Maximum number of allowed lists was reached.'
                 break
 
-        # Replace or augment strings in resource URLs if requested
-        if resource_url_replace != '' or resource_url_add != '':
-            self.__modify_resource_urls(resource_url_replace, resource_url_replace_with, resource_url_add)
+        # Filter, replace or augment strings in resource URLs if requested
+        if resource_url_filter != '' or resource_url_replace != '' or resource_url_add != '':
+            self.__modify_resource_urls(resource_url_filter, resource_url_replace, resource_url_replace_with, resource_url_add)
 
         # Notify object that it is populated
         self.populated = True

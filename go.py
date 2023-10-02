@@ -35,7 +35,7 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
         save_lists = True
     else:
         save_lists = False
-    hydra.populate(save_lists, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
+    hydra.populate(save_lists, request['resource_url_filter'], request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
     # Compile a beacon list if requested
     if 'beacon' in request['download']:
@@ -51,7 +51,7 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
 # Mini Hydra routine if Beacon logic is requested but no beacon file is given
 elif request['file'] == '':
     hydra = Hydra(request['target_folder'], request['source_url'])
-    hydra.populate(False, request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
+    hydra.populate(False, request['resource_url_filter'], request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
 # Mark absence of hydra object if beacon file is present
 else:
