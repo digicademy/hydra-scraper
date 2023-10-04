@@ -31,6 +31,7 @@ def clean_request(arguments:list) -> dict:
     request = {
         'download': [], # May contain lists, list_triples, beacon, resources, resource_triples
         'source_url': '',
+        'source_url_type': 'text/html',
         'source_file': '',
         'taget_folder': current_timestamp(),
         'resource_url_filter': '',
@@ -65,6 +66,7 @@ def clean_request(arguments:list) -> dict:
             # Go through each key/value pair
             request = clean_argument(request, arguments, 'download', 'list')
             request = clean_argument(request, arguments, 'source_url', 'url')
+            request = clean_argument(request, arguments, 'source_url_type', 'str')
             request = clean_argument(request, arguments, 'source_file', 'str')
             request = clean_argument(request, arguments, 'target_folder', 'str')
             request = clean_argument(request, arguments, 'resource_url_filter', 'str')

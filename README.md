@@ -41,6 +41,7 @@ run the script without interaction.
   - `resources`: all resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
   - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content
+- `-source_url_type '<string>'`: request this content type when scraping content (defaults to `text/html`)
 - `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
 - `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
 - `-resource_url_filter '<regular expression>'`: when listing resources, apply this string as a filter (defaults to none)
@@ -127,7 +128,6 @@ If you change the code, please remember to document each function and walk other
 ## Roadmap
 
 - Enable checking `schema:dateModified` when collating paged results
-- Add option to use content negotiation for requests
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
 - Allow harvesting from local files

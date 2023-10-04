@@ -28,6 +28,7 @@ class Beacon:
     populated = None
     triples = Graph()
     resources = []
+    resources_type = ''
     target_folder = ''
     number_of_resources = 0
     missing_resources = 0
@@ -36,17 +37,19 @@ class Beacon:
     non_rdf_resources_list = []
 
 
-    def __init__(self, target_folder:str, resources:list = []):
+    def __init__(self, target_folder:str, resources_type:str = 'text/html', resources:list = []):
         '''
         Sets up a list of resources to process
 
             Parameters:
                 target_folder (str): Name of the downloads subfolder to store files in
+                resources_type (str, optional): Content type to request when retrieving resources, defaults to 'text/html'
                 resources (list, optional): List of resources to retrieve, defaults to empty list
         '''
 
         # Assign variables
         self.target_folder = config['download_base'] + '/' + target_folder
+        self.resources_type = resources_type
         self.resources = resources
 
 
@@ -101,7 +104,7 @@ class Beacon:
             for number, resource_url in enumerate(self.resources, start = 1):
 
                 # Retrieve file
-                resource = download_file(resource_url)
+                resource = download_file(resource_url, self.resources_type)
                 if resource != None:
 
                     # Optionally save file

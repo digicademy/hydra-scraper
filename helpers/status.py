@@ -72,6 +72,8 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
 -source_url '<url>': use this entry-point URL to scrape content
 
+-source_url_type '<string>': request this content type when scraping content (defaults to `text/html`)
+
 -source_file '<path to file>': use the URLs contained in this beacon file to scrape content
 
 -taget_folder '<name of folder>': download everything into this subfolder of `downloads` (defaults to timestamp)

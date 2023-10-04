@@ -37,6 +37,7 @@ class Hydra:
     resources = []
     target_folder = ''
     entry_point_url = ''
+    entry_point_url_type = ''
     current_list_url = ''
     next_list_url = ''
     final_list_url = ''
@@ -45,18 +46,20 @@ class Hydra:
     number_of_lists = 0
 
 
-    def __init__(self, target_folder:str, entry_point_url:str):
+    def __init__(self, target_folder:str, entry_point_url:str, entry_point_url_type:str = 'text/html'):
         '''
         Sets up a Hydra entry point to process
 
             Parameters:
                 target_folder (str): Name of the downloads subfolder to store files in
                 entry_point_url (str): URL to use as an entry point for a scraping run
+                entry_point_url_type (str, optional): Content type to request when retrieving resources, defaults to 'text/html'
         '''
 
         # Assign variables
         self.target_folder = config['download_base'] + '/' + target_folder
         self.entry_point_url = entry_point_url
+        self.entry_point_url_type = entry_point_url_type
         self.current_list_url = entry_point_url
         self.next_list_url = entry_point_url
 
@@ -165,7 +168,7 @@ class Hydra:
             number += 1
 
             # Retrieve file
-            hydra = download_file(self.next_list_url)
+            hydra = download_file(self.next_list_url, self.entry_point_url_type)
             if hydra != None:
 
                 # Optionally save file
