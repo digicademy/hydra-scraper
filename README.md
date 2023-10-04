@@ -127,6 +127,7 @@ If you change the code, please remember to document each function and walk other
 ## Roadmap
 
 - Enable checking `schema:dateModified` when collating paged results
+- Add option to use content negotiation for requests
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
 - Allow harvesting from local files
