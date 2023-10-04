@@ -13,13 +13,13 @@ from urllib import request
 from helpers.clean import clean_lines
 
 
-def download_file(url:str, content_type:str = 'text/html') -> dict:
+def download_file(url:str, content_type:str = '') -> dict:
     '''
     Retrieves a file from a URL and returns the content
 
         Parameters:
             url (str): URL to download the file from
-            content_type (str): optional content type
+            content_type (str, optional): content type to request, defaults to none
 
         Returns:
             dict: Provides 'file_type', 'file_extension' and 'content' of the retrieved file
@@ -27,9 +27,12 @@ def download_file(url:str, content_type:str = 'text/html') -> dict:
 
     # Retrieve URL content
     try:
-        request_header = { 'Content-Type': content_type }
-        request_object = request.Request(url, headers = request_header)
-        response = request.urlopen(request_object)
+        if content_type != '':
+            request_header = { 'Accept': content_type }
+            request_object = request.Request(url, headers = request_header)
+            response = request.urlopen(request_object)
+        else:
+            response = request.urlopen(url)
 
         # Check if response is invalid
         if response.status != 200:

@@ -37,13 +37,13 @@ class Beacon:
     non_rdf_resources_list = []
 
 
-    def __init__(self, target_folder:str, resources_type:str = 'text/html', resources:list = []):
+    def __init__(self, target_folder:str, resources_type:str = '', resources:list = []):
         '''
         Sets up a list of resources to process
 
             Parameters:
                 target_folder (str): Name of the downloads subfolder to store files in
-                resources_type (str, optional): Content type to request when retrieving resources, defaults to 'text/html'
+                resources_type (str, optional): Content type to request when retrieving resources, defaults to none
                 resources (list, optional): List of resources to retrieve, defaults to empty list
         '''
 

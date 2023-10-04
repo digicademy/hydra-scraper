@@ -46,14 +46,14 @@ class Hydra:
     number_of_lists = 0
 
 
-    def __init__(self, target_folder:str, entry_point_url:str, entry_point_url_type:str = 'text/html'):
+    def __init__(self, target_folder:str, entry_point_url:str, entry_point_url_type:str = ''):
         '''
         Sets up a Hydra entry point to process
 
             Parameters:
                 target_folder (str): Name of the downloads subfolder to store files in
                 entry_point_url (str): URL to use as an entry point for a scraping run
-                entry_point_url_type (str, optional): Content type to request when retrieving resources, defaults to 'text/html'
+                entry_point_url_type (str, optional): Content type to request when retrieving resources, defaults to none
         '''
 
         # Assign variables

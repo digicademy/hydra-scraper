@@ -31,7 +31,7 @@ def clean_request(arguments:list) -> dict:
     request = {
         'download': [], # May contain lists, list_triples, beacon, resources, resource_triples
         'source_url': '',
-        'source_url_type': 'text/html',
+        'source_url_type': '',
         'source_file': '',
         'taget_folder': current_timestamp(),
         'resource_url_filter': '',
