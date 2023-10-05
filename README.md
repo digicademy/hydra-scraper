@@ -41,7 +41,7 @@ run the script without interaction.
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
   - `beacon`: beacon file of all resources listed in a Hydra API (requires `-source_url`)
   - `resources`: all resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
-  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or 
+  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
   - `resource_table`: CSV table of data in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content
 - `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
@@ -52,6 +52,7 @@ run the script without interaction.
 - `-resource_url_replace_with '<string>'`: when listing resources, replace the previous string in each URL with this one (defaults to none)
 - `-resource_url_add '<string>'`: when listing resources, add this string to the end of each URL (defaults to none)
 - `-clean_resource_names '<string list>'`: comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
+- `-table_data '<string list>'`: comma-separated names of properties to compile in a table (defaults to all)
 
 ## Examples
 
@@ -82,10 +83,10 @@ python go.py -download 'resource_triples' -source_file 'downloads/sample-cgif/be
 
 ### Corpus Vitrearum Germany
 
-All available **embedded metadata**:
+**Table** of specific metadata:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F' -table_data '???'
 ```
 
 All available **JSON-LD** data:
@@ -118,6 +119,12 @@ All available **LIDO** data:
 python go.py -download 'beacon,resources' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-lido' -resource_url_add '/about.lido' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.lido'
 ```
 
+All available **embedded metadata**:
+
+```
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+```
+
 ## Contributing
 
 This package has three main areas:
@@ -134,9 +141,8 @@ If you change the code, please remember to document each function and walk other
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
 - Allow harvesting from local files
-- Allow filtering triples for CGIF, add any quality assurance that is needed
+- Allow filtering triples for CGIF, align triples produced by lists and by resources, add any quality assurance that is needed
 - Allow usage of OAI-PMH APIs to produce beacon lists
 - Re-add the interactive mode
-- Bring back option to compile a CSV table from scraped data
 - Add URL composition feature of the Beacon standard
 - Properly package the script and use the system's download folder

@@ -206,3 +206,46 @@ class Beacon:
 
         # Provide final status
         self.status.append(status_report)
+
+
+    def save_table(self, table_data:list = [], file_name:str = 'resources'):
+        '''
+        Saves specified data from all downloaded triples into a single CSV file
+
+            Parameters:
+                table_data (list, optional): List of properties to save, defaults to all
+                file_name (str, optional): Name of the table file without a file extension, defaults to 'resources'
+        '''
+
+        # Provide initial status
+        status_report = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Prevent routine if object is not populated yet
+        if self.populated != True:
+            status_report['reason'] = 'A data table can only be written when the resources were read.'
+        else:
+
+            # Initial progress
+            echo_progress('Saving table from resource data', 0, 100)
+
+            # Compile file if there are triples
+            if len(self.triples):
+                file_path = self.target_folder + '/' + file_name + '.csv'
+                #TODO self.triples.serialize(destination=file_path, format='turtle')
+
+                # Compile success status
+                status_report['success'] = True
+                status_report['reason'] = 'Resource data listed in a table.'
+
+            # Report if there are no resources
+            else:
+                status_report['reason'] = 'No resource data to list in a table.'
+
+            # Final progress
+            echo_progress('Saving table from resource data', 100, 100)
+
+        # Provide final status
+        self.status.append(status_report)

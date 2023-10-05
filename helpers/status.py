@@ -60,15 +60,17 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
 -download '<value>': comma-separated list of requests, possible values:
 
-    lists: all Hydra-paginated lists (requires -url)
+    lists: all Hydra-paginated lists (requires -source_url)
 
-    list_triples: all RDF triples in a Hydra API (requires-url)
+    list_triples: all RDF triples in a Hydra API (requires -source_url)
 
-    beacon: beacon file of all resources listed in a Hydra API (requires -url)
+    beacon: beacon file of all resources listed in a Hydra API (requires -source_url)
 
-    resources: all resources listed in a Hydra API or a beacon file (requires -url or -file)
+    resources: all resources listed in a Hydra API or a beacon file (requires -source_url or -source_file)
 
-    resource_triples: all RDF triples in resources listed in a Hydra API or a beacon file (requires -url or -file)
+    resource_triples: all RDF triples in resources listed in a Hydra API or a beacon file (requires -source_url or -source_file)
+
+    resource_table: CSV table of data in resources listed in a Hydra API or a beacon file (requires -source_url or -source_file)
 
 -source_url '<url>': use this entry-point URL to scrape content
 
@@ -87,6 +89,8 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 -resource_url_add '<string>': before downloading, add this string to the end of each resource URL (defaults to none)
 
 -clean_resource_names '<string>': comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
+
+-table_data '<string list>': comma-separated names of properties to compile in a table (defaults to all)
 
 '''
     )

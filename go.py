@@ -58,7 +58,7 @@ else:
     hydra = False
 
 # Set up beacon file routine if required
-if 'resources' in request['download'] or 'resource_triples' in request['download']:
+if 'resources' in request['download'] or 'resource_triples' in request['download'] or 'resource_table' in request['download']:
 
     # Use previous resource list if present
     if hydra == False:
@@ -76,6 +76,10 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
     # Compile resource triples if requested
     if 'resource_triples' in request['download']:
         beacon.save_triples()
+
+    # Compile resource table if requested
+    if 'resource_table' in request['download']:
+        beacon.save_table(request['table_data'])
 
     # Add status message
     status.extend(beacon.status)
