@@ -2,7 +2,7 @@
 
 # Hydra Scraper
 
-**Comprehensive scraper for APIs with Hydra pagination as well as file dumps.**
+**Comprehensive scraper for APIs with Hydra pagination as well as file dumps**
 
 This scraper provides a command-line toolset to pull data from various sources,
 such as Hydra paginated APIs, beacon files, or local file dumps. The tool
@@ -41,10 +41,11 @@ run the script without interaction.
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
   - `beacon`: beacon file of all resources listed in a Hydra API (requires `-source_url`)
   - `resources`: all resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
-  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
+  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or 
+  - `resource_table`: CSV table of data in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content
-- `-source_url_type '<string>'`: request this content type when scraping content (defaults to none)
 - `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
+- `-content_type '<string>'`: request this content type when scraping content (defaults to none)
 - `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
 - `-resource_url_filter '<regular expression>'`: when listing resources, apply this string as a filter (defaults to none)
 - `-resource_url_replace '<string>'`: when listing resources, replace this string in each URL (defaults to none)
@@ -136,6 +137,6 @@ If you change the code, please remember to document each function and walk other
 - Allow filtering triples for CGIF, add any quality assurance that is needed
 - Allow usage of OAI-PMH APIs to produce beacon lists
 - Re-add the interactive mode
-- Re-add a `-csv` option and remove leftover file
+- Bring back option to compile a CSV table from scraped data
 - Add URL composition feature of the Beacon standard
 - Properly package the script and use the system's download folder

@@ -7,3 +7,7 @@
 - Add option to filter resource downloads by string
 - Add optional content negotiation
 - Test everything against the CVMA API
+
+## 0.8.3
+
+- Rename `-source_url_type` to `-content_type`

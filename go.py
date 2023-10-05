@@ -28,7 +28,7 @@ status = []
 
 # Set up Hydra API routine if required
 if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_triples' in request['download']:
-    hydra = Hydra(request['target_folder'], request['source_url'], request['source_url_type'])
+    hydra = Hydra(request['target_folder'], request['source_url'], request['content_type'])
 
     # Populate the object, and download each API list if requested
     if 'lists' in request['download']:
@@ -50,7 +50,7 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
 
 # Mini Hydra routine if Beacon logic is requested but no beacon file is given
 elif request['file'] == '':
-    hydra = Hydra(request['target_folder'], request['source_url'], request['source_url_type'])
+    hydra = Hydra(request['target_folder'], request['source_url'], request['content_type'])
     hydra.populate(False, request['resource_url_filter'], request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
 # Mark absence of hydra object if beacon file is present
@@ -62,9 +62,9 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
 
     # Use previous resource list if present
     if hydra == False:
-        beacon = Beacon(request['target_folder'], request['source_url_type'])
+        beacon = Beacon(request['target_folder'], request['content_type'])
     else:
-        beacon = Beacon(request['target_folder'], request['source_url_type'], hydra.resources)
+        beacon = Beacon(request['target_folder'], request['content_type'], hydra.resources)
 
     # Populate the object, and download each resource if requested
     if 'resources' in request['download']:
