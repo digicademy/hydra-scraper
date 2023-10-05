@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/700253411.svg)](https://zenodo.org/badge/latestdoi/700253411)
+
 # Hydra Scraper
 
 **Comprehensive scraper for APIs with Hydra pagination as well as file dumps.**
