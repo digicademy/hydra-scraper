@@ -235,7 +235,7 @@ class Beacon:
 
             # Compile table if there are triples
             if len(self.triples):
-                file_path = self.target_folder + '/' + file_name + '.csv'
+                file_path = self.target_folder + '/' + file_name
                 tabular_data = convert_triples_to_table(self.triples)
                 save_table(tabular_data, file_path)
 

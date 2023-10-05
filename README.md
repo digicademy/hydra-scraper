@@ -86,7 +86,7 @@ python go.py -download 'resource_triples' -source_file 'downloads/sample-cgif/be
 **Table** of specific metadata:
 
 ```
-python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F' -table_data '???'
+python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F'
 ```
 
 All available **JSON-LD** data:

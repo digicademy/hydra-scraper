@@ -49,7 +49,7 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
     status.extend(hydra.status)
 
 # Mini Hydra routine if Beacon logic is requested but no beacon file is given
-elif request['file'] == '':
+elif request['source_file'] == '':
     hydra = Hydra(request['target_folder'], request['source_url'], request['content_type'])
     hydra.populate(False, request['resource_url_filter'], request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
 
