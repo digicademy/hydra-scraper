@@ -43,6 +43,25 @@ def save_list(file_path:str, list_to_save:list):
         f.writelines(lines)
 
 
+def save_table(tabular_data:list, file_path:str ):
+    '''
+    Saves a uniform two-dimensional list as a comma-separated value file
+
+        Parameters:
+            tabular_data (list): Uniform two-dimensional list
+            file_path (str): Path of the file to save without the extension
+    '''
+
+    # Open file
+    f = open(file_path + '.csv', 'w')
+
+    # Write table line by line
+    for tabular_data_line in tabular_data:
+        tabular_data_string = '"' + '","'.join(tabular_data_line) + '"\n'
+        f.write(tabular_data_string)
+        f.flush
+
+
 def read_list(file_path:str) -> list:
     '''
     Reads a list file and returns each line as a list

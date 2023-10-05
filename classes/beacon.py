@@ -12,10 +12,12 @@ from time import sleep
 
 # Import script modules
 from helpers.config import *
+from helpers.convert import convert_triples_to_table
 from helpers.download import download_file
 from helpers.fileio import create_folder
 from helpers.fileio import read_list
 from helpers.fileio import save_file
+from helpers.fileio import save_table
 from helpers.status import echo_progress
 
 
@@ -231,10 +233,11 @@ class Beacon:
             # Initial progress
             echo_progress('Saving table from resource data', 0, 100)
 
-            # Compile file if there are triples
+            # Compile table if there are triples
             if len(self.triples):
                 file_path = self.target_folder + '/' + file_name + '.csv'
-                #TODO self.triples.serialize(destination=file_path, format='turtle')
+                tabular_data = convert_triples_to_table(self.triples)
+                save_table(tabular_data, file_path)
 
                 # Compile success status
                 status_report['success'] = True

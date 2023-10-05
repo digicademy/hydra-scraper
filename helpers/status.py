@@ -80,7 +80,7 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
 -taget_folder '<name of folder>': download everything into this subfolder of `downloads` (defaults to timestamp)
 
--resource_url_filter '<regular expression>': when listing resources, apply this string as a filter (defaults to none)
+-resource_url_filter '<string>': when listing resources, apply this string as a filter (defaults to none)
 
 -resource_url_replace '<string>': before downloading, replace this string in each resource URL (defaults to none)
 

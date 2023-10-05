@@ -2,7 +2,7 @@
 
 # Hydra Scraper
 
-**Comprehensive scraper for APIs with Hydra pagination as well as file dumps**
+**Comprehensive scraper for APIs with Hydra pagination as well as for file dumps**
 
 This scraper provides a command-line toolset to pull data from various sources,
 such as Hydra paginated APIs, beacon files, or local file dumps. The tool
@@ -24,11 +24,11 @@ This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 
 ## Installation
 
-To use this script, make sure your system has a working `python` (3.x.x) as well as the
-packages `validators` (0.20.x) and `rdflib` (6.x.x) installed. Then clone this
-repository (e.g. via `git clone https://github.com/digicademy/hydra-scraper.git`
-or the SSH equivalent). Open a terminal in the resulting folder to run the
-script as described below.
+To use this script, make sure your system has a working `python` as well as
+the packages `validators` and `rdflib` installed. Then clone this repository
+(e.g. via `git clone https://github.com/digicademy/hydra-scraper.git` or the
+SSH equivalent). Open a terminal in the resulting folder to run the script
+as described below.
 
 ## Usage
 
@@ -47,7 +47,7 @@ run the script without interaction.
 - `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
 - `-content_type '<string>'`: request this content type when scraping content (defaults to none)
 - `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
-- `-resource_url_filter '<regular expression>'`: when listing resources, apply this string as a filter (defaults to none)
+- `-resource_url_filter '<string>'`: when listing resources, apply this string as a filter (defaults to none)
 - `-resource_url_replace '<string>'`: when listing resources, replace this string in each URL (defaults to none)
 - `-resource_url_replace_with '<string>'`: when listing resources, replace the previous string in each URL with this one (defaults to none)
 - `-resource_url_add '<string>'`: when listing resources, add this string to the end of each URL (defaults to none)
