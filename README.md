@@ -22,6 +22,10 @@ Written and maintained by [Jonatan Jalle Steller](mailto:jonatan.steller@adwmain
 
 This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 
+## Workflows
+
+![Flowchart overview of possible workflows](assets/workflows.png)
+
 ## Installation
 
 To use this script, make sure your system has a working `python` as well as
@@ -92,8 +96,7 @@ python go.py -download 'resource_triples' -source_folder 'downloads/sample-cgif'
 **Table** of specific metadata:
 
 ```
-python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F'
-```
+python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F' -table_data 'http://purl.org/dc/elements/1.1/Title,http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState,http://iptc.org/std/Iptc4xmpExt/2008-02-29/City,http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation,http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId,http://ns.adobe.com/exif/1.0/GPSLatitude,http://ns.adobe.com/exif/1.0/GPSLongitude,https://lod.academy/cvma/ns/xmp/AgeDeterminationStart,https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd,https://lod.academy/cvma/ns/xmp/IconclassNotation'
 
 All available **JSON-LD** data:
 
