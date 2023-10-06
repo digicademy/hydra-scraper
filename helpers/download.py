@@ -77,6 +77,45 @@ def download_file(url:str, content_type:str = '') -> dict:
     return simple_response
 
 
+def retrieve_local_file(file_path:str, content_type:str) -> dict:
+    '''
+    Retrieves a local file and returns the content
+
+        Parameters:
+            file_path (str): path to open the file at
+            content_type (str): content type to parse
+
+        Returns:
+            dict: Provides 'file_type', 'file_extension' and 'content' of the retrieved file
+    '''
+
+    # Retrieve file content
+    try:
+        with open(file_path) as f:
+            content = f.read()
+
+            # Get file type and file extension
+            headers = {
+                'Content-Type': content_type
+            }
+            file_type = determine_file_type(headers, False)
+            file_extension = determine_file_type(headers, True)
+
+            # Structure the data
+            simple_response = {
+                'file_type': file_type,
+                'file_extension': file_extension,
+                'content': content
+            }
+
+    # Notify if file not available
+    except:
+        simple_response = None
+
+    # Return simplified response
+    return simple_response
+
+
 def determine_file_type(headers:dict, getFileExtension:bool = False) -> str:
     '''
     Determines the best file type and extension based on the server response

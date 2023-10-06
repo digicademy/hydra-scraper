@@ -14,8 +14,10 @@ from time import sleep
 from helpers.config import *
 from helpers.convert import convert_triples_to_table
 from helpers.download import download_file
+from helpers.download import retrieve_local_file
 from helpers.fileio import create_folder
 from helpers.fileio import read_list
+from helpers.fileio import read_folder
 from helpers.fileio import save_file
 from helpers.fileio import save_table
 from helpers.status import echo_progress
@@ -30,7 +32,8 @@ class Beacon:
     populated = None
     triples = Graph()
     resources = []
-    resources_type = ''
+    resources_from_folder = False
+    content_type = ''
     target_folder = ''
     number_of_resources = 0
     missing_resources = 0
@@ -39,19 +42,19 @@ class Beacon:
     non_rdf_resources_list = []
 
 
-    def __init__(self, target_folder:str, resources_type:str = '', resources:list = []):
+    def __init__(self, target_folder:str, content_type:str = '', resources:list = []):
         '''
         Sets up a list of resources to process
 
             Parameters:
                 target_folder (str): Name of the downloads subfolder to store files in
-                resources_type (str, optional): Content type to request when retrieving resources, defaults to none
+                content_type (str, optional): Content type to request when retrieving resources, defaults to none
                 resources (list, optional): List of resources to retrieve, defaults to empty list
         '''
 
         # Assign variables
         self.target_folder = config['download_base'] + '/' + target_folder
-        self.resources_type = resources_type
+        self.content_type = content_type
         self.resources = resources
 
 
@@ -69,7 +72,7 @@ class Beacon:
             return 'Processed list of individual resources'
 
 
-    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = ''):
+    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = '', local_folder:str = ''):
         '''
         Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
 
@@ -77,6 +80,7 @@ class Beacon:
                 save_original_files (bool, optional): Switch to also save original files on download, defaults to True
                 clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
                 beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
+                local_folder (str, optional): Path to a local folder with an existing file dump to process, defaults to an empty string
         '''
 
         # Notify object that it is being populated
@@ -93,6 +97,11 @@ class Beacon:
         if beacon_file != '':
             self.resources = read_list(beacon_file)
 
+        # If requested, get list of individual resources from local folder
+        elif local_folder != '':
+            self.resources = read_folder(local_folder)
+            self.resources_from_folder = True
+
         # Throw error if resource list is empty
         if self.resources == []:
             status_report['success'] = False
@@ -106,7 +115,10 @@ class Beacon:
             for number, resource_url in enumerate(self.resources, start = 1):
 
                 # Retrieve file
-                resource = download_file(resource_url, self.resources_type)
+                if self.resources_from_folder == True:
+                    resource = retrieve_local_file(resource_url, self.content_type)
+                else:
+                    resource = download_file(resource_url, self.content_type)
                 if resource != None:
 
                     # Optionally save file
@@ -159,7 +171,8 @@ class Beacon:
 
                 # Delay next retrieval to avoid a server block
                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
-                sleep(config['download_delay'])
+                if self.resources_from_folder == False:
+                    sleep(config['download_delay'])
 
         # Notify object that it is populated
         self.populated = True

@@ -32,6 +32,7 @@ def clean_request(arguments:list) -> dict:
         'download': [], # May contain lists, list_triples, beacon, resources, resource_triples, resource_table
         'source_url': '',
         'source_file': '',
+        'source_folder': '',
         'content_type': '',
         'taget_folder': current_timestamp(),
         'resource_url_filter': '',
@@ -68,6 +69,7 @@ def clean_request(arguments:list) -> dict:
             request = clean_argument(request, arguments, 'download', 'list')
             request = clean_argument(request, arguments, 'source_url', 'url')
             request = clean_argument(request, arguments, 'source_file', 'str')
+            request = clean_argument(request, arguments, 'source_folder', 'str')
             request = clean_argument(request, arguments, 'content_type', 'str')
             request = clean_argument(request, arguments, 'target_folder', 'str')
             request = clean_argument(request, arguments, 'resource_url_filter', 'str')
@@ -86,10 +88,17 @@ def clean_request(arguments:list) -> dict:
             if request['source_url'] == None:
                 raise ValueError('Hydra Scraper called without valid source URL.')
 
-        # Check requirements for the Beacon class
-        elif 'resources' in request['download'] or 'resource_triples' in request['download'] or 'resource_table' in request['download']:
+        # Check requirements for the Beacon class I
+        elif 'resources' in request['download']:
             if request['source_url'] == None and request['source_file'] == None:
                 raise ValueError('Hydra Scraper called without valid source URL or file name.')
+
+        # Check requirements for the Beacon class II
+        elif 'resource_triples' in request['download'] or 'resource_table' in request['download']:
+            if request['source_url'] == None and request['source_file'] == None and request['source_folder'] == None:
+                raise ValueError('Hydra Scraper called without valid source URL, file, or folder name.')
+            elif request['source_folder'] != None and request['content_type'] == None:
+                raise ValueError('Hydra Scraper called with a folder name but without a content type.')
 
         # No valid download requests
         else:

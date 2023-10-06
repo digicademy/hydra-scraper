@@ -71,7 +71,7 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
         save_resources = True
     else:
         save_resources = False
-    beacon.populate(save_resources, request['clean_resource_names'], request['source_file'])
+    beacon.populate(save_resources, request['clean_resource_names'], request['source_file'], request['source_folder'])
 
     # Compile resource triples if requested
     if 'resource_triples' in request['download']:

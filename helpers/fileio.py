@@ -8,6 +8,7 @@
 
 # Import libraries
 from os import makedirs
+from glob import glob
 
 # Import script modules
 from helpers.clean import clean_lines
@@ -89,10 +90,33 @@ def read_list(file_path:str) -> list:
 
         # Return list
         return entries
-    
+
     # Report if file is not found
     except:
         return []
+
+
+def read_folder(folder_path:str) -> list:
+    '''
+    Reads a local folder and returns each file name as a list
+
+        Parameters:
+            folder_path (str): Path to the folder to read
+
+        Returns:
+            list: List of individual file names
+    '''
+
+    # Prepare folder path and empty list
+    folder_path = folder_path + '/**/*'
+    entries = []
+
+    # Add each file to list
+    for file_path in glob(folder_path, recursive = True):
+        entries.append(file_path)
+
+    # Return list
+    return entries
 
 
 def create_folder(folder_name:str):

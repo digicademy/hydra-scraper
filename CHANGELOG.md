@@ -11,4 +11,5 @@
 ## 0.8.3
 
 - Rename `-source_url_type` to `-content_type`
-- Bring back option to compile a CSV table from scraped data
+- Add option to harvest from file dump
+- Bring back option to compile CSV table from scraped data

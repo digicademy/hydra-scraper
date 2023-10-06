@@ -44,8 +44,8 @@ run the script without interaction.
   - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content (default: none)
 - `-source_file '<path to file>'`: use the URLs in this beacon file to scrape content (default: none)
-- `-source_folder '<name of folder>'`: use files from this folder to scrape content (default: none)
-- `-content_type '<string>'`: request this content type when scraping content (default: none)
+- `-source_folder '<name of folder>'`: use this folder (default: none, requires `-content_type`)
+- `-content_type '<string>'`: request/use this content type when scraping content (default: none)
 - `-target_folder '<name of folder>'`: download to this subfolder of `downloads` (default: timestamp)
 - `-resource_url_filter '<string>'`: use this string as a filter for resource lists (default: none)
 - `-resource_url_replace '<string>'`: replace this string in resource lists (default: none)
@@ -79,6 +79,12 @@ Get **CGIF data from a beacon** file:
 
 ```
 python go.py -download 'resource_triples' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif'
+```
+
+Get **CGIF data from a file dump**:
+
+```
+python go.py -download 'resource_triples' -source_folder 'downloads/sample-cgif' -content_type 'application/ld+json' -target_folder 'sample-cgif'
 ```
 
 ### Corpus Vitrearum Germany
@@ -146,7 +152,6 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 
 ## Roadmap
 
-- *Allow harvesting from local files
 - Add URL composition feature of the Beacon standard
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
