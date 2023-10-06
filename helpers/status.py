@@ -58,39 +58,41 @@ def echo_help():
 
 This scraper is a command-line tool. Use "python go.py" to run the script in interactive mode. Alternatively, use the configuration options listed below to run the script without interaction.
 
--download '<value>': comma-separated list of requests, possible values:
+-download '<value>': comma-separated list of what you need, possible values:
 
     lists: all Hydra-paginated lists (requires -source_url)
 
     list_triples: all RDF triples in a Hydra API (requires -source_url)
 
-    beacon: beacon file of all resources listed in a Hydra API (requires -source_url)
+    beacon: beacon file of all resources listed in an API (requires -source_url)
 
-    resources: all resources listed in a Hydra API or a beacon file (requires -source_url or -source_file)
+    resources: all resources of an API or beacon (requires -source_url/_file)
 
-    resource_triples: all RDF triples in resources listed in a Hydra API or a beacon file (requires -source_url or -source_file)
+    resource_triples: all RDF triples of resources (requires -source_url/_file/_folder)
 
-    resource_table: CSV table of data in resources listed in a Hydra API or a beacon file (requires -source_url or -source_file)
+    resource_table: CSV table of data in resources (requires -source_url/_file/_folder)
 
--source_url '<url>': use this entry-point URL to scrape content
+-source_url '<url>': use this entry-point URL to scrape content (default: none)
 
--source_file '<path to file>': use the URLs contained in this beacon file to scrape content
+-source_file '<path to file>': use the URLs in this beacon file to scrape content (default: none)
 
--content_type '<string>': request this content type when scraping content (defaults to none)
+-source_folder '<name of folder>': use files from this folder to scrape content (default: none)
 
--taget_folder '<name of folder>': download everything into this subfolder of `downloads` (defaults to timestamp)
+-content_type '<string>': request this content type when scraping content (default: none)
 
--resource_url_filter '<string>': when listing resources, apply this string as a filter (defaults to none)
+-taget_folder '<name of folder>': download to this subfolder of `downloads` (default: timestamp)
 
--resource_url_replace '<string>': before downloading, replace this string in each resource URL (defaults to none)
+-resource_url_filter '<string>': use this string as a filter for resource lists (default: none)
 
--resource_url_replace_with '<string>': before downloading, replace the previous string in each resource URL with this one (defaults to none)
+-resource_url_replace '<string>': replace this string in resource lists (default: none)
 
--resource_url_add '<string>': before downloading, add this string to the end of each resource URL (defaults to none)
+-resource_url_replace_with '<string>': replace the previous string with this one (default: none)
 
--clean_resource_names '<string>': comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
+-resource_url_add '<string>': add this to the end of each resource URL (default: none)
 
--table_data '<string list>': comma-separated names of properties to compile in a table (defaults to all)
+-clean_resource_names '<string>': build file names from resource URLs (default: enumeration)
+
+-table_data '<string list>': comma-separated property URIs to compile in a table (default: all)
 
 '''
     )

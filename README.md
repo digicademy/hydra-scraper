@@ -25,10 +25,9 @@ This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 ## Installation
 
 To use this script, make sure your system has a working `python` as well as
-the packages `validators` and `rdflib` installed. Then clone this repository
-(e.g. via `git clone https://github.com/digicademy/hydra-scraper.git` or the
-SSH equivalent). Open a terminal in the resulting folder to run the script
-as described below.
+the packages `validators` and `rdflib`. Then clone this repository (e.g. `git
+clone https://github.com/digicademy/hydra-scraper.git` or the SSH equivalent).
+Open a terminal in the resulting folder to run the script as described below.
 
 ## Usage
 
@@ -36,23 +35,24 @@ This scraper is a command-line tool. Use `python go.py` to run the script in
 interactive mode. Alternatively, use the configuration options listed below to
 run the script without interaction.
 
-- `-download '<string list>'`: comma-separated list of requests, possible values:
+- `-download '<string list>'`: comma-separated list of what you need, possible values:
   - `lists`: all Hydra-paginated lists (requires `-source_url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
-  - `beacon`: beacon file of all resources listed in a Hydra API (requires `-source_url`)
-  - `resources`: all resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
-  - `resource_triples`: all RDF triples in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
-  - `resource_table`: CSV table of data in resources listed in a Hydra API or a beacon file (requires `-source_url` or `-source_file`)
-- `-source_url '<url>'`: use this entry-point URL to scrape content
-- `-source_file '<path to file>'`: use the URLs contained in this beacon file to scrape content
-- `-content_type '<string>'`: request this content type when scraping content (defaults to none)
-- `-target_folder '<name of folder>'`: download everything into this subfolder of `downloads` (defaults to timestamp)
-- `-resource_url_filter '<string>'`: when listing resources, apply this string as a filter (defaults to none)
-- `-resource_url_replace '<string>'`: when listing resources, replace this string in each URL (defaults to none)
-- `-resource_url_replace_with '<string>'`: when listing resources, replace the previous string in each URL with this one (defaults to none)
-- `-resource_url_add '<string>'`: when listing resources, add this string to the end of each URL (defaults to none)
-- `-clean_resource_names '<string list>'`: comma-separated strings to remove from a resource URL to produce its file name (defaults to enumerated files)
-- `-table_data '<string list>'`: comma-separated names of properties to compile in a table (defaults to all)
+  - `beacon`: beacon file of all resources listed in an API (requires `-source_url`)
+  - `resources`: all resources of an API or beacon (requires `-source_url`/`_file`)
+  - `resource_triples`: all RDF triples of resources (requires `-source_url`/`_file`/`_folder`)
+  - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
+- `-source_url '<url>'`: use this entry-point URL to scrape content (default: none)
+- `-source_file '<path to file>'`: use the URLs in this beacon file to scrape content (default: none)
+- `-source_folder '<name of folder>'`: use files from this folder to scrape content (default: none)
+- `-content_type '<string>'`: request this content type when scraping content (default: none)
+- `-target_folder '<name of folder>'`: download to this subfolder of `downloads` (default: timestamp)
+- `-resource_url_filter '<string>'`: use this string as a filter for resource lists (default: none)
+- `-resource_url_replace '<string>'`: replace this string in resource lists (default: none)
+- `-resource_url_replace_with '<string>'`: replace the previous string with this one (default: none)
+- `-resource_url_add '<string>'`: add this to the end of each resource URL (default: none)
+- `-clean_resource_names '<string list>'`: build file names from resource URLs (default: enumeration)
+- `-table_data '<string list>'`: comma-separated property URIs to compile in a table (default: all)
 
 ## Examples
 
@@ -135,14 +135,23 @@ This package has three main areas:
 
 If you change the code, please remember to document each function and walk other users through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
 
+## Releasing
+
+Before you make a new release, make sure the following files are up to date:
+
+- CHANGELOG.md: version number and changes
+- CITATION.cff: version number, authors, and release date
+
+Use GitHub to make the release. Use semantic versioning once the scraper has reached 1.0.0.
+
 ## Roadmap
 
+- *Allow harvesting from local files
+- Add URL composition feature of the Beacon standard
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
-- Allow harvesting from local files
 - Allow filtering triples for CGIF, align triples produced by lists and by resources, add any quality assurance that is needed
 - Allow usage of OAI-PMH APIs to produce beacon lists
 - Re-add the interactive mode
-- Add URL composition feature of the Beacon standard
 - Properly package the script and use the system's download folder
