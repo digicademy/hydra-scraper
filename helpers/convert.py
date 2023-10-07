@@ -7,10 +7,12 @@
 
 
 # Import libraries
-#from os import makedirs
+from rdflib.term import BNode
+from rdflib.term import Literal
+from rdflib.term import URIRef
 
 # Import script modules
-#from helpers.clean import clean_lines
+from helpers.clean import clean_string_for_csv
 
 
 def convert_triples_to_table(triples:object, limit_predicates:list = []) -> list:
@@ -27,39 +29,92 @@ def convert_triples_to_table(triples:object, limit_predicates:list = []) -> list
 
     # Set up output and predicate lists
     output = []
+    all_predicates = []
     predicates = []
 
-    # Get unique predicates and optionally filter them
-    all_predicates = triples.predicates(unique = True)
+    # Collect limited predicates or get all unique ones
+    all_predicates = list(triples.predicates(unique = True))
     if limit_predicates != []:
-        for all_predicate in all_predicates:
-            if str(all_predicate) in limit_predicates:
-                predicates.append(all_predicate)
+        for limit_predicate in limit_predicates:
+            predicates.append(URIRef(limit_predicate))
     else:
         predicates = all_predicates
+        predicates.sort()
 
     # List all predicates as a table header
     first_line = ['URI']
     for predicate in predicates:
-        first_line.append(predicate)
+        first_line.append(str(predicate))
     output.append(first_line)
 
-    # Get unique subjects that start with 'http' and go through them
-    all_subjects = triples.subjects(unique = True)
-    for all_subject in all_subjects:
-        if str(all_subject)[0:4] == 'http':
-            new_line = [str(all_subject)]
+    # Get unique entities used as subjects that start with 'http' and go through them
+    entities = list(triples.subjects(unique = True))
+    entities.sort()
+    for entity in entities:
+        if isinstance(entity, URIRef):
+            new_line = [str(entity)]
 
-            # TODO Check each required predicate, retrieve its object(s), and remove quotation marks
+            # Set up a query routine for each desired predicate
             for predicate in predicates:
-                all_objects = triples.objects(subject = all_subject, predicate = predicate, unique = True)
-                if all_objects == None:
-                    new_line.append('')
-                else:
-                    new_line.append(', '.join(str(all_objects).replace('"', '')))
+                new_line_entries = []
+
+                # Go through all predicates with this entity as a subject, find literals as objects of desired predicates, and repeat for several levels
+                # Level 1
+                for all_predicate1 in all_predicates:
+                    for s1, p1, o1 in triples.triples((entity, all_predicate1, None)):
+                        if all_predicate1 == predicate and isinstance(o1, (Literal, URIRef)):
+                            new_line_entries.append(clean_string_for_csv(str(o1)))
+
+                        # Ordered list, multiple levels
+                        elif all_predicate1 == predicate and isinstance(o1, BNode):
+                            new_line_entries.extend(convert_triples_to_table_with_ordered_lists(triples, o1))
+
+                        # Nested properties, level 2
+                        else:
+                            for all_predicate2 in all_predicates:
+                                for s2, p2, o2 in triples.triples((o1, all_predicate2, None)):
+                                    if all_predicate2 == predicate and isinstance(o2, (Literal, URIRef)):
+                                        new_line_entries.append(clean_string_for_csv(str(o2)))
+
+                                    # Nested properties, level 3
+                                    else:
+                                        for all_predicate3 in all_predicates:
+                                            for s3, p3, o3 in triples.triples((o2, all_predicate3, None)):
+                                                if all_predicate3 == predicate and isinstance(o3, (Literal, URIRef)):
+                                                    new_line_entries.append(clean_string_for_csv(str(o3)))
+
+                # Produce entry for this predicate
+                new_line_entry = ', '.join(new_line_entries)
+                new_line.append(new_line_entry)
 
             # Add new line to output
             output.append(new_line)
 
     # Return tabular data
     return output
+
+
+def convert_triples_to_table_with_ordered_lists(triples:object, previous:BNode) -> list:
+    '''
+    Helper function to page through ordered lists when querying properties to print them as a table
+
+        Parameters:
+            triples (object): Graph object containing the triples to flick through
+            previous (BNode): Previous entry in the unordered list
+
+        Returns:
+            list: Further entries of the unordered list
+    '''
+
+    # Set up empty list of results to add to
+    new_line_entries = []
+
+    # Dig one level further down the ordered list
+    for s, p, o in triples.triples((previous, None, None)):
+        if isinstance(o, (Literal, URIRef)) and o != URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'):
+            new_line_entries.append(clean_string_for_csv(str(o)))
+        elif isinstance(o, BNode):
+            new_line_entries.extend(convert_triples_to_table_with_ordered_lists(triples, o))
+
+    # Return the list
+    return new_line_entries

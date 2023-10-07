@@ -93,11 +93,6 @@ python go.py -download 'resource_triples' -source_folder 'downloads/sample-cgif'
 
 ### Corpus Vitrearum Germany
 
-**Table** of specific metadata:
-
-```
-python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F' -table_data 'http://purl.org/dc/elements/1.1/Title,http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState,http://iptc.org/std/Iptc4xmpExt/2008-02-29/City,http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation,http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId,http://ns.adobe.com/exif/1.0/GPSLatitude,http://ns.adobe.com/exif/1.0/GPSLongitude,https://lod.academy/cvma/ns/xmp/AgeDeterminationStart,https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd,https://lod.academy/cvma/ns/xmp/IconclassNotation'
-
 All available **JSON-LD** data:
 
 ```
@@ -132,6 +127,24 @@ All available **embedded metadata**:
 
 ```
 python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+```
+
+All available **embedded metadata**:
+
+```
+python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+```
+
+**Table** of specific metadata:
+
+```
+python go.py -download 'resource_table' -source_url 'https://corpusvitrearum.de/id/about.json' -target_folder 'cvma-jsonld' -resource_url_filter 'https://corpusvitrearum.de/id/F' -table_data 'http://purl.org/dc/elements/1.1/Title,http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState,http://iptc.org/std/Iptc4xmpExt/2008-02-29/City,http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation,http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId,http://ns.adobe.com/exif/1.0/GPSLatitude,http://ns.adobe.com/exif/1.0/GPSLongitude,https://lod.academy/cvma/ns/xmp/AgeDeterminationStart,https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd,https://lod.academy/cvma/ns/xmp/IconclassNotation'
+```
+
+Table of specific metadata **from an existing dump**:
+
+```
+python go.py -download 'resource_table' -source_folder 'downloads/cvma-jsonld/resources' -content_type 'application/ld+json' -target_folder 'cvma-jsonld' -table_data 'http://purl.org/dc/elements/1.1/Title,http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState,http://iptc.org/std/Iptc4xmpExt/2008-02-29/City,http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation,http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId,http://ns.adobe.com/exif/1.0/GPSLatitude,http://ns.adobe.com/exif/1.0/GPSLongitude,https://lod.academy/cvma/ns/xmp/AgeDeterminationStart,https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd,https://lod.academy/cvma/ns/xmp/IconclassNotation'
 ```
 
 ## Contributing

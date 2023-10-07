@@ -189,6 +189,26 @@ def clean_lines(content:str) -> str:
     return linesep.join(content_lines)
 
 
+def clean_string_for_csv(content:str) -> str:
+    '''
+    Takes a string, removes quotation marks, removes newlines, and returns the string
+
+        Parameters:
+            content (str): input string to clean
+
+        Returns:
+            str: cleaned output string
+    '''
+
+    # Remove offending characters
+    content = content.replace('"', '\'')
+    content = content.replace('\n', '')
+    content = content.replace('\r', '')
+
+    # Return clean string
+    return content
+
+
 def current_timestamp() -> str:
     '''
     Produces a current timestamp to be used as a folder name
