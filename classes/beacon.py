@@ -154,25 +154,25 @@ class Beacon:
                         self.non_rdf_resources_list.append(resource_url)
                         continue
 
-                # Report any failed state
-                if self.missing_resources >= self.number_of_resources:
-                    status_report['success'] = False
-                    status_report['reason'] = 'All resources were missing.'
-                elif self.missing_resources > 0 and self.non_rdf_resources > 0:
-                    status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
-                    status_report['missing'] = self.missing_resources_list
-                    status_report['non_rdf'] = self.non_rdf_resources_list
-                elif self.missing_resources > 0:
-                    status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
-                    status_report['missing'] = self.missing_resources_list
-                elif self.non_rdf_resources > 0:
-                    status_report['reason'] = 'Resources retrieved, but ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
-                    status_report['non_rdf'] = self.non_rdf_resources_list
-
                 # Delay next retrieval to avoid a server block
                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
                 if self.resources_from_folder == False:
                     sleep(config['download_delay'])
+
+            # Report any failed state
+            if self.missing_resources >= self.number_of_resources:
+                status_report['success'] = False
+                status_report['reason'] = 'All resources were missing.'
+            elif self.missing_resources > 0 and self.non_rdf_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
+                status_report['missing'] = self.missing_resources_list
+                status_report['non_rdf'] = self.non_rdf_resources_list
+            elif self.missing_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
+                status_report['missing'] = self.missing_resources_list
+            elif self.non_rdf_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
+                status_report['non_rdf'] = self.non_rdf_resources_list
 
         # Notify object that it is populated
         self.populated = True

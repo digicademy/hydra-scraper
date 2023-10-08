@@ -13,3 +13,4 @@
 - Rename `-source_url_type` to `-content_type`
 - Add option to harvest from file dump
 - Bring back option to compile CSV table from scraped data
+- Implement URL composition feature for Beacon files

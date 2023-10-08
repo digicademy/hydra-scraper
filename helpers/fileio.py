@@ -9,6 +9,7 @@
 # Import libraries
 from os import makedirs
 from glob import glob
+from re import search
 
 # Import script modules
 from helpers.clean import clean_lines
@@ -79,13 +80,32 @@ def read_list(file_path:str) -> list:
         f = open(file_path, 'r')
         content = f.read()
 
+        # Optionally identify an ID pattern
+        pattern = search(r"(?<=#TARGET: ).*(?<!\n)", content)
+        if pattern != None:
+            pattern = pattern.group()
+            if pattern.find('{ID}') == -1:
+                pattern = None
+
         # Clean empty lines and comments
         content = clean_lines(content)
         lines = iter(content.splitlines())
 
-        # Add each line to list
+        # Go through each line
         entries = []
         for line in lines:
+
+            # Remove additional Beacon features
+            line_option1 = line.find(' |')
+            line_option2 = line.find('|')
+            if line_option1 != -1:
+                line = line[:line_option1]
+            elif line_option2 != -1:
+                line = line[:line_option2]
+            
+            # Add complete line to list
+            if pattern != None:
+                line = pattern.replace('{ID}', line)
             entries.append(line)
 
         # Return list

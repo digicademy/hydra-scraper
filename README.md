@@ -2,10 +2,10 @@
 
 # Hydra Scraper
 
-**Comprehensive scraper for APIs with Hydra pagination as well as for file dumps**
+**Comprehensive scraper for Hydra-paginated APIs, Beacon files, and RDF file dumps**
 
 This scraper provides a command-line toolset to pull data from various sources,
-such as Hydra paginated APIs, beacon files, or local file dumps. The tool
+such as Hydra paginated APIs, Beacon files, or local file dumps. The tool
 differentiates between resource lists and individual resource files in
 RDF-compatible formats such as JSON-LD or Turtle, but it can also handle, for
 example, LIDO files. Command-line calls can be combined and adapted to build
@@ -42,12 +42,12 @@ run the script without interaction.
 - `-download '<string list>'`: comma-separated list of what you need, possible values:
   - `lists`: all Hydra-paginated lists (requires `-source_url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
-  - `beacon`: beacon file of all resources listed in an API (requires `-source_url`)
-  - `resources`: all resources of an API or beacon (requires `-source_url`/`_file`)
+  - `beacon`: Beacon file of all resources listed in an API (requires `-source_url`)
+  - `resources`: all resources of an API or Beacon (requires `-source_url`/`_file`)
   - `resource_triples`: all RDF triples of resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content (default: none)
-- `-source_file '<path to file>'`: use the URLs in this beacon file to scrape content (default: none)
+- `-source_file '<path to file>'`: use the URLs in this Beacon file to scrape content (default: none)
 - `-source_folder '<name of folder>'`: use this folder (default: none, requires `-content_type`)
 - `-content_type '<string>'`: request/use this content type when scraping content (default: none)
 - `-target_folder '<name of folder>'`: download to this subfolder of `downloads` (default: timestamp)
@@ -79,7 +79,7 @@ Get **CGIF data** from an API entry point:
 python go.py -download 'list_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'sample-cgif'
 ```
 
-Get **CGIF data from a beacon** file:
+Get **CGIF data from a Beacon** file:
 
 ```
 python go.py -download 'resource_triples' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif'
@@ -153,7 +153,7 @@ This package has three main areas:
 
 1. The file `go.py` provides the main logic of a scraping run.
 2. It relies on several `helpers` that provide basic functions such as cleaning up request arguments, saving files, printing status updates, or providing configuration options throughout the package.
-3. The two classes `Hydra` and `Beacon` do the heavy lifting of paging through an API entry point or a (beacon) list of individual resources, respectively. In addition to a standard initialisation, both classes have a `populate()` function that retrieves and saves data. Additional functions may then carry out further tasks such as saving a beacon list or saving collected triples.
+3. The two classes `Hydra` and `Beacon` do the heavy lifting of paging through an API entry point or a (Beacon) list of individual resources, respectively. In addition to a standard initialisation, both classes have a `populate()` function that retrieves and saves data. Additional functions may then carry out further tasks such as saving a Beacon list or saving collected triples.
 
 If you change the code, please remember to document each function and walk other users through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
 
@@ -168,11 +168,10 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 
 ## Roadmap
 
-- Add URL composition feature of the Beacon standard
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
 - Allow filtering triples for CGIF, align triples produced by lists and by resources, add any quality assurance that is needed
-- Allow usage of OAI-PMH APIs to produce beacon lists
+- Allow usage of OAI-PMH APIs to produce Beacon lists
 - Re-add the interactive mode
 - Properly package the script and use the system's download folder
