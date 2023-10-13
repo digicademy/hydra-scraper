@@ -70,7 +70,7 @@ operating system, you may need to use `python3` instead of `python`.
 Grab all **portal data** as triples:
 
 ```
-python go.py -download 'list_triples' -source_url 'https://nfdi4culture.de/resource.ttl' -target_folder 'n4c-turtle'
+python go.py -download 'resource_triples' -source_url 'https://nfdi4culture.de/resource.ttl' -target_folder 'n4c-turtle'
 ```
 
 Get **CGIF data** from an API entry point:
@@ -174,4 +174,4 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 - Allow filtering triples for CGIF, align triples produced by lists and by resources, add any quality assurance that is needed
 - Allow usage of OAI-PMH APIs to produce Beacon lists
 - Re-add the interactive mode
-- Properly package the script and use the system's download folder
+- Properly package the script and use the system's download folder, and possibly enable pushing to a Git repo?
