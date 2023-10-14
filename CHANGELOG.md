@@ -14,3 +14,8 @@
 - Add option to harvest from file dump
 - Bring back option to compile CSV table from scraped data
 - Implement URL composition feature for Beacon files
+
+## 0.8.4
+
+- Provide infrastructure for CGIF filters
+- Add ability to read triples from LIDO files

@@ -64,11 +64,15 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
     list_triples: all RDF triples in a Hydra API (requires -source_url)
 
+    list_cgif: CGIF triples in a Hydra API (requires -source_url)
+
     beacon: Beacon file of all resources listed in an API (requires -source_url)
 
     resources: all resources of an API or Beacon (requires -source_url/_file)
 
     resource_triples: all RDF triples of resources (requires -source_url/_file/_folder)
+
+    resource_cgif: CGIF triples of resources (requires -source_url/_file/_folder)
 
     resource_table: CSV table of data in resources (requires -source_url/_file/_folder)
 

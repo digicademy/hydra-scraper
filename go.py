@@ -27,7 +27,7 @@ create_folder(job_folder)
 status = []
 
 # Set up Hydra API routine if required
-if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_triples' in request['download']:
+if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_triples' in request['download'] or 'list_cgif' in request['download']:
     hydra = Hydra(request['target_folder'], request['source_url'], request['content_type'])
 
     # Populate the object, and download each API list if requested
@@ -45,6 +45,10 @@ if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_tr
     if 'list_triples' in request['download']:
         hydra.save_triples()
 
+    # Compile list CGIF triples if requested
+    if 'list_cgif' in request['download']:
+        hydra.save_triples('cgif', 'lists_cgif')
+
     # Add status message
     status.extend(hydra.status)
 
@@ -58,7 +62,7 @@ else:
     hydra = False
 
 # Set up beacon file routine if required
-if 'resources' in request['download'] or 'resource_triples' in request['download'] or 'resource_table' in request['download']:
+if 'resources' in request['download'] or 'resource_triples' in request['download'] or 'resource_cgif' in request['download'] or 'resource_table' in request['download']:
 
     # Use previous resource list if present
     if hydra == False:
@@ -76,6 +80,10 @@ if 'resources' in request['download'] or 'resource_triples' in request['download
     # Compile resource triples if requested
     if 'resource_triples' in request['download']:
         beacon.save_triples()
+
+    # Compile resource CGIF triples if requested
+    if 'resource_cgif' in request['download']:
+        beacon.save_triples('cgif', 'resources_cgif')
 
     # Compile resource table if requested
     if 'resource_table' in request['download']:
