@@ -32,56 +32,66 @@ def convert_lido_to_cgif(lido:str) -> Graph:
 
     # Set up an object to store CGIF triples
     cgif_triples = Graph()
+    cgif_triples.bind('schema', SCHEMA)
 
     # Parse LIDO files as XML and retrieve resource URI
     try:
         lido_root = etree.fromstring(bytes(lido, encoding='utf8'))
         resource = URIRef(lido_root.findtext('.//{http://www.lido-schema.org}recordInfoLink'))
 
-        # TODO Type festlegen, Namespace im Turtle richtig benennen
+        # TODO TODO Type festlegen, Reste an Tripeln
 
         # SCHEMA.contentLocation
         schema_content_location = lido_root.findtext('.//{http://www.lido-schema.org}repositoryLocation/{http://www.lido-schema.org}placeID[@{http://www.lido-schema.org}type="http://terminology.lido-schema.org/lido00099"]')
         if schema_content_location != None:
             cgif_triples.add((resource, SCHEMA.contentLocation, URIRef(schema_content_location)))
 
-        # SCHEMA.contentUrl
-        # TODO größte Bild-URL als Type "schema.URL"
-
-        # SCHEMA.copyrightNotice
-        # TODO Text zur Beschreibung des Copyrights, deutsch und englisch ggf. mehrfach, falls möglich
-
         # SCHEMA.creator
         # TODO NFDI-URI falls möglich
-
-        # SCHEMA.creditText
-        # TODO Bildunterschrift, falls möglich
-
-        # SCHEMA.dateModified
-        # TODO Normdatum der letzten Aktualisierung, als Type "schema.Date"
-
-        # SCHEMA.height
-        # TODO Höhe des Bildes in Pixeln, "??? px", als Type "schema.Distance"
 
         # SCHEMA.isPartOf
         # TODO URL des Datensatzes
 
-        # SCHEMA.keywords
-        # TODO Geonames-URL, Getty-URL zum Genre (Glasmalerei), Iconclass-URLs
-        # TODO Geonames außerdem als Type "schema:DefinedTerm" und "schema:LandmarksOrHistoricalBuildings" und mit eigenem Tripel "schema:inDefinedTermSet" und "https://geonames.org/"
-        # TODO Iconclass außerdem als Type "schema.DefinedTerm" und mit eigenem Tripel "schema:inDefinedTermSet" und "https://iconclass.org/"
-
-        # SCHEMA.license
-        # TODO URLs der Lizenzen für Bilddatei und Metadaten (Record)), ggf. mehrfach
-
         # SCHEMA.name
         # TODO Titel des Bildes, falls möglich deutsch und englisch ggf. mehrfach
+
+        # SCHEMA.keywords
+        # TODO Geonames-URL, Getty-URL zum Genre (Glasmalerei), Iconclass-URLs
+        # TODO Geonames außerdem als Type "schema:DefinedTerm" und "schema:LandmarksOrHistoricalBuildings" und mit eigenem Tripel "schema:inDefinedTermSet" und "https://geonames.org/", welches wiederum den Type "schema:DefinedTermSet" benötigt
+        # TODO Getty-URL zum Genre (Glasmalerei) außerdem als Type "schema.DefinedTerm" und mit eigenem Tripel "schema:inDefinedTermSet" und "http://vocab.getty.edu/page/aat/", welches wiederum den Type "schema:DefinedTermSet" benötigt
+        # TODO Iconclass außerdem als Type "schema.DefinedTerm" und mit eigenem Tripel "schema:inDefinedTermSet" und "https://iconclass.org/", welches wiederum den Type "schema:DefinedTermSet" benötigt
 
         # SCHEMA.temporalCoverage
         # TODO Anfangs- und Enddatum durch / getrennt, mit "T00:00:00" am Anfang und "T23:59:59" am Ende, mit Type "schema:Date"
 
+        # SCHEMA.dateModified
+        # TODO Normdatum der letzten Aktualisierung, als Type "schema.Date"
+
+        # SCHEMA.license
+        # TODO URLs der Lizenzen für Bilddatei und Metadaten (Record)), ggf. mehrfach, als Type "schema.URL"
+
+        # SCHEMA.height
+        # TODO Höhe des Bildes in Pixeln, "??? px", als Type "schema.Distance"
+
         # SCHEMA.width
         # TODO Breite des Bildes in Pixeln, "??? px", als Type "schema.Distance"
+
+        # SCHEMA.contentUrl
+        # TODO größte Bild-URL als Type "schema.URL"
+
+        # SCHEMA.creditText
+        # TODO Bildunterschrift, falls möglich
+
+        # SCHEMA.copyrightNotice
+        # TODO Text zur Beschreibung des Copyrights, deutsch und englisch ggf. mehrfach, falls möglich
+
+        # --- Fehlende Angaben zu DataFeed und DataCatalog ---
+
+        # TODO Eine URL als Type "schema.DataCatalog" mit Tripeln für "schema.name" plus String(s) sowie "schema.publisher" plus N4C-URL
+
+        # TODO Eine URL als Types "schema.DataFeed", "schema.Dataset" und "schema.URL" mit Tripeln für "schema.creator" plus N4C-URL, "schema.name" plus String(s), "schema.includedInDataCatalog" mit URL des DataCatalog, nochmal "schema.url" und evtl. allen Lizenzen des Dokuments als "schema.license"-Angaben falls vorhanden
+
+        # TODO Pro N4C-URL den Type "schema.Organization" (falls zutreffend), dazu womöglich "schema.name" plus String(s) und "schema.url" mit Web-URL der Organisationen
 
     # Empty variable if content does not parse
     except:

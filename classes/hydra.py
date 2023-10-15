@@ -7,8 +7,7 @@
 
 
 # Import libraries
-from rdflib import Graph
-from rdflib import Namespace
+from rdflib import Graph, Namespace
 from math import ceil
 from time import sleep
 
@@ -34,6 +33,8 @@ class Hydra:
     status = []
     populated = None
     triples = Graph()
+    triples.bind('hydra', HYDRA)
+    triples.bind('schema', SCHEMA)
     resources = []
     target_folder = ''
     entry_point_url = ''
@@ -188,6 +189,8 @@ class Hydra:
             # Add triples to object storage
             try:
                 hydra_triples = Graph()
+                hydra_triples.bind('hydra', HYDRA)
+                hydra_triples.bind('schema', SCHEMA)
                 hydra_triples.parse(data=hydra['content'], format=hydra['file_type'])
             except:
                 status_report['success'] = False

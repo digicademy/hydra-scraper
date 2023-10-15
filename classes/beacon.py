@@ -7,7 +7,7 @@
 
 
 # Import libraries
-from rdflib import Graph
+from rdflib import Graph, Namespace
 from time import sleep
 
 # Import script modules
@@ -23,6 +23,8 @@ from helpers.fileio import save_file
 from helpers.fileio import save_table
 from helpers.status import echo_progress
 
+# Define namespaces
+SCHEMA = Namespace('http://schema.org/')
 
 # Base class for a beacon list to process
 class Beacon:
@@ -32,6 +34,7 @@ class Beacon:
     status = []
     populated = None
     triples = Graph()
+    triples.bind('schema', SCHEMA)
     resources = []
     resources_from_folder = False
     content_type = ''
