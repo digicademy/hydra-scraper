@@ -232,7 +232,7 @@ class Hydra:
             hydra_triples.remove((None, RDF.type, HYDRA.PartialCollectionView))
 
             # Add list triples to object triples
-            self.triples = self.triples + hydra_triples
+            self.triples += hydra_triples
 
             # Delay next retrieval to avoid a server block
             echo_progress('Retrieving API lists', number, self.number_of_lists)

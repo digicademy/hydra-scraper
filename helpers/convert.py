@@ -7,12 +7,88 @@
 
 
 # Import libraries
-from rdflib.term import BNode
-from rdflib.term import Literal
-from rdflib.term import URIRef
+from lxml import etree
+from rdflib import Graph, Namespace
+from rdflib.term import BNode, Literal, URIRef
 
 # Import script modules
 from helpers.clean import clean_string_for_csv
+
+# Define namespaces
+from rdflib.namespace import RDF
+SCHEMA = Namespace('http://schema.org/')
+
+
+def convert_lido_to_cgif(lido:str) -> Graph:
+    '''
+    Converts a LIDO file to CGIF triples and returns them as a Graph object
+
+        Parameters:
+            lido (str): The content of the LIDO file to convert
+
+        Returns:
+            Graph: object containing the CGIF triples
+    '''
+
+    # Set up an object to store CGIF triples
+    cgif_triples = Graph()
+
+    # Parse LIDO files as XML and retrieve resource URI
+    try:
+        lido_root = etree.fromstring(bytes(lido, encoding='utf8'))
+        resource = URIRef(lido_root.findtext('.//{http://www.lido-schema.org}recordInfoLink'))
+
+        # TODO Type festlegen, Namespace im Turtle richtig benennen
+
+        # SCHEMA.contentLocation
+        schema_content_location = lido_root.findtext('.//{http://www.lido-schema.org}repositoryLocation/{http://www.lido-schema.org}placeID[@{http://www.lido-schema.org}type="http://terminology.lido-schema.org/lido00099"]')
+        if schema_content_location != None:
+            cgif_triples.add((resource, SCHEMA.contentLocation, URIRef(schema_content_location)))
+
+        # SCHEMA.contentUrl
+        # TODO größte Bild-URL als Type "schema.URL"
+
+        # SCHEMA.copyrightNotice
+        # TODO Text zur Beschreibung des Copyrights, deutsch und englisch ggf. mehrfach, falls möglich
+
+        # SCHEMA.creator
+        # TODO NFDI-URI falls möglich
+
+        # SCHEMA.creditText
+        # TODO Bildunterschrift, falls möglich
+
+        # SCHEMA.dateModified
+        # TODO Normdatum der letzten Aktualisierung, als Type "schema.Date"
+
+        # SCHEMA.height
+        # TODO Höhe des Bildes in Pixeln, "??? px", als Type "schema.Distance"
+
+        # SCHEMA.isPartOf
+        # TODO URL des Datensatzes
+
+        # SCHEMA.keywords
+        # TODO Geonames-URL, Getty-URL zum Genre (Glasmalerei), Iconclass-URLs
+        # TODO Geonames außerdem als Type "schema:DefinedTerm" und "schema:LandmarksOrHistoricalBuildings" und mit eigenem Tripel "schema:inDefinedTermSet" und "https://geonames.org/"
+        # TODO Iconclass außerdem als Type "schema.DefinedTerm" und mit eigenem Tripel "schema:inDefinedTermSet" und "https://iconclass.org/"
+
+        # SCHEMA.license
+        # TODO URLs der Lizenzen für Bilddatei und Metadaten (Record)), ggf. mehrfach
+
+        # SCHEMA.name
+        # TODO Titel des Bildes, falls möglich deutsch und englisch ggf. mehrfach
+
+        # SCHEMA.temporalCoverage
+        # TODO Anfangs- und Enddatum durch / getrennt, mit "T00:00:00" am Anfang und "T23:59:59" am Ende, mit Type "schema:Date"
+
+        # SCHEMA.width
+        # TODO Breite des Bildes in Pixeln, "??? px", als Type "schema.Distance"
+
+    # Empty variable if content does not parse
+    except:
+        cgif_triples = None
+
+    # Return Graph object containing CGIF triples
+    return cgif_triples
 
 
 def convert_triples_to_table(triples:object, limit_predicates:list = []) -> list:

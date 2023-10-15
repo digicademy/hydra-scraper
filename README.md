@@ -29,7 +29,7 @@ This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 ## Installation
 
 To use this script, make sure your system has a working `python` as well as
-the packages `validators` and `rdflib`. Then clone this repository (e.g. `git
+the packages `validators`, `rdflib`, and `lxml`. Then clone this repository (e.g. `git
 clone https://github.com/digicademy/hydra-scraper.git` or the SSH equivalent).
 Open a terminal in the resulting folder to run the script as described below.
 

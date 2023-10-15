@@ -12,6 +12,7 @@ from time import sleep
 
 # Import script modules
 from helpers.config import *
+from helpers.convert import convert_lido_to_cgif
 from helpers.convert import convert_triples_to_table
 from helpers.download import download_file
 from helpers.download import retrieve_local_file
@@ -38,8 +39,8 @@ class Beacon:
     number_of_resources = 0
     missing_resources = 0
     missing_resources_list = []
-    non_rdf_resources = 0
-    non_rdf_resources_list = []
+    incompatible_resources = 0
+    incompatible_resources_list = []
 
 
     def __init__(self, target_folder:str, content_type:str = '', resources:list = []):
@@ -145,14 +146,23 @@ class Beacon:
                     self.missing_resources_list.append(resource_url)
                     continue
 
-                # Add triples to object storage
+                # Add triples to object storage from RDF sources
                 if resource['file_type'] not in config['non_rdf_formats']:
                     try:
                         self.triples.parse(data=resource['content'], format=resource['file_type'])
                     except:
-                        self.non_rdf_resources += 1
-                        self.non_rdf_resources_list.append(resource_url)
+                        self.incompatible_resources += 1
+                        self.incompatible_resources_list.append(resource_url)
                         continue
+
+                # Add triples to object storage from LIDO sources
+                elif resource['file_type'] == 'lido':
+                    lido_cgif = convert_lido_to_cgif(resource['content'])
+                    if lido_cgif != None:
+                        self.triples += lido_cgif
+                    else:
+                        self.incompatible_resources += 1
+                        self.incompatible_resources_list.append(resource_url)
 
                 # Delay next retrieval to avoid a server block
                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
@@ -163,16 +173,16 @@ class Beacon:
             if self.missing_resources >= self.number_of_resources:
                 status_report['success'] = False
                 status_report['reason'] = 'All resources were missing.'
-            elif self.missing_resources > 0 and self.non_rdf_resources > 0:
-                status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
+            elif self.missing_resources > 0 and self.incompatible_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.incompatible_resources) + ' were not compatible.'
                 status_report['missing'] = self.missing_resources_list
-                status_report['non_rdf'] = self.non_rdf_resources_list
+                status_report['incompatible'] = self.incompatible_resources_list
             elif self.missing_resources > 0:
                 status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
                 status_report['missing'] = self.missing_resources_list
-            elif self.non_rdf_resources > 0:
-                status_report['reason'] = 'Resources retrieved, but ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
-                status_report['non_rdf'] = self.non_rdf_resources_list
+            elif self.incompatible_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.incompatible_resources) + ' were not compatible.'
+                status_report['incompatible'] = self.incompatible_resources_list
 
         # Notify object that it is populated
         self.populated = True
