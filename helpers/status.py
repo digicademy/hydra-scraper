@@ -64,11 +64,15 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
     list_triples: all RDF triples in a Hydra API (requires -source_url)
 
+    list_cgif: CGIF triples in a Hydra API (requires -source_url)
+
     beacon: Beacon file of all resources listed in an API (requires -source_url)
 
     resources: all resources of an API or Beacon (requires -source_url/_file)
 
     resource_triples: all RDF triples of resources (requires -source_url/_file/_folder)
+
+    resource_cgif: CGIF triples of resources (requires -source_url/_file/_folder)
 
     resource_table: CSV table of data in resources (requires -source_url/_file/_folder)
 
@@ -93,6 +97,12 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 -clean_resource_names '<string>': build file names from resource URLs (default: enumeration)
 
 -table_data '<string list>': comma-separated property URIs to compile in a table (default: all)
+
+-supplement_data_feed '<url>': URI of a data feed to bind LIDO files to (default: none)
+
+-supplement_data_catalog '<url>': URI of a data catalog the data feed belongs to (default: none)
+
+-supplement_data_catalog_publisher '<url>': URI of the publisher of the catalog (default: none)
 
 '''
     )

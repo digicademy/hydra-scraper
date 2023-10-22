@@ -29,7 +29,7 @@ This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 ## Installation
 
 To use this script, make sure your system has a working `python` as well as
-the packages `validators` and `rdflib`. Then clone this repository (e.g. `git
+the packages `validators`, `rdflib`, and `lxml`. Then clone this repository (e.g. `git
 clone https://github.com/digicademy/hydra-scraper.git` or the SSH equivalent).
 Open a terminal in the resulting folder to run the script as described below.
 
@@ -42,9 +42,11 @@ run the script without interaction.
 - `-download '<string list>'`: comma-separated list of what you need, possible values:
   - `lists`: all Hydra-paginated lists (requires `-source_url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
+  - `list_cgif`: CGIF triples in a Hydra API (requires`-source_url`)
   - `beacon`: Beacon file of all resources listed in an API (requires `-source_url`)
   - `resources`: all resources of an API or Beacon (requires `-source_url`/`_file`)
   - `resource_triples`: all RDF triples of resources (requires `-source_url`/`_file`/`_folder`)
+  - `resource_cgif`: CGIF triples of resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
 - `-source_url '<url>'`: use this entry-point URL to scrape content (default: none)
 - `-source_file '<path to file>'`: use the URLs in this Beacon file to scrape content (default: none)
@@ -57,6 +59,9 @@ run the script without interaction.
 - `-resource_url_add '<string>'`: add this to the end of each resource URL (default: none)
 - `-clean_resource_names '<string list>'`: build file names from resource URLs (default: enumeration)
 - `-table_data '<string list>'`: comma-separated property URIs to compile in a table (default: all)
+- `-supplement_data_feed '<url>'`: URI of a data feed to bind LIDO files to (default: none)
+- `-supplement_data_catalog '<url>'`: URI of a data catalog the data feed belongs to (default: none)
+- `-supplement_data_catalog_publisher '<url>'`: URI of the publisher of the catalog (default: none)
 
 ## Examples
 
@@ -76,19 +81,25 @@ python go.py -download 'resource_triples' -source_url 'https://nfdi4culture.de/r
 Get **CGIF data** from an API entry point:
 
 ```
-python go.py -download 'list_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'sample-cgif'
+python go.py -download 'list_cgif' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'sample-cgif'
 ```
 
 Get **CGIF data from a Beacon** file:
 
 ```
-python go.py -download 'resource_triples' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif'
+python go.py -download 'resource_cgif' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif'
+```
+
+Get **CGIF data from a Beacon** file that lists LIDO files:
+
+```
+python go.py -download 'resource_cgif' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif' -supplement_data_feed 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -supplement_data_catalog 'https://corpusvitrearum.de' -supplement_data_catalog_publisher 'https://nfdi4culture.de/id/E1834'
 ```
 
 Get **CGIF data from a file dump**:
 
 ```
-python go.py -download 'resource_triples' -source_folder 'downloads/sample-cgif' -content_type 'application/ld+json' -target_folder 'sample-cgif'
+python go.py -download 'resource_cgif' -source_folder 'downloads/sample-cgif' -content_type 'application/ld+json' -target_folder 'sample-cgif'
 ```
 
 ### Corpus Vitrearum Germany
@@ -114,7 +125,7 @@ python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -s
 All available **CGIF (JSON-LD)** data:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/id/about.cgif' -target_folder 'cvma-cgif' -resource_url_filter 'https://corpusvitrearum.de/id/F' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
+python go.py -download 'lists,list_triples,list_cgif,beacon,resources,resource_triples,resource_cgif' -source_url 'https://corpusvitrearum.de/id/about.cgif' -target_folder 'cvma-cgif' -resource_url_filter 'https://corpusvitrearum.de/id/F' -resource_url_add '/about.cgif' -clean_resource_names 'https://corpusvitrearum.de/id/,/about.cgif'
 ```
 
 All available **LIDO** data:
@@ -126,13 +137,7 @@ python go.py -download 'beacon,resources' -source_url 'https://corpusvitrearum.d
 All available **embedded metadata**:
 
 ```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
-```
-
-All available **embedded metadata**:
-
-```
-python go.py -download 'lists,list_triples,beacon,resources,resource_triples' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
+python go.py -download 'lists,list_triples,list_cgif,beacon,resources,resource_triples,resource_cgif' -source_url 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -target_folder 'cvma-embedded' -clean_resource_names 'https://corpusvitrearum.de/id/'
 ```
 
 **Table** of specific metadata:
@@ -170,8 +175,8 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
-- Add conversion routines, i.e. for LIDO to CGIF or for the RADAR version of DataCite/DataVerse to CGIF
-- Allow filtering triples for CGIF, align triples produced by lists and by resources, add any quality assurance that is needed
+- Add conversion routines, i.e. for the RADAR version of DataCite/DataVerse to CGIF
+- Add filter for CGIF triples which aligns those produced by lists and by resources and could host further quality assurance
 - Allow usage of OAI-PMH APIs to produce Beacon lists
 - Re-add the interactive mode
 - Properly package the script and use the system's download folder, and possibly enable pushing to a Git repo?

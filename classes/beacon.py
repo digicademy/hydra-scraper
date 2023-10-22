@@ -7,11 +7,12 @@
 
 
 # Import libraries
-from rdflib import Graph
+from rdflib import Graph, Namespace
 from time import sleep
 
 # Import script modules
 from helpers.config import *
+from helpers.convert import convert_lido_to_cgif
 from helpers.convert import convert_triples_to_table
 from helpers.download import download_file
 from helpers.download import retrieve_local_file
@@ -22,6 +23,8 @@ from helpers.fileio import save_file
 from helpers.fileio import save_table
 from helpers.status import echo_progress
 
+# Define namespaces
+SCHEMA = Namespace('http://schema.org/')
 
 # Base class for a beacon list to process
 class Beacon:
@@ -31,6 +34,7 @@ class Beacon:
     status = []
     populated = None
     triples = Graph()
+    triples.bind('schema', SCHEMA)
     resources = []
     resources_from_folder = False
     content_type = ''
@@ -38,8 +42,8 @@ class Beacon:
     number_of_resources = 0
     missing_resources = 0
     missing_resources_list = []
-    non_rdf_resources = 0
-    non_rdf_resources_list = []
+    incompatible_resources = 0
+    incompatible_resources_list = []
 
 
     def __init__(self, target_folder:str, content_type:str = '', resources:list = []):
@@ -72,7 +76,7 @@ class Beacon:
             return 'Processed list of individual resources'
 
 
-    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = '', local_folder:str = ''):
+    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = '', local_folder:str = '', supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = ''):
         '''
         Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
 
@@ -81,6 +85,9 @@ class Beacon:
                 clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
                 beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
                 local_folder (str, optional): Path to a local folder with an existing file dump to process, defaults to an empty string
+                supplement_data_feed (str, optional): URI of a data feed to bind LIDO files to (defaults to none)
+                supplement_data_catalog (str, optional): URI of a data catalog that the data feed belongs to (defaults to none)
+                supplement_data_catalog_publisher (str, optional): URI of the publisher of the data catalog (defaults to none)
         '''
 
         # Notify object that it is being populated
@@ -145,14 +152,23 @@ class Beacon:
                     self.missing_resources_list.append(resource_url)
                     continue
 
-                # Add triples to object storage
+                # Add triples to object storage from RDF sources
                 if resource['file_type'] not in config['non_rdf_formats']:
                     try:
                         self.triples.parse(data=resource['content'], format=resource['file_type'])
                     except:
-                        self.non_rdf_resources += 1
-                        self.non_rdf_resources_list.append(resource_url)
+                        self.incompatible_resources += 1
+                        self.incompatible_resources_list.append(resource_url)
                         continue
+
+                # Add triples to object storage from LIDO sources
+                elif resource['file_type'] == 'lido':
+                    lido_cgif = convert_lido_to_cgif(resource['content'], supplement_data_feed, supplement_data_catalog, supplement_data_catalog_publisher)
+                    if lido_cgif != None:
+                        self.triples += lido_cgif
+                    else:
+                        self.incompatible_resources += 1
+                        self.incompatible_resources_list.append(resource_url)
 
                 # Delay next retrieval to avoid a server block
                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
@@ -163,16 +179,16 @@ class Beacon:
             if self.missing_resources >= self.number_of_resources:
                 status_report['success'] = False
                 status_report['reason'] = 'All resources were missing.'
-            elif self.missing_resources > 0 and self.non_rdf_resources > 0:
-                status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
+            elif self.missing_resources > 0 and self.incompatible_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.incompatible_resources) + ' were not compatible.'
                 status_report['missing'] = self.missing_resources_list
-                status_report['non_rdf'] = self.non_rdf_resources_list
+                status_report['incompatible'] = self.incompatible_resources_list
             elif self.missing_resources > 0:
                 status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
                 status_report['missing'] = self.missing_resources_list
-            elif self.non_rdf_resources > 0:
-                status_report['reason'] = 'Resources retrieved, but ' + str(self.non_rdf_resources) + ' were not RDF-compatible.'
-                status_report['non_rdf'] = self.non_rdf_resources_list
+            elif self.incompatible_resources > 0:
+                status_report['reason'] = 'Resources retrieved, but ' + str(self.incompatible_resources) + ' were not compatible.'
+                status_report['incompatible'] = self.incompatible_resources_list
 
         # Notify object that it is populated
         self.populated = True
@@ -181,11 +197,12 @@ class Beacon:
         self.status.append(status_report)
 
 
-    def save_triples(self, file_name:str = 'resources'):
+    def save_triples(self, triple_filter:str = 'none', file_name:str = 'resources'):
         '''
         Saves all downloaded triples into a single Turtle file
 
             Parameters:
+                triple_filter (str, optional): Name of a filter (e.g. 'cgif') to apply to triples before saving them, default to 'none'
                 file_name (str, optional): Name of the triple file without a file extension, defaults to 'resources'
         '''
 
@@ -200,24 +217,37 @@ class Beacon:
             status_report['reason'] = 'A list of triples can only be written when the resources were read.'
         else:
 
+            # Generate filter description to use in status updates
+            filter_description = ''
+            if triple_filter == 'cgif':
+                filter_description = 'CGIF-filtered '
+
+            # Optionally filter CGIF triples
+            if triple_filter == 'cgif':
+                # TODO Add CGIF filters here
+                filtered_triples = self.triples
+
             # Initial progress
-            echo_progress('Saving list of resource triples', 0, 100)
+            echo_progress('Saving list of ' + filter_description + 'resource triples', 0, 100)
 
             # Compile file if there are triples
             if len(self.triples):
                 file_path = self.target_folder + '/' + file_name + '.ttl'
-                self.triples.serialize(destination=file_path, format='turtle')
+                if triple_filter == 'cgif':
+                    filtered_triples.serialize(destination=file_path, format='turtle')
+                else:
+                    self.triples.serialize(destination=file_path, format='turtle')
 
                 # Compile success status
                 status_report['success'] = True
-                status_report['reason'] = 'All resource triples listed in a Turtle file.'
+                status_report['reason'] = 'All ' + filter_description + 'resource triples listed in a Turtle file.'
 
             # Report if there are no resources
             else:
-                status_report['reason'] = 'No resource triples to list in a Turtle file.'
+                status_report['reason'] = 'No ' + filter_description + 'resource triples to list in a Turtle file.'
 
             # Final progress
-            echo_progress('Saving list of resource triples', 100, 100)
+            echo_progress('Saving list of ' + filter_description + 'resource triples', 100, 100)
 
         # Provide final status
         self.status.append(status_report)

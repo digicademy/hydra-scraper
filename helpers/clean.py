@@ -29,7 +29,7 @@ def clean_request(arguments:list) -> dict:
 
     # Set up an empty request dictionary
     request = {
-        'download': [], # May contain lists, list_triples, beacon, resources, resource_triples, resource_table
+        'download': [], # May contain lists, list_triples, list_cgif, beacon, resources, resource_triples, resource_cgif, resource_table
         'source_url': '',
         'source_file': '',
         'source_folder': '',
@@ -40,7 +40,10 @@ def clean_request(arguments:list) -> dict:
         'resource_url_replace_with': '',
         'resource_url_add': '',
         'clean_resource_names': [],
-        'table_data': []
+        'table_data': [],
+        'supplement_data_feed': '',
+        'supplement_data_catalog': '',
+        'supplement_data_catalog_publisher': '',
     }
 
     # If no arguments were provided, start interactive mode
@@ -78,13 +81,16 @@ def clean_request(arguments:list) -> dict:
             request = clean_argument(request, arguments, 'resource_url_add', 'str')
             request = clean_argument(request, arguments, 'clean_resource_names', 'list')
             request = clean_argument(request, arguments, 'table_data', 'list')
+            request = clean_argument(request, arguments, 'supplement_data_feed', 'url')
+            request = clean_argument(request, arguments, 'supplement_data_catalog', 'url')
+            request = clean_argument(request, arguments, 'supplement_data_catalog_publisher', 'url')
 
         # Throw error if there are options but '-download' is not one of them
         else:
             raise ValueError('Hydra Scraper called with invalid options.')
 
         # Check requirements for the Hydra class
-        if 'lists' in request['download'] or 'list_triples' in request['download'] or 'beacon' in request['download']:
+        if 'lists' in request['download'] or 'list_triples' in request['download'] or 'list_cgif' in request['download'] or 'beacon' in request['download']:
             if request['source_url'] == None:
                 raise ValueError('Hydra Scraper called without valid source URL.')
 
@@ -94,7 +100,7 @@ def clean_request(arguments:list) -> dict:
                 raise ValueError('Hydra Scraper called without valid source URL or file name.')
 
         # Check requirements for the Beacon class II
-        elif 'resource_triples' in request['download'] or 'resource_table' in request['download']:
+        elif 'resource_triples' in request['download'] or 'resource_cgif' in request['download'] or 'resource_table' in request['download']:
             if request['source_url'] == None and request['source_file'] == None and request['source_folder'] == None:
                 raise ValueError('Hydra Scraper called without valid source URL, file, or folder name.')
             elif request['source_folder'] != None and request['content_type'] == None:

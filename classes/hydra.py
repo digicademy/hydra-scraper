@@ -7,8 +7,7 @@
 
 
 # Import libraries
-from rdflib import Graph
-from rdflib import Namespace
+from rdflib import Graph, Namespace
 from math import ceil
 from time import sleep
 
@@ -34,6 +33,8 @@ class Hydra:
     status = []
     populated = None
     triples = Graph()
+    triples.bind('hydra', HYDRA)
+    triples.bind('schema', SCHEMA)
     resources = []
     target_folder = ''
     entry_point_url = ''
@@ -188,6 +189,8 @@ class Hydra:
             # Add triples to object storage
             try:
                 hydra_triples = Graph()
+                hydra_triples.bind('hydra', HYDRA)
+                hydra_triples.bind('schema', SCHEMA)
                 hydra_triples.parse(data=hydra['content'], format=hydra['file_type'])
             except:
                 status_report['success'] = False
@@ -232,7 +235,7 @@ class Hydra:
             hydra_triples.remove((None, RDF.type, HYDRA.PartialCollectionView))
 
             # Add list triples to object triples
-            self.triples = self.triples + hydra_triples
+            self.triples += hydra_triples
 
             # Delay next retrieval to avoid a server block
             echo_progress('Retrieving API lists', number, self.number_of_lists)
@@ -301,11 +304,12 @@ class Hydra:
         self.status.append(status_report)
 
 
-    def save_triples(self, file_name:str = 'lists'):
+    def save_triples(self, triple_filter:str = 'none', file_name:str = 'lists'):
         '''
         Saves all downloaded triples into a single Turtle file
 
             Parameters:
+                triple_filter (str, optional): Name of a filter (e.g. 'cgif') to apply to triples before saving them, default to 'none'
                 file_name (str, optional): Name of the triple file without a file extension, defaults to 'lists'
         '''
 
@@ -320,24 +324,37 @@ class Hydra:
             status_report['reason'] = 'A list of triples can only be written when the API was read.'
         else:
 
+            # Generate filter description to use in status updates
+            filter_description = ''
+            if triple_filter == 'cgif':
+                filter_description = 'CGIF-filtered '
+
+            # Optionally filter CGIF triples
+            if triple_filter == 'cgif':
+                # TODO Add CGIF filters here
+                filtered_triples = self.triples
+
             # Initial progress
-            echo_progress('Saving list of API triples', 0, 100)
+            echo_progress('Saving list of ' + filter_description + 'API triples', 0, 100)
 
             # Compile file if there are triples
             if len(self.triples):
                 file_path = self.target_folder + '/' + file_name + '.ttl'
-                self.triples.serialize(destination=file_path, format='turtle')
+                if triple_filter == 'cgif':
+                    filtered_triples.serialize(destination=file_path, format='turtle')
+                else:
+                    self.triples.serialize(destination=file_path, format='turtle')
 
                 # Compile success status
                 status_report['success'] = True
-                status_report['reason'] = 'All API triples listed in a Turtle file.'
+                status_report['reason'] = 'All ' + filter_description + 'API triples listed in a Turtle file.'
 
             # Report if there are no resources
             else:
-                status_report['reason'] = 'No API triples to list in a Turtle file.'
+                status_report['reason'] = 'No ' + filter_description + 'API triples to list in a Turtle file.'
 
             # Final progress
-            echo_progress('Saving list of API triples', 100, 100)
+            echo_progress('Saving list of ' + filter_description + 'API triples', 100, 100)
 
         # Provide final status
         self.status.append(status_report)
