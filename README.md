@@ -90,14 +90,16 @@ Get **CGIF data from a Beacon** file:
 python go.py -download 'resource_cgif' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif'
 ```
 
+Get **CGIF data from a Beacon** file that lists LIDO files:
+
+```
+python go.py -download 'resource_cgif' -source_file 'downloads/sample-cgif/beacon.txt' -target_folder 'sample-cgif' -supplement_data_feed 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -supplement_data_catalog 'https://corpusvitrearum.de' -supplement_data_catalog_publisher 'https://nfdi4culture.de/id/E1834'
+```
+
 Get **CGIF data from a file dump**:
 
 ```
 python go.py -download 'resource_cgif' -source_folder 'downloads/sample-cgif' -content_type 'application/ld+json' -target_folder 'sample-cgif'
-```
-
-```
-python go.py -download 'resource_cgif' -source_file 'downloads/cvma-lidotocgif/shortbeacon.txt' -target_folder 'cvma-lidotocgif' -supplement_data_feed 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -supplement_data_catalog 'https://corpusvitrearum.de' -supplement_data_catalog_publisher 'https://nfdi4culture.de/id/E1834'
 ```
 
 ### Corpus Vitrearum Germany
