@@ -53,7 +53,6 @@ def convert_lido_to_cgif(lido:str) -> Graph:
             language = None
             language_element = schema_name
             while language == None and language_element != None:
-                print(str(language_element))
                 if '{http://www.w3.org/XML/1998/namespace}lang' in language_element.attrib:
                     language = language_element.attrib['{http://www.w3.org/XML/1998/namespace}lang']
                 else:
