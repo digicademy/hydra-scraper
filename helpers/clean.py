@@ -40,7 +40,10 @@ def clean_request(arguments:list) -> dict:
         'resource_url_replace_with': '',
         'resource_url_add': '',
         'clean_resource_names': [],
-        'table_data': []
+        'table_data': [],
+        'supplement_data_feed': '',
+        'supplement_data_catalog': '',
+        'supplement_data_catalog_publisher': '',
     }
 
     # If no arguments were provided, start interactive mode
@@ -78,6 +81,9 @@ def clean_request(arguments:list) -> dict:
             request = clean_argument(request, arguments, 'resource_url_add', 'str')
             request = clean_argument(request, arguments, 'clean_resource_names', 'list')
             request = clean_argument(request, arguments, 'table_data', 'list')
+            request = clean_argument(request, arguments, 'supplement_data_feed', 'url')
+            request = clean_argument(request, arguments, 'supplement_data_catalog', 'url')
+            request = clean_argument(request, arguments, 'supplement_data_catalog_publisher', 'url')
 
         # Throw error if there are options but '-download' is not one of them
         else:

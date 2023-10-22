@@ -59,6 +59,9 @@ run the script without interaction.
 - `-resource_url_add '<string>'`: add this to the end of each resource URL (default: none)
 - `-clean_resource_names '<string list>'`: build file names from resource URLs (default: enumeration)
 - `-table_data '<string list>'`: comma-separated property URIs to compile in a table (default: all)
+- `-supplement_data_feed '<url>'`: URI of a data feed to bind LIDO files to (default: none)
+- `-supplement_data_catalog '<url>'`: URI of a data catalog the data feed belongs to (default: none)
+- `-supplement_data_catalog_publisher '<url>'`: URI of the publisher of the catalog (default: none)
 
 ## Examples
 
@@ -91,6 +94,10 @@ Get **CGIF data from a file dump**:
 
 ```
 python go.py -download 'resource_cgif' -source_folder 'downloads/sample-cgif' -content_type 'application/ld+json' -target_folder 'sample-cgif'
+```
+
+```
+python go.py -download 'resource_cgif' -source_file 'downloads/cvma-lidotocgif/shortbeacon.txt' -target_folder 'cvma-lidotocgif' -supplement_data_feed 'https://corpusvitrearum.de/cvma-digital/bildarchiv.html' -supplement_data_catalog 'https://corpusvitrearum.de' -supplement_data_catalog_publisher 'https://nfdi4culture.de/id/E1834'
 ```
 
 ### Corpus Vitrearum Germany

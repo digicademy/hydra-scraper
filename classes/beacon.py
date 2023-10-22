@@ -76,7 +76,7 @@ class Beacon:
             return 'Processed list of individual resources'
 
 
-    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = '', local_folder:str = ''):
+    def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = '', local_folder:str = '', supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = ''):
         '''
         Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
 
@@ -85,6 +85,9 @@ class Beacon:
                 clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
                 beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
                 local_folder (str, optional): Path to a local folder with an existing file dump to process, defaults to an empty string
+                supplement_data_feed (str, optional): URI of a data feed to bind LIDO files to (defaults to none)
+                supplement_data_catalog (str, optional): URI of a data catalog that the data feed belongs to (defaults to none)
+                supplement_data_catalog_publisher (str, optional): URI of the publisher of the data catalog (defaults to none)
         '''
 
         # Notify object that it is being populated
@@ -160,7 +163,7 @@ class Beacon:
 
                 # Add triples to object storage from LIDO sources
                 elif resource['file_type'] == 'lido':
-                    lido_cgif = convert_lido_to_cgif(resource['content'])
+                    lido_cgif = convert_lido_to_cgif(resource['content'], supplement_data_feed, supplement_data_catalog, supplement_data_catalog_publisher)
                     if lido_cgif != None:
                         self.triples += lido_cgif
                     else:

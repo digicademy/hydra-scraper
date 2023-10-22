@@ -98,5 +98,11 @@ This scraper is a command-line tool. Use "python go.py" to run the script in int
 
 -table_data '<string list>': comma-separated property URIs to compile in a table (default: all)
 
+-supplement_data_feed '<url>': URI of a data feed to bind LIDO files to (default: none)
+
+-supplement_data_catalog '<url>': URI of a data catalog the data feed belongs to (default: none)
+
+-supplement_data_catalog_publisher '<url>': URI of the publisher of the catalog (default: none)
+
 '''
     )
