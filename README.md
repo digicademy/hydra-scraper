@@ -164,6 +164,7 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 
 ## Roadmap
 
+- Find way to add remaining LIDO triples
 - Enable checking `schema:dateModified` when collating paged results
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for the RADAR version of DataCite/DataVerse to CGIF

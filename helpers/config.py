@@ -21,5 +21,13 @@ config = {
     'max_paginated_lists': 500,
     'non_rdf_formats': [
         'lido'
+    ],
+    'known_defined_term_sets': [
+        'http://sws.geonames.org/',
+        'https://iconclass.org/',
+        'http://vocab.getty.edu/page/aat/',
+        'http://d-nb.info/gnd/',
+        'http://www.wikidata.org/wiki/',
+        'https://viaf.org/viaf/'
     ]
 }
