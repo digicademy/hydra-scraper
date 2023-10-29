@@ -177,6 +177,6 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 - Implement a JSON return (including dateModified, number of resources, errors)
 - Add conversion routines, i.e. for the RADAR version of DataCite/DataVerse to CGIF
 - Add filter for CGIF triples which aligns those produced by lists and by resources and could host further quality assurance
-- Allow usage of OAI-PMH APIs to produce Beacon lists
+- Consider allowing the usage of OAI-PMH APIs to produce Beacon lists
 - Re-add the interactive mode
 - Properly package the script and use the system's download folder, and possibly enable pushing to a Git repo?
