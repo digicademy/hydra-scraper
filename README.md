@@ -173,10 +173,18 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 
 ## Roadmap
 
-- Enable checking `schema:dateModified` when collating paged results
-- Implement a JSON return (including dateModified, number of resources, errors)
-- Add conversion routines, i.e. for the RADAR version of DataCite/DataVerse to CGIF
-- Add filter for CGIF triples which aligns those produced by lists and by resources and could host further quality assurance
-- Consider allowing the usage of OAI-PMH APIs to produce Beacon lists
-- Re-add the interactive mode
-- Properly package the script and use the system's download folder, and possibly enable pushing to a Git repo?
+- Refactor internal logic to the following classes:
+  - HydraRequest
+    - HydraRequestCommand
+    - HydraRequestInteractive
+  - HydraStatus
+    - HydraStatusCommand
+    - HydraStatusInteractive
+  - HydraScrape
+    - HydraScrapeApi
+    - HydraScrapeResources
+  - HydraConvert
+    - HydraConvertLido
+- Shift CGIF routine to produce target data layout when this part of the ontology is finalised
+- Consider including more conversion routines, e.g. RADAR DataCite/DataVerse and OAI-PMH
+- Properly package the script and use the system's download folder by default?
