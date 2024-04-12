@@ -174,17 +174,11 @@ Use GitHub to make the release. Use semantic versioning once the scraper has rea
 ## Roadmap
 
 - Refactor internal logic to the following classes:
-  - HydraRequest
-    - HydraRequestCommand
-    - HydraRequestInteractive
-  - HydraStatus
-    - HydraStatusCommand
-    - HydraStatusInteractive
-  - HydraScrape
-    - HydraScrapeApi
-    - HydraScrapeResources
-  - HydraConvert
-    - HydraConvertLido
-- Shift CGIF routine to produce target data layout when this part of the ontology is finalised
-- Consider including more conversion routines, e.g. RADAR DataCite/DataVerse and OAI-PMH
-- Properly package the script and use the system's download folder by default?
+  - HydraCommand
+  - HydraOutput
+  - HydraReport
+  - HydraMunch
+  - HydraFetch
+- Re-implement interactive mode
+- Possibly switch LIDO support to epoz/lidolator after contributing features
+- Possibly use the system's download folder to actually distribute the package

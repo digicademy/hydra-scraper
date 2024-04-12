@@ -19,3 +19,14 @@
 
 - Provide infrastructure for CGIF filters
 - Add ability to read triples from LIDO files
+
+## 0.9.0
+
+- Refactor code to use a single main script and five classes
+  - HydraCommand
+  - HydraOutput
+  - HydraReport
+  - HydraMunch
+  - HydraFetch
+- Switch custom argument processing and progress reporting to Python libraries
+- Add routine to process CGIF to nfdicore and cto ontologies
