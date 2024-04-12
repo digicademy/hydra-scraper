@@ -166,14 +166,14 @@ If you change the code, please remember to document each function and walk other
 
 Before you make a new release, make sure the following files are up to date:
 
-- CHANGELOG.md: version number and changes
-- CITATION.cff: version number, authors, and release date
-- setup.py: version number and authors
+- `CHANGELOG.md`: version number and changes
+- `CITATION.cff`: version number, authors, and release date
+- `setup.py`: version number and authors
 
 Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
 - Re-implement interactive mode
-- Possibly switch LIDO support to epoz/lidolator after contributing features
+- Possibly switch LIDO support to `epoz/lidolator` after contributing features
 - Possibly use the system's download folder to actually distribute the package
