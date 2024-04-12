@@ -11,19 +11,19 @@ from sys import argv
 
 # Import script modules
 from classes.hydracommand import *
+from classes.hydrafetch import *
+from classes.hydramunch import *
 from classes.hydraoutput import *
 from classes.hydrareport import *
-from classes.hydramunch import *
-from classes.hydrafetch import *
 
 
 # Collect configuration info
 command = HydraCommand(argv[1:])
 
 # Set up helper objects
-output = HydraOutput(command)
 report = HydraReport(command)
 munch = HydraMunch(command)
+output = HydraOutput(command)
 
 # Run main fetch job
 fetch = HydraFetch(command, output, report, munch)

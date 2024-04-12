@@ -154,11 +154,11 @@ python go.py -download 'resource_table' -source_folder 'downloads/cvma-jsonld/re
 
 ## Contributing
 
-This package has three main areas:
+The file `go.py` provides the basic logic of a scraping run. It instantiates three types of objects:
 
-1. The file `go.py` provides the main logic of a scraping run.
-2. It relies on several `helpers` that provide basic functions such as cleaning up request arguments, saving files, printing status updates, or providing configuration options throughout the package.
-3. The two classes `Hydra` and `Beacon` do the heavy lifting of paging through an API entry point or a (Beacon) list of individual resources, respectively. In addition to a standard initialisation, both classes have a `populate()` function that retrieves and saves data. Additional functions may then carry out further tasks such as saving a Beacon list or saving collected triples.
+1. `HydraCommand` collects and cleans structured configuration info.
+2. This info is passed to three helper objects: `HydraReport` provides status updates throughout or at the end of a run, `HydraOutput` handles all serialisations, and `HydraMunch` transforms ingested data to other ontologies.
+3. When all four of these are set up, `HydraFetch` does the heavy lifting of retrieving information from an API entry point or going through a Beacon list of individual resources, respectively.
 
 If you change the code, please remember to document each function and walk other users through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
 
@@ -168,17 +168,12 @@ Before you make a new release, make sure the following files are up to date:
 
 - CHANGELOG.md: version number and changes
 - CITATION.cff: version number, authors, and release date
+- setup.py: version number and authors
 
-Use GitHub to make the release. Use semantic versioning once the scraper has reached 1.0.0.
+Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Refactor internal logic to the following classes:
-  - HydraCommand
-  - HydraOutput
-  - HydraReport
-  - HydraMunch
-  - HydraFetch
 - Re-implement interactive mode
 - Possibly switch LIDO support to epoz/lidolator after contributing features
 - Possibly use the system's download folder to actually distribute the package
