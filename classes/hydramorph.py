@@ -1,4 +1,4 @@
-# Class to provide a structured input command
+# Class to morph data and digest it to a different structure
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -11,8 +11,8 @@
 # Import script modules
 
 
-# Provide a structured input command
-class HydraMunch:
+# Morph data and digest it to a different structure
+class HydraMorph:
 
     something = None
 
@@ -37,7 +37,7 @@ class HydraMunch:
         # Put together a string
         return self.something
 
-
+# type: cgif-to-nfdi, lido-to-nfdi
 
 # # Import libraries
 # from datetime import date
@@ -125,7 +125,7 @@ class HydraMunch:
 #             for schema_keyword in schema_keywords:
 #                 if schema_keyword != None:
 #                     cgif_triples.add((resource, SCHEMA.keywords, URIRef(schema_keyword)))
-#                     for known_defined_term_set in config['known_defined_term_sets']:
+#                     for known_defined_term_set in command.known_defined_term_sets:
 #                         if known_defined_term_set in schema_keyword:
 #                             cgif_triples.add((URIRef(schema_keyword), SCHEMA.inDefinedTermSet, URIRef(known_defined_term_set)))
 #                             cgif_triples.add((URIRef(known_defined_term_set), RDF.type, SCHEMA.DefinedTermSet))

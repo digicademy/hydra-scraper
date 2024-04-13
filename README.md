@@ -157,8 +157,8 @@ python go.py -download 'resource_table' -source_folder 'downloads/cvma-jsonld/re
 The file `go.py` provides the basic logic of a scraping run. It instantiates three types of objects:
 
 1. `HydraCommand` collects and cleans structured configuration info.
-2. This info is passed to three helper objects: `HydraReport` provides status updates throughout or at the end of a run, `HydraOutput` handles all serialisations, and `HydraMunch` transforms ingested data to other ontologies.
-3. When all four of these are set up, `HydraFetch` does the heavy lifting of retrieving information from an API entry point or going through a Beacon list of individual resources, respectively.
+2. This info is passed to three helper objects: `HydraReport` provides status updates throughout or at the end of a run, `HydraOutput` handles all serialisations, and `HydraMorph` transforms ingested data to other ontologies.
+3. When all four of these are set up, `HydraRetrieve` does the heavy lifting of fetching information from an API entry point or working through URLs provided in a Beacon list of individual resources, respectively.
 
 If you change the code, please remember to document each function and walk other users through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
 
@@ -174,6 +174,7 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
+- Check whether to use arparse and an allowed_requests variable to simplify help messages and requirement checks
 - Re-implement interactive mode
 - Possibly switch LIDO support to `epoz/lidolator` after contributing features
 - Possibly use the system's download folder to actually distribute the package

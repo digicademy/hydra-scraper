@@ -1,4 +1,4 @@
-# Class to provide a structured input command
+# Class to provide data in various output formats
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -7,11 +7,12 @@
 
 
 # Import libraries
+# from os import linesep
 
 # Import script modules
 
 
-# Provide a structured input command
+# Provide data in various output formats
 class HydraOutput:
 
     something = None
@@ -28,6 +29,9 @@ class HydraOutput:
         # Assign variables
         self.something = something
 
+        # Create job folder
+        self.create_folder(self.target_folder)
+
 
     def __str__(self):
         '''
@@ -37,9 +41,9 @@ class HydraOutput:
         # Put together a string
         return self.something
 
+# types: files, beacon, rdf, csv
 
 # # Import libraries
-# from os import makedirs
 # from glob import glob
 # from re import search
 
@@ -171,16 +175,41 @@ class HydraOutput:
 #     return entries
 
 
-# def create_folder(folder_name:str):
+# def clean_lines(content:str) -> str:
 #     '''
-#     Creates a folder with a given name in the main script's directory
+#     Takes a string, removes empty lines, removes comments, and returns the string
 
 #         Parameters:
-#             folder_name (str): Name of the folder to create
+#             content (str): input string to clean
+
+#         Returns:
+#             str: cleaned output string
 #     '''
 
-#     # Try to create folders
-#     try:
-#         makedirs(folder_name, exist_ok=True)
-#     except OSError as error:
-#         pass
+#     # Split up by lines and remove empty ones as well as comments
+#     content_lines = [
+#         line for line in content.splitlines()
+#         if line.strip() and line[0] != '#'
+#     ]
+
+#     # Return re-assembled string
+#     return linesep.join(content_lines)
+
+# def clean_string_for_csv(content:str) -> str:
+#     '''
+#     Takes a string, removes quotation marks, removes newlines, and returns the string
+
+#         Parameters:
+#             content (str): input string to clean
+
+#         Returns:
+#             str: cleaned output string
+#     '''
+
+#     # Remove offending characters
+#     content = content.replace('"', '\'')
+#     content = content.replace('\n', '')
+#     content = content.replace('\r', '')
+
+#     # Return clean string
+#     return content

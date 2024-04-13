@@ -1,4 +1,4 @@
-# Class to provide a structured input command
+# Class to retrieve data via beacon files or APIs
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -11,8 +11,8 @@
 # Import script modules
 
 
-# Provide a structured input command
-class HydraFetch:
+# Retrieve data via beacon files or APIs
+class HydraRetrieve:
 
     something = None
 
@@ -37,68 +37,70 @@ class HydraFetch:
         # Put together a string
         return self.something
 
+# types: api, resources
+
 # # Set up Hydra API routine if required
-# if 'lists' in request['download'] or 'beacon' in request['download'] or 'list_triples' in request['download'] or 'list_cgif' in request['download']:
-#     hydra = Hydra(request['target_folder'], request['source_url'], request['content_type'])
+# if 'lists' in command.request or 'beacon' in command.request or 'list_triples' in command.request or 'list_cgif' in command.request:
+#     hydra = Hydra(command.target_folder_name, command.source_url, command.content_type)
 
 #     # Populate the object, and download each API list if requested
-#     if 'lists' in request['download']:
+#     if 'lists' in command.request:
 #         save_lists = True
 #     else:
 #         save_lists = False
-#     hydra.populate(save_lists, request['resource_url_filter'], request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
+#     hydra.populate(save_lists, command.resource_url_filter, command.resource_url_replace, command.resource_url_replace_with, command.resource_url_add)
 
 #     # Compile a beacon list if requested
-#     if 'beacon' in request['download']:
+#     if 'beacon' in command.request:
 #         hydra.save_beacon()
 
 #     # Compile list triples if requested
-#     if 'list_triples' in request['download']:
+#     if 'list_triples' in command.request:
 #         hydra.save_triples()
 
 #     # Compile list CGIF triples if requested
-#     if 'list_cgif' in request['download']:
+#     if 'list_cgif' in command.request:
 #         hydra.save_triples('cgif', 'lists_cgif')
 
 #     # Add status message
 #     status.extend(hydra.status)
 
 # # Mini Hydra routine if Beacon logic is requested but no beacon file is given
-# elif request['source_file'] == '':
-#     hydra = Hydra(request['target_folder'], request['source_url'], request['content_type'])
-#     hydra.populate(False, request['resource_url_filter'], request['resource_url_replace'], request['resource_url_replace_with'], request['resource_url_add'])
+# elif command.source_file == '':
+#     hydra = Hydra(command.target_folder_name, command.source_url, command.content_type)
+#     hydra.populate(False, command.resource_url_filter, command.resource_url_replace, command.resource_url_replace_with, command.resource_url_add)
 
 # # Mark absence of hydra object if beacon file is present
 # else:
 #     hydra = False
 
 # # Set up beacon file routine if required
-# if 'resources' in request['download'] or 'resource_triples' in request['download'] or 'resource_cgif' in request['download'] or 'resource_table' in request['download']:
+# if 'resources' in command.request or 'resource_triples' in command.request or 'resource_cgif' in command.request or 'resource_table' in command.request:
 
 #     # Use previous resource list if present
 #     if hydra == False:
-#         beacon = Beacon(request['target_folder'], request['content_type'])
+#         beacon = Beacon(command.target_folder_name, command.content_type)
 #     else:
-#         beacon = Beacon(request['target_folder'], request['content_type'], hydra.resources)
+#         beacon = Beacon(command.target_folder_name, command.content_type, hydra.resources)
 
 #     # Populate the object, and download each resource if requested
-#     if 'resources' in request['download']:
+#     if 'resources' in command.request:
 #         save_resources = True
 #     else:
 #         save_resources = False
-#     beacon.populate(save_resources, request['clean_resource_names'], request['source_file'], request['source_folder'], request['supplement_data_feed'], request['supplement_data_catalog'], request['supplement_data_catalog_publisher'])
+#     beacon.populate(save_resources, command.clean_resource_names, command.source_file, command.source_folder, command.supplement_data_feed, command.supplement_data_catalog, command.supplement_data_catalog_publisher)
 
 #     # Compile resource triples if requested
-#     if 'resource_triples' in request['download']:
+#     if 'resource_triples' in command.request:
 #         beacon.save_triples()
 
 #     # Compile resource CGIF triples if requested
-#     if 'resource_cgif' in request['download']:
+#     if 'resource_cgif' in command.request:
 #         beacon.save_triples('cgif', 'resources_cgif')
 
 #     # Compile resource table if requested
-#     if 'resource_table' in request['download']:
-#         beacon.save_table(request['table_data'])
+#     if 'resource_table' in command.request:
+#         beacon.save_table(command.table_data)
 
 #     # Add status message
 #     status.extend(beacon.status)
@@ -294,7 +296,6 @@ class HydraFetch:
 # # Import script modules
 # from helpers.config import *
 # from helpers.download import download_file
-# from helpers.fileio import create_folder
 # from helpers.fileio import save_file
 # from helpers.fileio import save_list
 # from helpers.status import echo_progress
@@ -338,7 +339,7 @@ class HydraFetch:
 #         '''
 
 #         # Assign variables
-#         self.target_folder = config['download_base'] + '/' + target_folder
+#         self.target_folder = is actually command.target_folder
 #         self.entry_point_url = entry_point_url
 #         self.content_type = content_type
 #         self.current_list_url = entry_point_url
@@ -455,7 +456,7 @@ class HydraFetch:
 #                 # Optionally save file
 #                 if save_original_files:
 #                     file_folder = self.target_folder + '/lists'
-#                     create_folder(file_folder)
+#                     common.create_folder(file_folder)
 #                     file_path = file_folder + '/' + str(number) + '.' + hydra['file_extension']
 #                     save_file(hydra['content'], file_path)
 #                     status_report['reason'] = 'All lists saved to download folder.'
@@ -519,14 +520,14 @@ class HydraFetch:
 
 #             # Delay next retrieval to avoid a server block
 #             echo_progress('Retrieving API lists', number, self.number_of_lists)
-#             sleep(config['download_delay'])
+#             sleep(command.retrieval_delay)
 
 #             # Get out of loop if there is no next page
 #             if self.next_list_url == '':
 #                 break
 
 #             # Throw error if maximum number of lists is reached as a safety net
-#             if number > config['max_paginated_lists']:
+#             if number > command.max_number_of_paginated_lists:
 #                 status_report['success'] = False
 #                 status_report['reason'] = 'Maximum number of allowed lists was reached.'
 #                 break
@@ -651,7 +652,6 @@ class HydraFetch:
 # from helpers.convert import convert_triples_to_table
 # from helpers.download import download_file
 # from helpers.download import retrieve_local_file
-# from helpers.fileio import create_folder
 # from helpers.fileio import read_list
 # from helpers.fileio import read_folder
 # from helpers.fileio import save_file
@@ -692,7 +692,7 @@ class HydraFetch:
 #         '''
 
 #         # Assign variables
-#         self.target_folder = config['download_base'] + '/' + target_folder
+#         self.target_folder = is actually command.target_folder
 #         self.content_type = content_type
 #         self.resources = resources
 
@@ -766,7 +766,7 @@ class HydraFetch:
 #                     # Optionally save file
 #                     if save_original_files:
 #                         file_folder = self.target_folder + '/resources'
-#                         create_folder(file_folder)
+#                         common.create_folder(file_folder)
 
 #                         # Clean up file name if required
 #                         if clean_resource_urls == []:
@@ -788,7 +788,7 @@ class HydraFetch:
 #                     continue
 
 #                 # Add triples to object storage from RDF sources
-#                 if resource['file_type'] not in config['non_rdf_formats']:
+#                 if resource['file_type'] not in command.allowed_non_rdf_formats:
 #                     try:
 #                         self.triples.parse(data=resource['content'], format=resource['file_type'])
 #                     except:
@@ -808,7 +808,7 @@ class HydraFetch:
 #                 # Delay next retrieval to avoid a server block
 #                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
 #                 if self.resources_from_folder == False:
-#                     sleep(config['download_delay'])
+#                     sleep(command.retrieval_delay)
 
 #             # Report any failed state
 #             if self.missing_resources >= self.number_of_resources:

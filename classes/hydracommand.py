@@ -7,26 +7,72 @@
 
 
 # Import libraries
-
-# Import script modules
+from datetime import datetime
+from os import makedirs
+from validators import url
 
 
 # Provide a structured input command
 class HydraCommand:
 
-    something = None
+
+    # Fixed configuration
+    retrieval_delay = 0.02
+    target_folder_base = 'downloads'
+    max_number_of_paginated_lists = 500
+    allowed_non_rdf_formats = [
+        'lido'
+    ]
+    known_defined_term_sets = [
+        'http://sws.geonames.org/',
+        'https://iconclass.org/',
+        'http://vocab.getty.edu/page/aat/',
+        'https://d-nb.info/gnd/',
+        'http://www.wikidata.org/entity/',
+        'https://viaf.org/viaf/',
+        'https://rism.online/',
+        'https://database.factgrid.de/wiki/Item:'
+    ]
 
 
-    def __init__(self, something:str = ''):
+    # Variables
+    request = []
+    source_url = ''
+    source_file = ''
+    source_folder = ''
+    content_type = ''
+    target_folder_name = ''
+    target_folder = ''
+    resource_url_filter = ''
+    resource_url_replace = ''
+    resource_url_replace_with = ''
+    resource_url_add = ''
+    clean_resource_names = []
+    table_data = []
+    supplement_data_feed = ''
+    supplement_data_catalog = ''
+    supplement_data_catalog_publisher = ''
+
+
+    def __init__(self, command_line_arguments:list = []):
         '''
         Add required data to instances of this object
 
             Parameters:
-                something (str): ???
+                command_line_arguments (list): List of all command-line arguments
         '''
 
-        # Assign variables
-        self.something = something
+        # Generate generic target folder
+        self.target_folder_name = self._generate_timestamp()
+
+        # Ask for input or use command-line arguments
+        if len(command_line_arguments) == 1:
+            self._interactive_commands()
+        else:
+            self._command_line(command_line_arguments)
+
+        # Generate job folder
+        self.target_folder = self.target_folder_base + '/' + self.target_folder_name
 
 
     def __str__(self):
@@ -34,259 +80,225 @@ class HydraCommand:
         String representation of instances of this object
         '''
 
-        # Put together a string
-        return self.something
-
-# # Get request data and create download folder for this job
-# request = clean_request(argv[1:])
-# job_folder = config['download_base'] + '/' + request['target_folder']
-# create_folder(job_folder)
-
-# # Set up status messages
-# status = []
+        # Put together a useful string
+        if self.request != []:
+            return 'Command object to prepare the following requests: ' + ', '.join(self.request)
+        else:
+            return 'Empty command object'
 
 
+    def _interactive_commands(self):
+        '''
+        Ask for commands interactively to populate object instance
+        '''
 
-# Configuration dictionary to use in the script
-# config = {
-#     'download_delay': 0.02,
-#     'download_base': 'downloads',
-#     'max_paginated_lists': 500,
-#     'non_rdf_formats': [
-#         'lido'
-#     ],
-#     'known_defined_term_sets': [
-#         'http://sws.geonames.org/',
-#         'https://iconclass.org/',
-#         'http://vocab.getty.edu/page/aat/',
-#         'http://d-nb.info/gnd/',
-#         'http://www.wikidata.org/wiki/',
-#         'https://viaf.org/viaf/'
-#     ]
-# }
+        # Show placeholder
+        print('Interactive mode has not been implemented yet.')
+        exit
 
 
+    def _command_line(self, command_line_arguments:list):
+        '''
+        Use command-line arguments to populate object instance
 
-# # Import libraries
-# from datetime import datetime
-# from os import linesep
-# from validators import url
+            Parameters:
+                command_line_arguments (list): List of all command-line arguments
+        '''
 
-# # Import script modules
-# from helpers.status import echo_help
-# from helpers.status import echo_note
+        # Remove script call
+        command_line_arguments = command_line_arguments[1:]
 
+        # Catch help requests
+        if command_line_arguments[0] in ['help', '-help', '--help', 'h', '-h', '--h']:
+            self.help_message()
 
-# def clean_request(arguments:list) -> dict:
-#     '''
-#     Produces a clean request dictionary from interactive mode or command line arguments
+        # Check requests and modify the request dictionary accordingly
+        elif '-download' in command_line_arguments:
 
-#         Parameters:
-#             arguments (list): List of command line arguments handed to the script
-        
-#         Returns:
-#             dict: Clean request dictionary
-#     '''
+            # Go through each key/value pair
+            self.request = self._clean_argument_value(command_line_arguments, 'download', 'list')
+            self.source_url = self._clean_argument_value(command_line_arguments, 'source_url', 'url')
+            self.source_file = self._clean_argument_value(command_line_arguments, 'source_file', 'str')
+            self.source_folder = self._clean_argument_value(command_line_arguments, 'source_folder', 'str')
+            self.content_type = self._clean_argument_value(command_line_arguments, 'content_type', 'str')
+            self.target_folder_name = self._clean_argument_value(command_line_arguments, 'target_folder', 'str')
+            self.resource_url_filter = self._clean_argument_value(command_line_arguments, 'resource_url_filter', 'str')
+            self.resource_url_replace = self._clean_argument_value(command_line_arguments, 'resource_url_replace', 'str')
+            self.resource_url_replace_with = self._clean_argument_value(command_line_arguments, 'resource_url_replace_with', 'str')
+            self.resource_url_add = self._clean_argument_value(command_line_arguments, 'resource_url_add', 'str')
+            self.clean_resource_names = self._clean_argument_value(command_line_arguments, 'clean_resource_names', 'list')
+            self.table_data = self._clean_argument_value(command_line_arguments, 'table_data', 'list')
+            self.supplement_data_feed = self._clean_argument_value(command_line_arguments, 'supplement_data_feed', 'url')
+            self.supplement_data_catalog = self._clean_argument_value(command_line_arguments, 'supplement_data_catalog', 'url')
+            self.supplement_data_catalog_publisher = self._clean_argument_value(command_line_arguments, 'supplement_data_catalog_publisher', 'url')
 
-#     # Set up an empty request dictionary
-#     request = {
-#         'download': [], # May contain lists, list_triples, list_cgif, beacon, resources, resource_triples, resource_cgif, resource_table
-#         'source_url': '',
-#         'source_file': '',
-#         'source_folder': '',
-#         'content_type': '',
-#         'taget_folder': current_timestamp(),
-#         'resource_url_filter': '',
-#         'resource_url_replace': '',
-#         'resource_url_replace_with': '',
-#         'resource_url_add': '',
-#         'clean_resource_names': [],
-#         'table_data': [],
-#         'supplement_data_feed': '',
-#         'supplement_data_catalog': '',
-#         'supplement_data_catalog_publisher': '',
-#     }
+        # Throw error if there is no '-download' argument
+        else:
+            raise ValueError('Hydra Scraper called with invalid arguments.')
 
-#     # If no arguments were provided, start interactive mode
-#     if arguments == []:
-#         echo_note('\nInteractive mode has not been implemented yet.\n')
+        # Check requirements for APIs
+        if 'lists' in self.request or 'list_triples' in self.request or 'list_cgif' in self.request or 'beacon' in self.request:
+            if self.source_url == None:
+                raise ValueError('Hydra Scraper called without valid source URL.')
 
-#     # If arguments were provided, enter non-interactive mode
-#     else:
+        # Check requirements for a Beacon list, part 1
+        elif 'resources' in self.request:
+            if self.source_url == None and self.source_file == None:
+                raise ValueError('Hydra Scraper called without valid source URL or file name.')
 
-#         # Help request as a special case
-#         if arguments[0] in [
-#             'help',
-#             '-help',
-#             '--help',
-#             'h',
-#             '-h',
-#             '--h'
-#         ]:
-#             echo_help()
+        # Check requirements for a Beacon list, part 2
+        elif 'resource_triples' in self.request or 'resource_cgif' in self.request or 'resource_table' in self.request:
+            if self.source_url == None and self.source_file == None and self.source_folder == None:
+                raise ValueError('Hydra Scraper called without valid source URL, file, or folder name.')
+            elif self.source_folder != None and self.content_type == None:
+                raise ValueError('Hydra Scraper called with a folder name but without a content type.')
 
-#         # Check requests and modify the request dictionary accordingly
-#         elif '-download' in arguments:
-#             echo_note('')
-
-#             # Go through each key/value pair
-#             request = clean_argument(request, arguments, 'download', 'list')
-#             request = clean_argument(request, arguments, 'source_url', 'url')
-#             request = clean_argument(request, arguments, 'source_file', 'str')
-#             request = clean_argument(request, arguments, 'source_folder', 'str')
-#             request = clean_argument(request, arguments, 'content_type', 'str')
-#             request = clean_argument(request, arguments, 'target_folder', 'str')
-#             request = clean_argument(request, arguments, 'resource_url_filter', 'str')
-#             request = clean_argument(request, arguments, 'resource_url_replace', 'str')
-#             request = clean_argument(request, arguments, 'resource_url_replace_with', 'str')
-#             request = clean_argument(request, arguments, 'resource_url_add', 'str')
-#             request = clean_argument(request, arguments, 'clean_resource_names', 'list')
-#             request = clean_argument(request, arguments, 'table_data', 'list')
-#             request = clean_argument(request, arguments, 'supplement_data_feed', 'url')
-#             request = clean_argument(request, arguments, 'supplement_data_catalog', 'url')
-#             request = clean_argument(request, arguments, 'supplement_data_catalog_publisher', 'url')
-
-#         # Throw error if there are options but '-download' is not one of them
-#         else:
-#             raise ValueError('Hydra Scraper called with invalid options.')
-
-#         # Check requirements for the Hydra class
-#         if 'lists' in request['download'] or 'list_triples' in request['download'] or 'list_cgif' in request['download'] or 'beacon' in request['download']:
-#             if request['source_url'] == None:
-#                 raise ValueError('Hydra Scraper called without valid source URL.')
-
-#         # Check requirements for the Beacon class I
-#         elif 'resources' in request['download']:
-#             if request['source_url'] == None and request['source_file'] == None:
-#                 raise ValueError('Hydra Scraper called without valid source URL or file name.')
-
-#         # Check requirements for the Beacon class II
-#         elif 'resource_triples' in request['download'] or 'resource_cgif' in request['download'] or 'resource_table' in request['download']:
-#             if request['source_url'] == None and request['source_file'] == None and request['source_folder'] == None:
-#                 raise ValueError('Hydra Scraper called without valid source URL, file, or folder name.')
-#             elif request['source_folder'] != None and request['content_type'] == None:
-#                 raise ValueError('Hydra Scraper called with a folder name but without a content type.')
-
-#         # No valid download requests
-#         else:
-#             raise ValueError('Hydra Scraper called without valid download requests.')
-
-#     # Return the request dictionary
-#     return request
+        # No valid requests
+        else:
+            raise ValueError('Hydra Scraper called without valid download requests.')
 
 
-# def clean_argument(request:dict, arguments:list, key:str, evaluation:str = None) -> dict:
-#     '''
-#     Checks the value of a command-line argument, validates it, and adds it to the request dictionary
+    def _clean_argument_value(command_line_arguments:list, key:str, evaluation:str = None) -> str|list:
+        '''
+        Checks, validates, and returns the value of a command-line argument
 
-#         Parameters:
-#             request (dict): old request dictionary
-#             arguments (list): command line arguments
-#             key (str): key to find the right value
-#             evaluation (str): type of evaluation to run ('url', 'str', 'list')
+            Parameters:
+                command_line_arguments (list): command line arguments
+                key (str): key to find the right value
+                evaluation (str, optional): type of evaluation to run ('url', 'str', 'list')
 
-#         Returns:
-#             dict: revised request dictionary
-#     '''
+            Returns:
+                str|list: clean value
+        '''
 
-#     # Check if argument key is used
-#     if '-' + key in arguments:
+        # Check if argument key is used
+        if '-' + key in command_line_arguments:
 
-#         # Retrieve argument value
-#         value_index = arguments.index('-' + key) + 1
-#         if len(arguments) >= value_index:
-#             value = arguments[value_index]
+            # Retrieve argument value
+            value_index = command_line_arguments.index('-' + key) + 1
+            if len(command_line_arguments) >= value_index:
+                value = command_line_arguments[value_index]
 
-#             # Perform a string evaluation
-#             if evaluation == 'str':
-#                 if isinstance(value, str):
-#                     request[key] = value
-#                 else:
-#                     raise ValueError('The command-line argument -' + key + ' uses a malformed string.')
+                # Perform a string evaluation
+                if evaluation == 'str':
+                    if not isinstance(value, str):
+                        raise ValueError('The command-line argument -' + key + ' uses a malformed string.')
 
-#             # Perform a comma-separated list evaluation
-#             elif evaluation == 'list':
-#                 if isinstance(value, str):
-#                     if ', ' in value:
-#                         request[key] = value.split(', ')
-#                     elif ',' in value:
-#                         request[key] = value.split(',')
-#                     else:
-#                         request[key] = [ value ]
-#                 else:
-#                     raise ValueError('The command-line argument -' + key + ' uses a malformed comma-separated list.')
+                # Perform a comma-separated list evaluation
+                elif evaluation == 'list':
+                    if isinstance(value, str):
+                        if ', ' in value:
+                            value = value.split(', ')
+                        elif ',' in value:
+                            value = value.split(',')
+                        else:
+                            value = [ value ]
+                    else:
+                        raise ValueError('The command-line argument -' + key + ' uses a malformed comma-separated list.')
 
-#             # Perform a URL evaluation
-#             elif evaluation == 'url':
-#                 if url(value):
-#                     request[key] = value
-#                 else:
-#                     raise ValueError('The command-line argument -' + key + ' uses a malformed URL.')
+                # Perform a URL evaluation
+                elif evaluation == 'url':
+                    if not url(value):
+                        raise ValueError('The command-line argument -' + key + ' uses a malformed URL.')
+                    
+                # Perform no evaluation
+                else:
+                    pass
                 
-#             # Perform no evaluation
-#             else:
-#                 pass
-            
-#         # Throw error if there is no value for the key 
-#         else:
-#             raise ValueError('The command-line argument -' + key + ' is missing a value.')
-    
-#     # Return request dictionary
-#     return request
+            # Throw error if there is no value for the key 
+            else:
+                raise ValueError('The command-line argument -' + key + ' is missing a value.')
+        
+        # Return value
+        return value
 
 
-# def clean_lines(content:str) -> str:
-#     '''
-#     Takes a string, removes empty lines, removes comments, and returns the string
+    def _generate_timestamp(self) -> str:
+        '''
+        Produce a current timestamp
 
-#         Parameters:
-#             content (str): input string to clean
+            Returns:
+                str: current timestamp as a string
+        '''
 
-#         Returns:
-#             str: cleaned output string
-#     '''
+        # Format timestamp
+        timestamp = datetime.now()
+        timestamp = timestamp.strftime('%Y-%m-%d %H:%M')
 
-#     # Split up by lines and remove empty ones as well as comments
-#     content_lines = [
-#         line for line in content.splitlines()
-#         if line.strip() and line[0] != '#'
-#     ]
-
-#     # Return re-assembled string
-#     return linesep.join(content_lines)
+        # Return as string
+        return str(timestamp)
 
 
-# def clean_string_for_csv(content:str) -> str:
-#     '''
-#     Takes a string, removes quotation marks, removes newlines, and returns the string
+    def _help_message():
+        '''
+        Echoes a help message to the user
+        '''
 
-#         Parameters:
-#             content (str): input string to clean
+        print(
+'''
 
-#         Returns:
-#             str: cleaned output string
-#     '''
+This scraper is a command-line tool. Use "python go.py" to run the script in interactive mode. Alternatively, use the configuration options listed below to run the script without interaction.
 
-#     # Remove offending characters
-#     content = content.replace('"', '\'')
-#     content = content.replace('\n', '')
-#     content = content.replace('\r', '')
+-download '<value>': comma-separated list of what you need, possible values:
 
-#     # Return clean string
-#     return content
+    lists: all Hydra-paginated lists (requires -source_url)
+
+    list_triples: all RDF triples in a Hydra API (requires -source_url)
+
+    list_cgif: CGIF triples in a Hydra API (requires -source_url)
+
+    beacon: Beacon file of all resources listed in an API (requires -source_url)
+
+    resources: all resources of an API or Beacon (requires -source_url/_file)
+
+    resource_triples: all RDF triples of resources (requires -source_url/_file/_folder)
+
+    resource_cgif: CGIF triples of resources (requires -source_url/_file/_folder)
+
+    resource_table: CSV table of data in resources (requires -source_url/_file/_folder)
+
+-source_url '<url>': use this entry-point URL to scrape content (default: none)
+
+-source_file '<path to file>': use the URLs in this Beacon file to scrape content (default: none)
+
+-source_folder '<name of folder>': use this folder (default: none, requires -content_type)
+
+-content_type '<string>': request/use this content type when scraping content (default: none)
+
+-taget_folder '<name of folder>': download to this subfolder of `downloads` (default: timestamp)
+
+-resource_url_filter '<string>': use this string as a filter for resource lists (default: none)
+
+-resource_url_replace '<string>': replace this string in resource lists (default: none)
+
+-resource_url_replace_with '<string>': replace the previous string with this one (default: none)
+
+-resource_url_add '<string>': add this to the end of each resource URL (default: none)
+
+-clean_resource_names '<string>': build file names from resource URLs (default: enumeration)
+
+-table_data '<string list>': comma-separated property URIs to compile in a table (default: all)
+
+-supplement_data_feed '<url>': URI of a data feed to bind LIDO files to (default: none)
+
+-supplement_data_catalog '<url>': URI of a data catalog the data feed belongs to (default: none)
+
+-supplement_data_catalog_publisher '<url>': URI of the publisher of the catalog (default: none)
+
+'''
+        )
 
 
-# def current_timestamp() -> str:
-#     '''
-#     Produces a current timestamp to be used as a folder name
+    def create_folder(folder_name:str):
+        '''
+        Creates a folder with a given name
 
-#         Returns:
-#             str: current timestamp as a string
-#     '''
+            Parameters:
+                folder_name (str): Name of the folder to create
+        '''
 
-#     # Format timestamp
-#     timestamp = datetime.now()
-#     timestamp = timestamp.strftime('%Y-%m-%d %H:%M')
-
-#     # Return it as a string
-#     return str(timestamp)
+        # Create folders, may be error-prone
+        try:
+            makedirs(folder_name, exist_ok=True)
+        except OSError as error:
+            pass

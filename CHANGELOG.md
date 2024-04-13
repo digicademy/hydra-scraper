@@ -26,7 +26,6 @@
   - HydraCommand
   - HydraOutput
   - HydraReport
-  - HydraMunch
-  - HydraFetch
-- Switch custom argument processing and progress reporting to Python libraries
+  - HydraMorph
+  - HydraRetrieve
 - Add routine to process CGIF to nfdicore and cto ontologies
