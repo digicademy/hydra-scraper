@@ -21,7 +21,7 @@ from classes.hydraretrieve import *
 command = HydraCommand(argv)
 
 # Set up helper objects
-#report = HydraReport(command)
+report = HydraReport(command)
 #morph = HydraMorph(command)
 #output = HydraOutput(command)
 

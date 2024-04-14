@@ -6,28 +6,33 @@
 # LICENSE.txt file that was distributed with this source code.
 
 
-# Import libraries
-
 # Import script modules
+from classes.hydracommand import *
 
 
-# Report status updates and results
 class HydraReport:
 
-    something = None
-    # status = []
+    # Variables
+    command = None
+    be_quiet = False
+    status = []
+    report = ''
 
 
-    def __init__(self, something:str = ''):
+    def __init__(self, command:HydraCommand):
         '''
-        Add required data to instances of this object
+        Report status updates and results
 
             Parameters:
-                something (str): ???
+                command (HydraCommand): configuration object for the current scraping run
         '''
 
-        # Assign variables
-        self.something = something
+        # Register user input
+        self.command = command
+
+        # Add blank line for a scraping run
+        if self.be_quiet == False:
+            self.echo_note('\n')
 
 
     def __str__(self):
@@ -35,68 +40,78 @@ class HydraReport:
         String representation of instances of this object
         '''
 
-        # Put together a string
-        return self.something
-
-# type: status, result
-
-# # Compile a report string (success, reason, missing, incompatible)
-# report = 'Done!'
-# for entry in status:
-#     if entry['success'] == False:
-#         report = 'Something went wrong!'
-# for entry in status:
-#     report = report + ' ' + entry['reason']
-# for entry in status:
-#     if 'missing' in entry:
-#         report = report + '\n\nMissing files:\n- ' + '\n- '.join(entry['missing'])
-#for entry in status:
-#    if 'incompatible' in entry:
-#        report = report + '\n\nNot compatible:\n- ' + '\n- '.join(entry['incompatible'])
-
-# Provide final report
-#echo_note('\n' + report + '\n')
+        # Put together a useful string
+        if self.be_quiet == False:
+            return 'Report set up for live status updates'
+        else:
+            return 'Report set up to only provide status info at the end'
 
 
+    def echo_note(self, note:str, even_if_quiet:bool = True):
+        '''
+        Echoes a note to the user
 
-# def echo_note(note:str):
-#     '''
-#     Echoes a note to the user
+            Parameters:
+                note (str): Note to show the user
+                even_if_quiet (bool): Whether or not to print the note in quiet mode
+        '''
 
-#         Parameters:
-#             note (str): Note to show the user
-#     '''
-
-#     # Echo note
-#     print(note)
-
-
-# def echo_progress(note:str, current:int=None, maximum:int=None):
-#     '''
-#     Echoes progress information to the user
-
-#         Parameters:
-#             note (str): Note to show the user
-#             current (int): Current number of files, defaults to "None"
-#             maximum (int): Total number of files, defaults to "None"
-#     '''
-
-#     # Start echo string
-#     echo_string = '- ' + note + '… '
-
-#     # Just echo string if the loop has not started yet
-#     if current == None and maximum == None:
-#         print(echo_string, end='\r')
-
-#     # Calculate percentage if task is not complete
-#     elif current < maximum:
-#         progress = int((current / maximum ) * 100)
-#         echo_string += f"{progress:02}" + '%'
-#         print(echo_string, end='\r')
-
-#     # End line properly when task is done
-#     else:
-#         echo_string += 'done!'
-#         print(echo_string)
+        # Echo note or add to final report
+        if even_if_quiet:
+            if self.be_quiet != True:
+                print(note)
+            else:
+                self.report += note + '\n'
 
 
+    def echo_progress(self, note:str, current:int=None, maximum:int=None):
+        '''
+        Echoes progress information to the user
+
+            Parameters:
+                note (str): Note to show the user
+                current (int): Current number of files, defaults to "None"
+                maximum (int): Total number of files, defaults to "None"
+        '''
+
+        # Start string
+        if self.be_quiet != True:
+            echo_string = '- ' + note + '… '
+
+            # Just echo string if loop has not started yet
+            if current == None and maximum == None:
+                print(echo_string, end='\r')
+                
+            # Calculate percentage if task is not complete
+            elif current < maximum:
+                progress = int((current / maximum ) * 100)
+                echo_string += f"{progress:02}" + '%'
+                print(echo_string, end='\r')
+
+            # End line properly when task is done
+            else:
+                echo_string += 'done!'
+                print(echo_string)
+
+
+    def echo_report(self):
+        '''
+        Compiles a final report
+        '''
+
+        # Compile a report string (success, reason, missing, incompatible)
+        self.report += 'Done!'
+        for entry in self.status:
+            if entry['success'] == False:
+                report = 'Something went wrong!'
+        for entry in self.status:
+            report = report + ' ' + entry['reason']
+        for entry in self.status:
+            if 'missing' in entry:
+                report = report + '\n\nMissing files:\n- ' + '\n- '.join(entry['missing'])
+        for entry in self.status:
+            if 'incompatible' in entry:
+                report = report + '\n\nNot compatible:\n- ' + '\n- '.join(entry['incompatible'])
+
+        #Provide final report
+        self.echo_note('\n' + report + '\n')

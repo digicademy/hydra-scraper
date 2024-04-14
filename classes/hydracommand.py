@@ -12,11 +12,9 @@ from os import makedirs
 from validators import url
 
 
-# Provide a structured input command
 class HydraCommand:
 
-
-    # Fixed configuration
+    # Fixed config
     retrieval_delay = 0.02
     target_folder_base = 'downloads'
     max_number_of_paginated_lists = 500
@@ -33,7 +31,6 @@ class HydraCommand:
         'https://rism.online/',
         'https://database.factgrid.de/wiki/Item:'
     ]
-
 
     # Variables
     request = []
@@ -56,7 +53,7 @@ class HydraCommand:
 
     def __init__(self, command_line_arguments:list = []):
         '''
-        Add required data to instances of this object
+        Provide a structured input command
 
             Parameters:
                 command_line_arguments (list): List of all command-line arguments
@@ -82,9 +79,9 @@ class HydraCommand:
 
         # Put together a useful string
         if self.request != []:
-            return 'Command object to prepare the following requests: ' + ', '.join(self.request)
+            return 'Command including the following requests: ' + ', '.join(self.request)
         else:
-            return 'Empty command object'
+            return 'Empty command'
 
 
     def _interactive_commands(self):

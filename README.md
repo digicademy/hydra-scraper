@@ -175,6 +175,7 @@ Use GitHub to make the release. Use semantic versioning.
 ## Roadmap
 
 - Check whether to use arparse and an allowed_requests variable to simplify help messages and requirement checks
+- Add argument to only provide status info at the end
 - Re-implement interactive mode
 - Possibly switch LIDO support to `epoz/lidolator` after contributing features
 - Possibly use the system's download folder to actually distribute the package
