@@ -66,26 +66,6 @@ class HydraOutput:
         return linesep.join(content_lines)
 
 
-    def _strip_string(self, content:str) -> str:
-        '''
-        Takes a string, removes quotation marks, removes newlines, and returns the string
-
-            Parameters:
-                content (str): input string to clean
-
-            Returns:
-                str: cleaned output string
-        '''
-
-        # Remove offending characters
-        content = content.replace('"', '\'')
-        content = content.replace('\n', '')
-        content = content.replace('\r', '')
-
-        # Return clean string
-        return content
-
-
     def read_folder(self, folder_path:str) -> list:
         '''
         Reads a local folder and returns each file name as a list
