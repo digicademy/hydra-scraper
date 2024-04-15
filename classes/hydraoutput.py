@@ -7,30 +7,33 @@
 
 
 # Import libraries
-# from os import linesep
+from glob import glob
+from os import linesep
+from re import search
 
 # Import script modules
+from classes.hydracommand import *
 
 
-# Provide data in various output formats
 class HydraOutput:
 
-    something = None
+    # Variables
+    command = None
 
 
-    def __init__(self, something:str = ''):
+    def __init__(self, command:HydraCommand):
         '''
-        Add required data to instances of this object
+        Report status updates and results
 
             Parameters:
-                something (str): ???
+                command (HydraCommand): configuration object for the current scraping run
         '''
 
-        # Assign variables
-        self.something = something
+        # Register user input
+        self.command = command
 
-        # Create job folder
-        self.create_folder(self.target_folder)
+        # Create target folder
+        command.create_folder(command.target_folder)
 
 
     def __str__(self):
@@ -38,178 +41,170 @@ class HydraOutput:
         String representation of instances of this object
         '''
 
-        # Put together a string
-        return self.something
-
-# types: files, beacon, rdf, csv
-
-# # Import libraries
-# from glob import glob
-# from re import search
-
-# # Import script modules
-# from helpers.clean import clean_lines
+        # Put together a useful string
+        return 'Output object for a scraping run'
 
 
-# def save_file(content:str, file_path:str):
-#     '''
-#     Saves content to a file with a specified name and extension
+    def _strip_lines(self, content:str) -> str:
+        '''
+        Takes a string, removes empty lines, removes comments, and returns the string
 
-#         Parameters:
-#             content (str): Content to be saved to file
-#             file_path (str): Path of the file to create
-#     '''
+            Parameters:
+                content (str): Input string to clean
 
-#     # Write content to file
-#     f = open(file_path, 'w')
-#     f.write(content)
-#     f.flush
+            Returns:
+                str: Cleaned output string
+        '''
 
+        # Split up by lines and remove empty ones or comments
+        content_lines = [
+            line for line in content.splitlines()
+            if line.strip() and line[0] != '#'
+        ]
 
-# def save_list(file_path:str, list_to_save:list):
-#     '''
-#     Saves a list to a file
-
-#         Parameters:
-#             file_path (str): Path of the file to create
-#             list_to_save (list): List of entries to save to file
-#     '''
-
-#     # Prepare beacon file and save each line
-#     lines = ["{}\n".format(index) for index in list_to_save]
-#     with open(file_path, 'w') as f:
-#         f.writelines(lines)
+        # Return re-assembled string
+        return linesep.join(content_lines)
 
 
-# def save_table(tabular_data:list, file_path:str ):
-#     '''
-#     Saves a uniform two-dimensional list as a comma-separated value file
+    def _strip_string(self, content:str) -> str:
+        '''
+        Takes a string, removes quotation marks, removes newlines, and returns the string
 
-#         Parameters:
-#             tabular_data (list): Uniform two-dimensional list
-#             file_path (str): Path of the file to save without the extension
-#     '''
+            Parameters:
+                content (str): input string to clean
 
-#     # Open file
-#     f = open(file_path + '.csv', 'w')
+            Returns:
+                str: cleaned output string
+        '''
 
-#     # Write table line by line
-#     for tabular_data_line in tabular_data:
-#         tabular_data_string = '"' + '","'.join(tabular_data_line) + '"\n'
-#         f.write(tabular_data_string)
-#         f.flush
+        # Remove offending characters
+        content = content.replace('"', '\'')
+        content = content.replace('\n', '')
+        content = content.replace('\r', '')
 
-
-# def read_list(file_path:str) -> list:
-#     '''
-#     Reads a list file and returns each line as a list
-
-#         Parameters:
-#             file_path (str): Path to the file to read
-
-#         Returns:
-#             list: List of individual lines
-#     '''
-
-#     # Open file
-#     try:
-#         f = open(file_path, 'r')
-#         content = f.read()
-
-#         # Optionally identify an ID pattern
-#         pattern = search(r"(?<=#TARGET: ).*(?<!\n)", content)
-#         if pattern != None:
-#             pattern = pattern.group()
-#             if pattern.find('{ID}') == -1:
-#                 pattern = None
-
-#         # Clean empty lines and comments
-#         content = clean_lines(content)
-#         lines = iter(content.splitlines())
-
-#         # Go through each line
-#         entries = []
-#         for line in lines:
-
-#             # Remove additional Beacon features
-#             line_option1 = line.find(' |')
-#             line_option2 = line.find('|')
-#             if line_option1 != -1:
-#                 line = line[:line_option1]
-#             elif line_option2 != -1:
-#                 line = line[:line_option2]
-            
-#             # Add complete line to list
-#             if pattern != None:
-#                 line = pattern.replace('{ID}', line)
-#             entries.append(line)
-
-#         # Return list
-#         return entries
-
-#     # Report if file is not found
-#     except:
-#         return []
+        # Return clean string
+        return content
 
 
-# def read_folder(folder_path:str) -> list:
-#     '''
-#     Reads a local folder and returns each file name as a list
+    def read_folder(self, folder_path:str) -> list:
+        '''
+        Reads a local folder and returns each file name as a list
 
-#         Parameters:
-#             folder_path (str): Path to the folder to read
+            Parameters:
+                folder_path (str): Path to the folder to read
 
-#         Returns:
-#             list: List of individual file names
-#     '''
+            Returns:
+                list: List of individual file names
+        '''
 
-#     # Prepare folder path and empty list
-#     folder_path = folder_path + '/**/*'
-#     entries = []
+        # Prepare folder path and empty list
+        folder_path = folder_path + '/**/*'
+        entries = []
 
-#     # Add each file to list
-#     for file_path in glob(folder_path, recursive = True):
-#         entries.append(file_path)
+        # Add each file to list
+        for file_path in glob(folder_path, recursive = True):
+            entries.append(file_path)
 
-#     # Return list
-#     return entries
+        # Return list
+        return entries
 
 
-# def clean_lines(content:str) -> str:
-#     '''
-#     Takes a string, removes empty lines, removes comments, and returns the string
+    def read_list(self, file_path:str) -> list:
+        '''
+        Reads a list file and returns each line as a list
 
-#         Parameters:
-#             content (str): input string to clean
+            Parameters:
+                file_path (str): Path to the file to read
 
-#         Returns:
-#             str: cleaned output string
-#     '''
+            Returns:
+                list: List of individual lines
+        '''
 
-#     # Split up by lines and remove empty ones as well as comments
-#     content_lines = [
-#         line for line in content.splitlines()
-#         if line.strip() and line[0] != '#'
-#     ]
+        # Open file
+        try:
+            f = open(file_path, 'r')
+            content = f.read()
 
-#     # Return re-assembled string
-#     return linesep.join(content_lines)
+            # Optionally identify an ID pattern
+            pattern = search(r"(?<=#TARGET: ).*(?<!\n)", content)
+            if pattern != None:
+                pattern = pattern.group()
+                if pattern.find('{ID}') == -1:
+                    pattern = None
 
-# def clean_string_for_csv(content:str) -> str:
-#     '''
-#     Takes a string, removes quotation marks, removes newlines, and returns the string
+            # Clean empty lines and comments
+            content = self._strip_lines(content)
+            lines = iter(content.splitlines())
 
-#         Parameters:
-#             content (str): input string to clean
+            # Go through each line
+            entries = []
+            for line in lines:
 
-#         Returns:
-#             str: cleaned output string
-#     '''
+                # Remove additional Beacon features
+                line_option1 = line.find(' |')
+                line_option2 = line.find('|')
+                if line_option1 != -1:
+                    line = line[:line_option1]
+                elif line_option2 != -1:
+                    line = line[:line_option2]
+                
+                # Add complete line to list
+                if pattern != None:
+                    line = pattern.replace('{ID}', line)
+                entries.append(line)
 
-#     # Remove offending characters
-#     content = content.replace('"', '\'')
-#     content = content.replace('\n', '')
-#     content = content.replace('\r', '')
+            # Return list
+            return entries
 
-#     # Return clean string
-#     return content
+        # Report if file is not found
+        except:
+            return []
+
+
+    def save_file(self, content:str, file_path:str):
+        '''
+        Saves content to a file with a specified name and extension
+
+            Parameters:
+                content (str): Content to be saved to file
+                file_path (str): Path of the file to create
+        '''
+
+        # Write content to file
+        f = open(file_path, 'w')
+        f.write(content)
+        f.flush
+
+
+    def save_list(self, file_path:str, list_to_save:list):
+        '''
+        Saves a list to a file
+
+            Parameters:
+                file_path (str): Path of the file to create
+                list_to_save (list): List of entries to save to file
+        '''
+
+        # Prepare beacon file and save each line
+        lines = ["{}\n".format(index) for index in list_to_save]
+        with open(file_path, 'w') as f:
+            f.writelines(lines)
+
+
+    def save_csv(self, tabular_data:list, file_path:str):
+        '''
+        Saves a uniform two-dimensional list as a comma-separated value file
+
+            Parameters:
+                tabular_data (list): Uniform two-dimensional list
+                file_path (str): Path of the file to save without the extension
+        '''
+
+        # Open file
+        f = open(file_path + '.csv', 'w')
+
+        # Write table line by line
+        for tabular_data_line in tabular_data:
+            tabular_data_string = '"' + '","'.join(tabular_data_line) + '"\n'
+            f.write(tabular_data_string)
+            f.flush

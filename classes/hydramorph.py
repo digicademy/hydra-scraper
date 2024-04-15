@@ -46,7 +46,7 @@ class HydraMorph:
 # from rdflib.term import BNode, Literal, URIRef
 
 # # Import script modules
-# from helpers.clean import clean_string_for_csv
+# from helpers.clean import output.strip_string
 # from helpers.config import *
 
 # # Define namespaces
@@ -324,7 +324,7 @@ class HydraMorph:
 #                 for all_predicate1 in all_predicates:
 #                     for s1, p1, o1 in triples.triples((entity, all_predicate1, None)):
 #                         if all_predicate1 == predicate and isinstance(o1, (Literal, URIRef)):
-#                             new_line_entries.append(clean_string_for_csv(str(o1)))
+#                             new_line_entries.append(output.strip_string(str(o1)))
 
 #                         # Ordered list, multiple levels
 #                         elif all_predicate1 == predicate and isinstance(o1, BNode):
@@ -335,14 +335,14 @@ class HydraMorph:
 #                             for all_predicate2 in all_predicates:
 #                                 for s2, p2, o2 in triples.triples((o1, all_predicate2, None)):
 #                                     if all_predicate2 == predicate and isinstance(o2, (Literal, URIRef)):
-#                                         new_line_entries.append(clean_string_for_csv(str(o2)))
+#                                         new_line_entries.append(output.strip_string(str(o2)))
 
 #                                     # Nested properties, level 3
 #                                     else:
 #                                         for all_predicate3 in all_predicates:
 #                                             for s3, p3, o3 in triples.triples((o2, all_predicate3, None)):
 #                                                 if all_predicate3 == predicate and isinstance(o3, (Literal, URIRef)):
-#                                                     new_line_entries.append(clean_string_for_csv(str(o3)))
+#                                                     new_line_entries.append(output.strip_string(str(o3)))
 
 #                 # Produce entry for this predicate
 #                 new_line_entry = ', '.join(new_line_entries)
@@ -373,7 +373,7 @@ class HydraMorph:
 #     # Dig one level further down the ordered list
 #     for s, p, o in triples.triples((previous, None, None)):
 #         if isinstance(o, (Literal, URIRef)) and o != URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'):
-#             new_line_entries.append(clean_string_for_csv(str(o)))
+#             new_line_entries.append(output.strip_string(str(o)))
 #         elif isinstance(o, BNode):
 #             new_line_entries.extend(convert_triples_to_table_with_ordered_lists(triples, o))
 

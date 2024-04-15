@@ -100,7 +100,7 @@ class HydraRetrieve:
 
 #     # Compile resource table if requested
 #     if 'resource_table' in command.request:
-#         beacon.save_table(command.table_data)
+#         beacon.save_csv(command.table_data)
 
 #     # Add status message
 #     status.extend(beacon.status)
@@ -111,7 +111,7 @@ class HydraRetrieve:
 # from urllib import request
 
 # # Import script modules
-# from helpers.clean import clean_lines
+# from helpers.clean import _strip_lines
 
 
 # def download_file(url:str, content_type:str = '') -> dict:
@@ -160,7 +160,7 @@ class HydraRetrieve:
 #                         content = content[embedded_jsonld_start:embedded_jsonld_end]
 
 #                         # Remove empty lines
-#                         content = clean_lines(content)
+#                         content = output._strip_lines(content)
 
 #             # Structure the data
 #             simple_response = {
@@ -915,7 +915,7 @@ class HydraRetrieve:
 #             if len(self.triples):
 #                 file_path = self.target_folder + '/' + file_name
 #                 tabular_data = convert_triples_to_table(self.triples, table_data)
-#                 save_table(tabular_data, file_path)
+#                 save_csv(tabular_data, file_path)
 
 #                 # Compile success status
 #                 status_report['success'] = True
