@@ -13,7 +13,7 @@ from rdflib import Graph, Namespace
 from rdflib.term import BNode, Literal, URIRef
 
 # Import script modules
-from classes.hydracommand import *
+from classes.command import *
 
 # Define namespaces
 from rdflib.namespace import RDF

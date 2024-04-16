@@ -12,7 +12,7 @@ from os import linesep
 from re import search
 
 # Import script modules
-from classes.hydracommand import *
+from classes.command import *
 
 
 class HydraOutput:

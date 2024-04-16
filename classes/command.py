@@ -174,7 +174,7 @@ class HydraCommand:
         allowed_arguments.add_argument(
             '-quiet', '--quiet',
             default = False,
-            action = 'store_true'
+            action = 'store_true',
             help = 'Option to avoid intermediate progress reporting'
         )
 

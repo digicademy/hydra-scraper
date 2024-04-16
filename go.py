@@ -10,18 +10,17 @@
 from sys import argv
 
 # Import script modules
-from classes.hydracommand import *
-from classes.hydramorph import *
-from classes.hydraoutput import *
-from classes.hydrareport import *
-from classes.hydraretrieve import *
+from classes.command import *
+from classes.morph import *
+from classes.output import *
+from classes.report import *
+from classes.retrieve import *
 
 
 # Collect configuration info
 command = HydraCommand(argv)
+
 #report = HydraReport()
-
-
 #morph = HydraMorph(command)
 #output = HydraOutput(command)
 
