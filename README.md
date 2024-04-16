@@ -39,7 +39,7 @@ This scraper is a command-line tool. Use `python go.py` to run the script in
 interactive mode. Alternatively, use the configuration options listed below to
 run the script without interaction.
 
-- `-download '<string list>'`: comma-separated list of what you need, possible values:
+- `-download '<value>' '<value>'`: list of downloads you require, possible values:
   - `lists`: all Hydra-paginated lists (requires `-source_url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
   - `list_cgif`: CGIF triples in a Hydra API (requires`-source_url`)
@@ -48,17 +48,17 @@ run the script without interaction.
   - `resource_triples`: all RDF triples of resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_cgif`: CGIF triples of resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
-- `-source_url '<url>'`: use this entry-point URL to scrape content (default: none)
-- `-source_file '<path to file>'`: use the URLs in this Beacon file to scrape content (default: none)
-- `-source_folder '<name of folder>'`: use this folder (default: none, requires `-content_type`)
-- `-content_type '<string>'`: request/use this content type when scraping content (default: none)
-- `-target_folder '<name of folder>'`: download to this subfolder of `downloads` (default: timestamp)
-- `-resource_url_filter '<string>'`: use this string as a filter for resource lists (default: none)
-- `-resource_url_replace '<string>'`: replace this string in resource lists (default: none)
-- `-resource_url_replace_with '<string>'`: replace the previous string with this one (default: none)
-- `-resource_url_add '<string>'`: add this to the end of each resource URL (default: none)
-- `-clean_resource_names '<string list>'`: build file names from resource URLs (default: enumeration)
-- `-table_data '<string list>'`: comma-separated property URIs to compile in a table (default: all)
+- `-source_url '<url>'`: entry-point URL to scrape content from (default: none)
+- `-source_file '<path to file>'`: path to Beacon file containing URLs to scrape (default: none)
+- `-source_folder '<name of folder>'`: path to folder containing files to scrape (default: none, requires `-content_type`)
+- `-content_type '<string>'`: content type to request or use when scraping (default: none)
+- `-target_folder '<name of folder>'`: download to this subfolder of the download folder (default: timestamp)
+- `-resource_url_filter '<string>'`: string as a filter for resource lists (default: none)
+- `-resource_url_replace '<string>'`: string to replace in resource lists (default: none)
+- `-resource_url_replace_with '<string>'`: string to replace the previous one with (default: none)
+- `-resource_url_add '<string>'`: addition to the end of each resource URL (default: none)
+- `-clean_resource_names '<string>' '<string>'`: list of strings to remove from resource URLs to build their file name (default: enumeration)
+- `-table_data '<string>' '<string>'`: list of property URIs to compile in a table (default: all)
 - `-supplement_data_feed '<url>'`: URI of a data feed to bind LIDO files to (default: none)
 - `-supplement_data_catalog '<url>'`: URI of a data catalog the data feed belongs to (default: none)
 - `-supplement_data_catalog_publisher '<url>'`: URI of the publisher of the catalog (default: none)
@@ -174,8 +174,5 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Check whether to use arparse and an allowed_requests variable to simplify help messages and requirement checks
-- Add argument to only provide status info at the end
-- Re-implement interactive mode
 - Possibly switch LIDO support to `epoz/lidolator` after contributing features
 - Possibly use the system's download folder to actually distribute the package

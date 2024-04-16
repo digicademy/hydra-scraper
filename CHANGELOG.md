@@ -29,3 +29,5 @@
   - HydraMorph
   - HydraRetrieve
 - Add routine to process CGIF to nfdicore and cto ontologies
+- Simplify command-line interface and argument parsing
+- Add `-quiet` option to not report intermiedate progress

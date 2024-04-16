@@ -33,7 +33,7 @@ class HydraOutput:
         self.command = command
 
         # Create target folder
-        command.create_folder(command.target_folder)
+        command.create_folder(command.target_folder_path)
 
 
     def __str__(self):

@@ -6,29 +6,18 @@
 # LICENSE.txt file that was distributed with this source code.
 
 
-# Import script modules
-from classes.hydracommand import *
-
-
 class HydraReport:
 
     # Variables
-    command = None
     be_quiet = False
     status = []
     report = ''
 
 
-    def __init__(self, command:HydraCommand):
+    def __init__(self):
         '''
         Report status updates and results
-
-            Parameters:
-                command (HydraCommand): configuration object for the current scraping run
         '''
-
-        # Register user input
-        self.command = command
 
         # Add blank line for a scraping run
         if self.be_quiet == False:

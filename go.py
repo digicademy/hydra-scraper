@@ -19,9 +19,9 @@ from classes.hydraretrieve import *
 
 # Collect configuration info
 command = HydraCommand(argv)
+#report = HydraReport()
 
-# Set up helper objects
-report = HydraReport(command)
+
 #morph = HydraMorph(command)
 #output = HydraOutput(command)
 
