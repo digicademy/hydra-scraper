@@ -73,11 +73,11 @@ class HydraCommand:
             choices = [
                 'lists',
                 'list_triples',
-                'list_cgif',
+                'list_nfdi',
                 'beacon',
                 'resources',
                 'resource_triples',
-                'resource_cgif',
+                'resource_nfdi',
                 'resource_table'
             ],
             nargs='+',
@@ -201,13 +201,13 @@ class HydraCommand:
         self.quiet = arguments.quiet
 
         # More complex argument requirements
-        if 'lists' in self.download or 'list_triples' in self.download or 'list_cgif' in self.download or 'beacon' in self.download:
+        if 'lists' in self.download or 'list_triples' in self.download or 'list_nfdi' in self.download or 'beacon' in self.download:
             if self.source_url == None:
                 raise ValueError('Hydra Scraper called without valid source URL.')
         elif 'resources' in self.download:
             if self.source_url == None and self.source_file == None:
                 raise ValueError('Hydra Scraper called without valid source URL or file name.')
-        elif 'resource_triples' in self.download or 'resource_cgif' in self.download or 'resource_table' in self.download:
+        elif 'resource_triples' in self.download or 'resource_nfdi' in self.download or 'resource_table' in self.download:
             if self.source_url == None and self.source_file == None and self.source_folder == None:
                 raise ValueError('Hydra Scraper called without valid source URL, file, or folder name.')
             elif self.source_folder != None and self.content_type == None:
@@ -225,9 +225,9 @@ class HydraCommand:
 
         # Put together a useful string
         if self.download != []:
-            return 'Command including the following requests: ' + ', '.join(self.download)
+            return 'Scraping command to produce the following items: ' + ', '.join(self.download) + '.'
         else:
-            return 'Empty command'
+            return 'Empty scraping command.'
 
 
     def _generate_timestamp(self) -> str:

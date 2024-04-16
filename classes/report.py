@@ -9,19 +9,21 @@
 class HydraReport:
 
     # Variables
-    be_quiet = False
+    quiet = False
+    done = False
     status = []
-    report = ''
 
 
-    def __init__(self):
+    def __init__(self, quiet:bool = False):
         '''
         Report status updates and results
+
+            Parameters:
+                quiet (bool): Whether to avoid intermediate status updates
         '''
 
-        # Add blank line for a scraping run
-        if self.be_quiet == False:
-            self.echo_note('\n')
+        # Assign argument to object
+        self.quiet = quiet
 
 
     def __str__(self):
@@ -29,31 +31,50 @@ class HydraReport:
         String representation of instances of this object
         '''
 
-        # Put together a useful string
-        if self.be_quiet == False:
-            return 'Report set up for live status updates'
+        # Basic info
+        if self.done == True:
+            report = 'Scraping job done'
         else:
-            return 'Report set up to only provide status info at the end'
+            report = 'Scraping job is still running'
+            for entry in self.status:
+                if entry['success'] == False:
+                    report = 'Scraping job is still running, but something went wrong already!'
+        
+        # Notify about issues
+        report_issue = '!'
+        for entry in self.status:
+            if entry['success'] == False:
+                report_issue = ', but something went wrong!'
+        report += report_issue
+
+        # Add detail: reason, missing, incompatible
+        for entry in self.status:
+            report += ' ' + entry['reason']
+        for entry in self.status:
+            if 'missing' in entry:
+                report = report + '\n\nMissing files:\n- ' + '\n- '.join(entry['missing'])
+        for entry in self.status:
+            if 'incompatible' in entry:
+                report = report + '\n\nNot compatible:\n- ' + '\n- '.join(entry['incompatible'])
+
+        # Provide result
+        return report
 
 
-    def echo_note(self, note:str, even_if_quiet:bool = True):
+    def echo_note(self, note:str):
         '''
         Echoes a note to the user
 
             Parameters:
                 note (str): Note to show the user
-                even_if_quiet (bool): Whether or not to print the note in quiet mode
         '''
 
         # Echo note or add to final report
-        if even_if_quiet:
-            if self.be_quiet != True:
-                print(note)
-            else:
-                self.report += note + '\n'
+        if self.quiet != True:
+            print(note)
 
 
-    def echo_progress(self, note:str, current:int=None, maximum:int=None):
+    def echo_progress(self, note:str, current:int = None, maximum:int = None):
         '''
         Echoes progress information to the user
 
@@ -64,7 +85,7 @@ class HydraReport:
         '''
 
         # Start string
-        if self.be_quiet != True:
+        if self.quiet != True:
             echo_string = '- ' + note + '… '
 
             # Just echo string if loop has not started yet
@@ -83,24 +104,11 @@ class HydraReport:
                 print(echo_string)
 
 
-    def echo_report(self):
+    def finish(self):
         '''
-        Compiles a final report
+        Outputs a final report at the end of a scraping run
         '''
 
-        # Compile a report string (success, reason, missing, incompatible)
-        self.report += 'Done!'
-        for entry in self.status:
-            if entry['success'] == False:
-                report = 'Something went wrong!'
-        for entry in self.status:
-            report = report + ' ' + entry['reason']
-        for entry in self.status:
-            if 'missing' in entry:
-                report = report + '\n\nMissing files:\n- ' + '\n- '.join(entry['missing'])
-        for entry in self.status:
-            if 'incompatible' in entry:
-                report = report + '\n\nNot compatible:\n- ' + '\n- '.join(entry['incompatible'])
-
-        #Provide final report
-        self.echo_note('\n' + report + '\n')
+        # Mark task as finished and print it
+        self.done = True
+        print(str(self))

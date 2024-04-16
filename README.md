@@ -42,11 +42,11 @@ run the script without interaction.
 - `-download '<value>' '<value>'`: list of downloads you require, possible values:
   - `lists`: all Hydra-paginated lists (requires `-source_url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
-  - `list_cgif`: CGIF triples in a Hydra API (requires`-source_url`)
+  - `list_nfdi`: nfdicore/cto triples from a CGIF-compatible Hydra API (requires`-source_url`)
   - `beacon`: Beacon file of all resources listed in an API (requires `-source_url`)
   - `resources`: all resources of an API or Beacon (requires `-source_url`/`_file`)
   - `resource_triples`: all RDF triples of resources (requires `-source_url`/`_file`/`_folder`)
-  - `resource_cgif`: CGIF triples of resources (requires `-source_url`/`_file`/`_folder`)
+  - `resource_nfdi`: Cnfdicore/cto triples from CGIF-compatible resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
 - `-source_url '<url>'`: entry-point URL to scrape content from (default: none)
 - `-source_file '<path to file>'`: path to Beacon file containing URLs to scrape (default: none)

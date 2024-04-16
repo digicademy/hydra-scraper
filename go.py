@@ -19,10 +19,13 @@ from classes.retrieve import *
 
 # Collect configuration info
 command = HydraCommand(argv)
+report = HydraReport(command.quiet)
 
-#report = HydraReport()
 #morph = HydraMorph(command)
 #output = HydraOutput(command)
 
 # Run main retrieval job
 #retrieve = HydraRetrieve(command, output, report, morph)
+
+# Produce final report
+report.finish()
