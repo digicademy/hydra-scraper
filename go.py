@@ -1,4 +1,4 @@
-# Entry-point script
+# Main script
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -17,15 +17,17 @@ from classes.report import *
 from classes.retrieve import *
 
 
-# Collect configuration info
+# Set up config and reporting
 command = HydraCommand(argv)
 report = HydraReport(command.quiet)
 
-#morph = HydraMorph(command)
-#output = HydraOutput(command)
+#
 
-# Run main retrieval job
-#retrieve = HydraRetrieve(command, output, report, morph)
+list = HydraRetrieveList() # read, save, _remove_blank_lines
+file = HydraRetrieveFile() # read, save, morph, _morph_lido_to_nfdi
+graph = HydraRetrieveGraph() # read, save, morph, _morph_cgif_to_nfdi
+
+#
 
 # Produce final report
 report.finish()
