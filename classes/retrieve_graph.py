@@ -39,6 +39,9 @@ class HydraRetrieveGraph(HydraRetrieve):
                 morph (str): ???
         '''
 
+        # Inherit from base class
+        super().__init__()
+
         # Assign variables
         self.something = something
 

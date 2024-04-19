@@ -15,23 +15,14 @@ from urllib import request
 
 class HydraRetrieve:
 
-    # Variables
-    something = None
 
-
-    def __init__(self, command, output, report, morph):
+    def __init__(self):
         '''
         Retrieve, morph, and save data
-
-            Parameters:
-                command (str): ???
-                output (str): ???
-                report (str): ???
-                morph (str): ???
         '''
 
-        # Assign variables
-        self.something = something
+        # Do nothing
+        pass
 
 
     def __str__(self):
@@ -40,57 +31,57 @@ class HydraRetrieve:
         '''
 
         # Put together a string
-        return self.something
+        return 'Basic retrieval methods intended to be inherited'
 
 
-    def _strip_string(self, content:str) -> str:
+    def _strip_string(self, input:str) -> str:
         '''
-        Takes a string, removes quotation marks, removes newlines, and returns the string
+        Takes a string, removes quotation marks and newlines, and returns the string
 
             Parameters:
-                content (str): input string to clean
+                string (str): Input string to clean
 
             Returns:
-                str: cleaned output string
+                str: Cleaned output string
         '''
 
         # Remove offending characters
-        content = content.replace('"', '\'')
-        content = content.replace('\n', '')
-        content = content.replace('\r', '')
+        input = input.replace('"', '\'')
+        input = input.replace('\n', '')
+        input = input.replace('\r', '')
 
         # Return clean string
-        return content
+        return input
 
 
-    def _strip_lines(self, content:str) -> str:
+    def _strip_lines(self, input:str) -> str:
         '''
-        Takes a string, removes empty lines, removes comments, and returns the string
+        Takes a multi-line string, removes empty lines and comments, and returns the string
 
             Parameters:
-                content (str): Input string to clean
+                input (str): Input string to remove lines from
 
             Returns:
                 str: Cleaned output string
         '''
 
         # Split up by lines and remove empty ones or comments
-        content_lines = [
-            line for line in content.splitlines()
+        lines = [
+            line for line in input.splitlines()
             if line.strip() and line[0] != '#'
         ]
 
         # Return re-assembled string
-        return linesep.join(content_lines)
+        return linesep.join(lines)
 
 
-    def download_file(self, url:str, content_type:str = '') -> dict:
+    def _download_file(self, url:str, content_type:str = None) -> dict:
         '''
         Retrieves a file from a URL and returns the content
 
             Parameters:
                 url (str): URL to download the file from
-                content_type (str): content type to request, defaults to none
+                content_type (str): Content type to request
 
             Returns:
                 dict: Provides 'file_type', 'file_extension' and 'content' of the retrieved file
@@ -98,7 +89,7 @@ class HydraRetrieve:
 
         # Retrieve URL content
         try:
-            if content_type != '':
+            if content_type != None:
                 request_header = { 'Accept': content_type }
                 request_object = request.Request(url, headers = request_header)
                 response = request.urlopen(request_object)
@@ -130,7 +121,7 @@ class HydraRetrieve:
                             content = content[embedded_jsonld_start:embedded_jsonld_end]
 
                             # Remove empty lines
-                            content = output._strip_lines(content)
+                            content = self._strip_lines(content)
 
                 # Structure the data
                 simple_response = {
@@ -147,7 +138,7 @@ class HydraRetrieve:
         return simple_response
 
 
-    def save_file(self, content:str, file_path:str):
+    def _save_file(self, content:str, file_path:str):
         '''
         Saves content to a file with a specified name and extension
 
