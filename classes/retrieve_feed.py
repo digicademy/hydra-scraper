@@ -8,6 +8,7 @@
 
 # Import libraries
 from glob import glob
+from re import search
 
 # Import script modules
 from classes.retrieve import *
@@ -15,26 +16,17 @@ from classes.retrieve import *
 
 class HydraRetrieveFeed(HydraRetrieve):
 
-    # Variables
-    something = None
 
-
-    def __init__(self, command, output, report, morph):
+    def __init__(self, report:object):
         '''
         Retrieve data feeds like beacon files or APIs
 
             Parameters:
-                command (str): ???
-                output (str): ???
-                report (str): ???
-                morph (str): ???
+                report (object): The report object to use
         '''
 
         # Inherit from base class
-        super().__init__()
-
-        # Assign variables
-        self.something = something
+        super().__init__(report)
 
 
     def __str__(self):
@@ -43,72 +35,15 @@ class HydraRetrieveFeed(HydraRetrieve):
         '''
 
         # Put together a string
-        return self.something
+        return 'Retrieval data and methods for feeds like beacon files or APIs'
 
 
-    def read_folder(self, folder_path:str) -> list:
-        '''
-        Reads a local folder and returns each file name as a list
-
-            Parameters:
-                folder_path (str): Path to the folder to read
-
-            Returns:
-                list: List of individual file names
-        '''
-
-        # Prepare folder path and empty list
-        folder_path = folder_path + '/**/*'
-        entries = []
-
-        # Add each file to list
-        for file_path in glob(folder_path, recursive = True):
-            entries.append(file_path)
-
-        # Return list
-        return entries
-    
-
-    def retrieve_local_file(self, file_path:str, content_type:str) -> dict:
-        '''
-        Retrieves a local file and returns the content
-
-            Parameters:
-                file_path (str): path to open the file at
-                content_type (str): content type to parse
-
-            Returns:
-                dict: Provides 'file_type', 'file_extension' and 'content' of the retrieved file
-        '''
-
-        # Retrieve file content
-        try:
-            with open(file_path) as f:
-                content = f.read()
-
-                # Get file type and file extension
-                headers = {
-                    'Content-Type': content_type
-                }
-                file_type = self._determine_file_type(headers, False)
-                file_extension = self._determine_file_type(headers, True)
-
-                # Structure the data
-                simple_response = {
-                    'file_type': file_type,
-                    'file_extension': file_extension,
-                    'content': content
-                }
-
-        # Notify if file not available
-        except:
-            simple_response = None
-
-        # Return simplified response
-        return simple_response
+    # TODO read()
+    # TODO morph()
+    # TODO save()
 
 
-    def read_list(self, file_path:str) -> list:
+    def _read_list(self, file_path:str) -> list:
         '''
         Reads a list file and returns each line as a list
 
@@ -160,7 +95,7 @@ class HydraRetrieveFeed(HydraRetrieve):
             return []
 
 
-    def save_list(self, file_path:str, list_to_save:list):
+    def _save_list(self, file_path:str, list_to_save:list):
         '''
         Saves a list to a file
 
@@ -169,26 +104,40 @@ class HydraRetrieveFeed(HydraRetrieve):
                 list_to_save (list): List of entries to save to file
         '''
 
-        # Prepare beacon file and save each line
+        # Prepare file and save each line
         lines = ["{}\n".format(index) for index in list_to_save]
         with open(file_path, 'w') as f:
             f.writelines(lines)
 
 
+    def _list_files_in_folder(self, folder_path:str) -> list:
+        '''
+        Reads a local folder and returns each file name as a list
 
+            Parameters:
+                folder_path (str): Path to the folder to read
+
+            Returns:
+                list: List of individual file names
+        '''
+
+        # Prepare folder path and empty list
+        folder_path = folder_path + '/**/*'
+        entries = []
+
+        # Add each file to list
+        for file_path in glob(folder_path, recursive = True):
+            entries.append(file_path)
+
+        # Return list
+        return entries
+    
 
 
 # # Import libraries
 # from rdflib import Graph, Namespace
 # from math import ceil
 # from time import sleep
-
-# # Import script modules
-# from helpers.config import *
-# from helpers.download import download_file
-# from helpers.fileio import save_file
-# from helpers.fileio import save_list
-# from helpers.status import echo_progress
 
 # # Define namespaces
 # from rdflib.namespace import RDF

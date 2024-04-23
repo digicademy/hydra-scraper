@@ -174,5 +174,5 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Possibly switch LIDO support to `epoz/lidolator` after contributing features
+- Possibly switch LIDO support to `epoz/lidolator` and nfdicore/cto support to `epoz/nfdi4culture_python_package` after contributing features
 - Possibly use the system's download folder to actually distribute the package

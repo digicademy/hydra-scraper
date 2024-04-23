@@ -24,16 +24,6 @@ class HydraCommand:
     allowed_non_rdf_formats = [
         'lido'
     ]
-    known_defined_term_sets = [
-        'http://sws.geonames.org/',
-        'https://iconclass.org/',
-        'http://vocab.getty.edu/page/aat/',
-        'https://d-nb.info/gnd/',
-        'http://www.wikidata.org/entity/',
-        'https://viaf.org/viaf/',
-        'https://rism.online/',
-        'https://database.factgrid.de/wiki/Item:'
-    ]
 
     # Variables
     download = []

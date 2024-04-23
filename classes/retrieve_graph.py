@@ -7,8 +7,6 @@
 
 
 # Import libraries
-from datetime import date
-from lxml import etree
 from rdflib import Graph, Namespace
 from rdflib.term import BNode, Literal, URIRef
 
@@ -16,34 +14,30 @@ from rdflib.term import BNode, Literal, URIRef
 from classes.retrieve import *
 
 # Define namespaces
-from rdflib.namespace import RDF
-SCHEMA = Namespace('http://schema.org/')
+from rdflib.namespace import RDF, RDFS, SDO, OWL
 NFDICORE = Namespace('https://nfdi.fiz-karlsruhe.de/ontology/')
 CTO = Namespace('https://nfdi4culture.de/ontology#')
+MO = Namespace('http://purl.org/ontology/mo/')
 
 
 class HydraRetrieveGraph(HydraRetrieve):
 
     # Variables
-    something = None
+    store = None
+    nfdi = None
+    csv = None
 
 
-    def __init__(self, command, output, report, morph):
+    def __init__(self, report:object):
         '''
         Retrieve and compile graph data
 
             Parameters:
-                command (str): ???
-                output (str): ???
-                report (str): ???
-                morph (str): ???
+                report (object): The report object to use
         '''
 
         # Inherit from base class
-        super().__init__()
-
-        # Assign variables
-        self.something = something
+        super().__init__(report)
 
 
     def __str__(self):
@@ -52,53 +46,123 @@ class HydraRetrieveGraph(HydraRetrieve):
         '''
 
         # Put together a string
-        return self.something
+        return 'Retrieval data and methods for graph data'
 
 
-    def save_csv(self, tabular_data:list, file_path:str):
+    def morph(self, routine:str, csv_predicates:list = None):
         '''
-        Saves a uniform two-dimensional list as a comma-separated value file
+        Morphs the graph to a different format
 
             Parameters:
-                tabular_data (list): Uniform two-dimensional list
-                file_path (str): Path of the file to save without the extension
+                routine (str): Transformation routine to use
+                csv_predicates (list): List of predicates to include in CSV morph
         '''
 
-        # Open file
-        f = open(file_path + '.csv', 'w')
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
 
-        # Write table line by line
-        for tabular_data_line in tabular_data:
-            tabular_data_string = '"' + '","'.join(tabular_data_line) + '"\n'
-            f.write(tabular_data_string)
-            f.flush
+        # Routine: to CSV
+        if routine == 'to-csv':
+            self.report.echo_progress('Producing CSV table from graph data', 0, 100)
+            if self.store == None:
+                status['reason'] = 'No graph data to list in a CSV table.'
+            else:
+                self._morph_to_csv(csv_predicates)
+                status['success'] = True
+                status['reason'] = 'Graph data listed in a CSV table.'
+            self.report.echo_progress('Producing CSV table from graph data', 100, 100)
+
+        # Routine: CGIF to NFDI
+        elif routine == 'cgif-to-nfdi':
+            self.report.echo_progress('Converting graph data to NFDI style', 0, 100)
+            if self.store == None:
+                status['reason'] = 'No graph data to convert to NFDI style.'
+            else:
+                self._morph_cgif_to_nfdi()
+                status['success'] = True
+                status['reason'] = 'Graph data converted to NFDI style.'
+            self.report.echo_progress('Converting graph data to NFDI style', 100, 100)
+
+        # Update status
+        self.report.status.append(status)
 
 
-
-
-
-
-    def convert_triples_to_table(self, triples:object, limit_predicates:list = []) -> list:
+    def save(self, target_folder_path:str, file_name:str, routine:str = None):
         '''
-        Converts triples into tabular data, aka a uniform two-dimensional list
+        Saves graph data to a file
 
             Parameters:
-                triples (object): Graph object containing the triples to convert
-                limit_predicates (list, optional): List of predicates to include, defaults to all
-
-            Returns:
-                list: Uniform two-dimensional list
+                target_folder_path (str): Path of the folder to create files in
+                file_name (str): Name of the file to create
+                routine (str): Specific data to save
         '''
 
-        # Set up output and predicate lists
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Construct file name
+        file_path = target_folder_path + '/' + file_name
+
+        # Routine: CSV
+        if routine == 'csv':
+            self.report.echo_progress('Saving CSV data', 0, 100)
+            if self.csv == None:
+                status['reason'] = 'No CSV data to save.'
+            else:
+                self._save_file(file_path, self.csv)
+                status['success'] = True
+                status['reason'] = 'CSV data saved to file.'
+            self.report.echo_progress('Saving CSV data', 100, 100)
+
+        # Routine: NFDI-style triples
+        elif routine == 'nfdi':
+            self.report.echo_progress('Saving NFDI-style triples', 0, 100)
+            if self.store == None:
+                status['reason'] = 'No NFDI-style triples to save.'
+            else:
+                self.nfdi.serialize(destination=file_path, format='turtle')
+                status['success'] = True
+                status['reason'] = 'NFDI-style triples saved to file.'
+            self.report.echo_progress('Saving NFDI-style triples', 100, 100)
+
+        # Routine: Triples
+        else:
+            self.report.echo_progress('Saving triples', 0, 100)
+            if self.store == None:
+                status['reason'] = 'No triples to save.'
+            else:
+                self.store.serialize(destination=file_path, format='turtle')
+                status['success'] = True
+                status['reason'] = 'Triples saved to file.'
+            self.report.echo_progress('Saving triples', 100, 100)
+
+        # Update status
+        self.report.status.append(status)
+
+
+    def _morph_to_csv(self, csv_predicates:list = None):
+        '''
+        Converts triples into tabular CSV data
+
+            Parameters:
+                csv_predicates (list): List of predicates to include
+        '''
+
+        # Set up output
+        self.csv = ''
         output = []
-        all_predicates = []
-        predicates = []
 
-        # Collect limited predicates or get all unique ones
-        all_predicates = list(triples.predicates(unique = True))
-        if limit_predicates != []:
-            for limit_predicate in limit_predicates:
+        # Collect predicates (limited or all unique ones)
+        predicates = []
+        all_predicates = list(self.store.predicates(None, None, True))
+        if csv_predicates != None:
+            for limit_predicate in csv_predicates:
                 predicates.append(URIRef(limit_predicate))
         else:
             predicates = all_predicates
@@ -111,7 +175,7 @@ class HydraRetrieveGraph(HydraRetrieve):
         output.append(first_line)
 
         # Get unique entities used as subjects that start with 'http' and go through them
-        entities = list(triples.subjects(unique = True))
+        entities = list(self.store.subjects(unique = True))
         entities.sort()
         for entity in entities:
             if isinstance(entity, URIRef):
@@ -124,27 +188,27 @@ class HydraRetrieveGraph(HydraRetrieve):
                     # Go through all predicates with this entity as a subject, find literals as objects of desired predicates, and repeat for several levels
                     # Level 1
                     for all_predicate1 in all_predicates:
-                        for s1, p1, o1 in triples.triples((entity, all_predicate1, None)):
-                            if all_predicate1 == predicate and isinstance(o1, (Literal, URIRef)):
-                                new_line_entries.append(self._strip_string(str(o1)))
+                        for object1 in self.store.objects((entity, all_predicate1, None)):
+                            if all_predicate1 == predicate and isinstance(object1, (Literal, URIRef)):
+                                new_line_entries.append(self._strip_string(str(object1)))
 
                             # Ordered list, multiple levels
-                            elif all_predicate1 == predicate and isinstance(o1, BNode):
-                                new_line_entries.extend(self._convert_triples_to_table_with_ordered_lists(triples, o1))
+                            elif all_predicate1 == predicate and isinstance(object1, BNode):
+                                new_line_entries.extend(self._morph_to_csv_ol(self.store, object1))
 
                             # Nested properties, level 2
                             else:
                                 for all_predicate2 in all_predicates:
-                                    for s2, p2, o2 in triples.triples((o1, all_predicate2, None)):
-                                        if all_predicate2 == predicate and isinstance(o2, (Literal, URIRef)):
-                                            new_line_entries.append(self._strip_string(str(o2)))
+                                    for object2 in self.store.objects((object1, all_predicate2, None)):
+                                        if all_predicate2 == predicate and isinstance(object2, (Literal, URIRef)):
+                                            new_line_entries.append(self._strip_string(str(object2)))
 
                                         # Nested properties, level 3
                                         else:
                                             for all_predicate3 in all_predicates:
-                                                for s3, p3, o3 in triples.triples((o2, all_predicate3, None)):
-                                                    if all_predicate3 == predicate and isinstance(o3, (Literal, URIRef)):
-                                                        new_line_entries.append(self._strip_string(str(o3)))
+                                                for object3 in self.store.objects((object2, all_predicate3, None)):
+                                                    if all_predicate3 == predicate and isinstance(object3, (Literal, URIRef)):
+                                                        new_line_entries.append(self._strip_string(str(object3)))
 
                     # Produce entry for this predicate
                     new_line_entry = ', '.join(new_line_entries)
@@ -153,452 +217,473 @@ class HydraRetrieveGraph(HydraRetrieve):
                 # Add new line to output
                 output.append(new_line)
 
-        # Return tabular data
-        return output
+        # Save tabular data
+        for output_line in output:
+            self.csv += '"' + '","'.join(output_line) + '"\n'
 
 
-    def _convert_triples_to_table_with_ordered_lists(self, triples:object, previous:BNode) -> list:
+    def _morph_to_csv_ol(self, previous:BNode) -> list:
         '''
-        Helper function to page through ordered lists when querying properties to print them as a table
+        Helper to page through ordered lists when querying properties to print them as a CSV table
 
             Parameters:
-                triples (object): Graph object containing the triples to flick through
                 previous (BNode): Previous entry in the unordered list
 
             Returns:
                 list: Further entries of the unordered list
         '''
 
-        # Set up empty list of results to add to
-        new_line_entries = []
+        # Set up empty list
+        entries = []
 
         # Dig one level further down the ordered list
-        for s, p, o in triples.triples((previous, None, None)):
-            if isinstance(o, (Literal, URIRef)) and o != URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'):
-                new_line_entries.append(self._strip_string(str(o)))
-            elif isinstance(o, BNode):
-                new_line_entries.extend(self._convert_triples_to_table_with_ordered_lists(triples, o))
+        for entry in self.store.objects((previous, None)):
+            if isinstance(entry, (Literal, URIRef)) and entry != URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'):
+                entries.append(self._strip_string(str(entry)))
 
-        # Return the list
-        return new_line_entries
+            # Keep digging if there is more
+            elif isinstance(entry, BNode):
+                entries.extend(self._morph_to_csv_ol(entry))
 
-
-
-
+        # Return list
+        return entries
 
 
-
-    def convert_cgif_to_nfdi(self, cgif:Graph) -> Graph:
+    def _morph_cgif_to_nfdi(self):
         '''
-        Converts an existing CGIF (or schema.org) graph to nfdicore/cto and returns it
-
-            Parameters:
-                cgif (Graph): The CGIF graph to convert
-
-            Returns:
-                Graph: The nfdicore/cto version of the graph
+        Converts CGIF (or schema.org) triples to nfdicore/cto ones
         '''
 
         # Set up nfdicore/cto graph
         nfdi = Graph()
-        nfdi.bind('schema', SCHEMA)
+        nfdi.bind('rdf', RDF)
+        nfdi.bind('rdfs', RDFS)
+        nfdi.bind('owl', OWL)
+        nfdi.bind('schema', SDO)
         nfdi.bind('nfdicore', NFDICORE)
         nfdi.bind('cto', CTO)
+        nfdi.bind('mo', MO)
 
         # Set up lists of schema.org classes for data feed, person, organization, place, and event
         # Lists collated on 17/4/2024, periodical update desirable (TODO)
         schema_data_feed = [
-            SCHEMA.DataFeed,
-            SCHEMA.Dataset
+            SDO.DataFeed,
+            SDO.Dataset
         ]
         schema_person = [
-            SCHEMA.Person,
-            SCHEMA.Patient
+            SDO.Person,
+            SDO.Patient
         ]
         schema_organization = [
-            SCHEMA.Organization,
-            SCHEMA.Airline,
-            SCHEMA.Consortium,
-            SCHEMA.Corporation,
-            SCHEMA.EducationalOrganization,
-            SCHEMA.CollegeOrUniversity,
-            SCHEMA.ElementarySchool,
-            SCHEMA.HighSchool,
-            SCHEMA.MiddleSchool,
-            SCHEMA.Preschool,
-            SCHEMA.School,
-            SCHEMA.FundingScheme,
-            SCHEMA.GovernmentOrganization,
-            SCHEMA.LibrarySystem,
-            SCHEMA.LocalBusiness,
-            SCHEMA.AnimalShelter,
-            SCHEMA.ArchiveOrganization,
-            SCHEMA.AutomotiveBusiness,
-            SCHEMA.AutoBodyShop,
-            SCHEMA.AutoDealer,
-            SCHEMA.AutoPartsStore,
-            SCHEMA.AutoRental,
-            SCHEMA.AutoRepair,
-            SCHEMA.AutoWash,
-            SCHEMA.GasStation,
-            SCHEMA.MotorcycleDealer,
-            SCHEMA.MotorcycleRepair,
-            SCHEMA.ChildCare,
-            SCHEMA.Dentist,
-            SCHEMA.DryCleaningOrLaundry,
-            SCHEMA.EmergencyService,
-            SCHEMA.FireStation,
-            SCHEMA.Hospital,
-            SCHEMA.PoliceStation,
-            SCHEMA.EmploymentAgency,
-            SCHEMA.EntertainmentBusiness,
-            SCHEMA.AdultEntertainment,
-            SCHEMA.AmusementPark,
-            SCHEMA.ArtGallery,
-            SCHEMA.Casino,
-            SCHEMA.ComedyClub,
-            SCHEMA.MovieTheater,
-            SCHEMA.NightClub,
-            SCHEMA.FinancialService,
-            SCHEMA.AccountingService,
-            SCHEMA.AutomatedTeller,
-            SCHEMA.BankOrCreditUnion,
-            SCHEMA.InsuranceAgency,
-            SCHEMA.FoodEstablishment,
-            SCHEMA.Bakery,
-            SCHEMA.BarOrPub,
-            SCHEMA.Brewery,
-            SCHEMA.CafeOrCoffeeShop,
-            SCHEMA.Distillery,
-            SCHEMA.FastFoodRestaurant,
-            SCHEMA.IceCreamShop,
-            SCHEMA.Restaurant,
-            SCHEMA.Winery,
-            SCHEMA.GovernmentOffice,
-            SCHEMA.PostOffice,
-            SCHEMA.HealthAndBeautyBusiness,
-            SCHEMA.BeautySalon,
-            SCHEMA.DaySpa,
-            SCHEMA.HairSalon,
-            SCHEMA.HealthClub,
-            SCHEMA.NailSalon,
-            SCHEMA.TattooParlor,
-            SCHEMA.HomeAndConstructionBusiness,
-            SCHEMA.Electrician,
-            SCHEMA.GeneralContractor,
-            SCHEMA.HVACBusiness,
-            SCHEMA.HousePainter,
-            SCHEMA.Locksmith,
-            SCHEMA.MovingCompany,
-            SCHEMA.Plumber,
-            SCHEMA.RoofingContractor,
-            SCHEMA.InternetCafe,
-            SCHEMA.LegalService,
-            SCHEMA.Attorney,
-            SCHEMA.Notary,
-            SCHEMA.Library,
-            SCHEMA.LodgingBusiness,
-            SCHEMA.BedAndBreakfast,
-            SCHEMA.Campground,
-            SCHEMA.Hostel,
-            SCHEMA.Hotel,
-            SCHEMA.Motel,
-            SCHEMA.Resort,
-            SCHEMA.SkiResort,
-            SCHEMA.VacationRental,
-            SCHEMA.MedicalBusiness,
-            SCHEMA.Dentist,
-            SCHEMA.MedicalClinic,
-            SCHEMA.CovidTestingFacility,
-            SCHEMA.Optician,
-            SCHEMA.Pharmacy,
-            SCHEMA.Physician,
-            SCHEMA.IndividualPhysician,
-            SCHEMA.PhysiciansOffice,
-            SCHEMA.ProfessionalService,
-            SCHEMA.RadioStation,
-            SCHEMA.RealEstateAgent,
-            SCHEMA.RecyclingCenter,
-            SCHEMA.SelfStorage,
-            SCHEMA.ShoppingCenter,
-            SCHEMA.SportsActivityLocation,
-            SCHEMA.BowlingAlley,
-            SCHEMA.ExerciseGym,
-            SCHEMA.GolfCourse,
-            SCHEMA.HealthClub,
-            SCHEMA.PublicSwimmingPool,
-            SCHEMA.SkiResort,
-            SCHEMA.SportsClub,
-            SCHEMA.StadiumOrArena,
-            SCHEMA.TennisComplex,
-            SCHEMA.Store,
-            SCHEMA.AutoPartsStore,
-            SCHEMA.BikeStore,
-            SCHEMA.BookStore,
-            SCHEMA.ClothingStore,
-            SCHEMA.ComputerStore,
-            SCHEMA.ConvenienceStore,
-            SCHEMA.DepartmentStore,
-            SCHEMA.ElectronicsStore,
-            SCHEMA.Florist,
-            SCHEMA.FurnitureStore,
-            SCHEMA.GardenStore,
-            SCHEMA.GroceryStore,
-            SCHEMA.HardwareStore,
-            SCHEMA.HobbyShop,
-            SCHEMA.HomeGoodsStore,
-            SCHEMA.JewelryStore,
-            SCHEMA.LiquorStore,
-            SCHEMA.MensClothingStore,
-            SCHEMA.MobilePhoneStore,
-            SCHEMA.MovieRentalStore,
-            SCHEMA.MusicStore,
-            SCHEMA.OfficeEquipmentStore,
-            SCHEMA.OutletStore,
-            SCHEMA.PawnShop,
-            SCHEMA.PetStore,
-            SCHEMA.ShoeStore,
-            SCHEMA.SportingGoodsStore,
-            SCHEMA.TireShop,
-            SCHEMA.ToyStore,
-            SCHEMA.WholesaleStore,
-            SCHEMA.TelevisionStation,
-            SCHEMA.TouristInformationCenter,
-            SCHEMA.TravelAgency,
-            SCHEMA.MedicalOrganization,
-            SCHEMA.Dentist,
-            SCHEMA.DiagnosticLab,
-            SCHEMA.Hospital,
-            SCHEMA.MedicalClinic,
-            SCHEMA.Pharmacy,
-            SCHEMA.Physician,
-            SCHEMA.VeterinaryCare,
-            SCHEMA.NGO,
-            SCHEMA.NewsMediaOrganization,
-            SCHEMA.OnlineBusiness,
-            SCHEMA.OnlineStore,
-            SCHEMA.PerformingGroup,
-            SCHEMA.DanceGroup,
-            SCHEMA.MusicGroup,
-            SCHEMA.TheaterGroup,
-            SCHEMA.PoliticalParty,
-            SCHEMA.Project,
-            SCHEMA.FundingAgency,
-            SCHEMA.ResearchProject,
-            SCHEMA.ResearchOrganization,
-            SCHEMA.SearchRescueOrganization,
-            SCHEMA.SportsOrganization,
-            SCHEMA.SportsTeam,
-            SCHEMA.WorkersUnion
+            SDO.Organization,
+            SDO.Airline,
+            SDO.Consortium,
+            SDO.Corporation,
+            SDO.EducationalOrganization,
+            SDO.CollegeOrUniversity,
+            SDO.ElementarySchool,
+            SDO.HighSchool,
+            SDO.MiddleSchool,
+            SDO.Preschool,
+            SDO.School,
+            SDO.FundingScheme,
+            SDO.GovernmentOrganization,
+            SDO.LibrarySystem,
+            SDO.LocalBusiness,
+            SDO.AnimalShelter,
+            SDO.ArchiveOrganization,
+            SDO.AutomotiveBusiness,
+            SDO.AutoBodyShop,
+            SDO.AutoDealer,
+            SDO.AutoPartsStore,
+            SDO.AutoRental,
+            SDO.AutoRepair,
+            SDO.AutoWash,
+            SDO.GasStation,
+            SDO.MotorcycleDealer,
+            SDO.MotorcycleRepair,
+            SDO.ChildCare,
+            SDO.Dentist,
+            SDO.DryCleaningOrLaundry,
+            SDO.EmergencyService,
+            SDO.FireStation,
+            SDO.Hospital,
+            SDO.PoliceStation,
+            SDO.EmploymentAgency,
+            SDO.EntertainmentBusiness,
+            SDO.AdultEntertainment,
+            SDO.AmusementPark,
+            SDO.ArtGallery,
+            SDO.Casino,
+            SDO.ComedyClub,
+            SDO.MovieTheater,
+            SDO.NightClub,
+            SDO.FinancialService,
+            SDO.AccountingService,
+            SDO.AutomatedTeller,
+            SDO.BankOrCreditUnion,
+            SDO.InsuranceAgency,
+            SDO.FoodEstablishment,
+            SDO.Bakery,
+            SDO.BarOrPub,
+            SDO.Brewery,
+            SDO.CafeOrCoffeeShop,
+            SDO.Distillery,
+            SDO.FastFoodRestaurant,
+            SDO.IceCreamShop,
+            SDO.Restaurant,
+            SDO.Winery,
+            SDO.GovernmentOffice,
+            SDO.PostOffice,
+            SDO.HealthAndBeautyBusiness,
+            SDO.BeautySalon,
+            SDO.DaySpa,
+            SDO.HairSalon,
+            SDO.HealthClub,
+            SDO.NailSalon,
+            SDO.TattooParlor,
+            SDO.HomeAndConstructionBusiness,
+            SDO.Electrician,
+            SDO.GeneralContractor,
+            SDO.HVACBusiness,
+            SDO.HousePainter,
+            SDO.Locksmith,
+            SDO.MovingCompany,
+            SDO.Plumber,
+            SDO.RoofingContractor,
+            SDO.InternetCafe,
+            SDO.LegalService,
+            SDO.Attorney,
+            SDO.Notary,
+            SDO.Library,
+            SDO.LodgingBusiness,
+            SDO.BedAndBreakfast,
+            SDO.Campground,
+            SDO.Hostel,
+            SDO.Hotel,
+            SDO.Motel,
+            SDO.Resort,
+            SDO.SkiResort,
+            SDO.VacationRental,
+            SDO.MedicalBusiness,
+            SDO.Dentist,
+            SDO.MedicalClinic,
+            SDO.CovidTestingFacility,
+            SDO.Optician,
+            SDO.Pharmacy,
+            SDO.Physician,
+            SDO.IndividualPhysician,
+            SDO.PhysiciansOffice,
+            SDO.ProfessionalService,
+            SDO.RadioStation,
+            SDO.RealEstateAgent,
+            SDO.RecyclingCenter,
+            SDO.SelfStorage,
+            SDO.ShoppingCenter,
+            SDO.SportsActivityLocation,
+            SDO.BowlingAlley,
+            SDO.ExerciseGym,
+            SDO.GolfCourse,
+            SDO.HealthClub,
+            SDO.PublicSwimmingPool,
+            SDO.SkiResort,
+            SDO.SportsClub,
+            SDO.StadiumOrArena,
+            SDO.TennisComplex,
+            SDO.Store,
+            SDO.AutoPartsStore,
+            SDO.BikeStore,
+            SDO.BookStore,
+            SDO.ClothingStore,
+            SDO.ComputerStore,
+            SDO.ConvenienceStore,
+            SDO.DepartmentStore,
+            SDO.ElectronicsStore,
+            SDO.Florist,
+            SDO.FurnitureStore,
+            SDO.GardenStore,
+            SDO.GroceryStore,
+            SDO.HardwareStore,
+            SDO.HobbyShop,
+            SDO.HomeGoodsStore,
+            SDO.JewelryStore,
+            SDO.LiquorStore,
+            SDO.MensClothingStore,
+            SDO.MobilePhoneStore,
+            SDO.MovieRentalStore,
+            SDO.MusicStore,
+            SDO.OfficeEquipmentStore,
+            SDO.OutletStore,
+            SDO.PawnShop,
+            SDO.PetStore,
+            SDO.ShoeStore,
+            SDO.SportingGoodsStore,
+            SDO.TireShop,
+            SDO.ToyStore,
+            SDO.WholesaleStore,
+            SDO.TelevisionStation,
+            SDO.TouristInformationCenter,
+            SDO.TravelAgency,
+            SDO.MedicalOrganization,
+            SDO.Dentist,
+            SDO.DiagnosticLab,
+            SDO.Hospital,
+            SDO.MedicalClinic,
+            SDO.Pharmacy,
+            SDO.Physician,
+            SDO.VeterinaryCare,
+            SDO.NGO,
+            SDO.NewsMediaOrganization,
+            SDO.OnlineBusiness,
+            SDO.OnlineStore,
+            SDO.PerformingGroup,
+            SDO.DanceGroup,
+            SDO.MusicGroup,
+            SDO.TheaterGroup,
+            SDO.PoliticalParty,
+            SDO.Project,
+            SDO.FundingAgency,
+            SDO.ResearchProject,
+            SDO.ResearchOrganization,
+            SDO.SearchRescueOrganization,
+            SDO.SportsOrganization,
+            SDO.SportsTeam,
+            SDO.WorkersUnion
         ]
         schema_place = [
-            SCHEMA.Place,
-            SCHEMA.Accommodation,
-            SCHEMA.Apartment,
-            SCHEMA.CampingPitch,
-            SCHEMA.House,
-            SCHEMA.SingleFamilyResidence,
-            SCHEMA.Room,
-            SCHEMA.HotelRoom,
-            SCHEMA.MeetingRoom,
-            SCHEMA.Suite,
-            SCHEMA.AdministrativeArea,
-            SCHEMA.City,
-            SCHEMA.Country,
-            SCHEMA.SchoolDistrict,
-            SCHEMA.State,
-            SCHEMA.CivicStructure,
-            SCHEMA.Airport,
-            SCHEMA.Aquarium,
-            SCHEMA.Beach,
-            SCHEMA.BoatTerminal,
-            SCHEMA.Bridge,
-            SCHEMA.BusStation,
-            SCHEMA.BusStop,
-            SCHEMA.Campground,
-            SCHEMA.Cemetery,
-            SCHEMA.Crematorium,
-            SCHEMA.EducationalOrganization,
-            SCHEMA.EventVenue,
-            SCHEMA.FireStation,
-            SCHEMA.GovernmentBuilding,
-            SCHEMA.CityHall,
-            SCHEMA.Courthouse,
-            SCHEMA.DefenceEstablishment,
-            SCHEMA.Embassy,
-            SCHEMA.LegislativeBuilding,
-            SCHEMA.Hospital,
-            SCHEMA.MovieTheater,
-            SCHEMA.Museum,
-            SCHEMA.MusicVenue,
-            SCHEMA.Park,
-            SCHEMA.ParkingFacility,
-            SCHEMA.PerformingArtsTheater,
-            SCHEMA.PlaceOfWorship,
-            SCHEMA.BuddhistTemple,
-            SCHEMA.Church,
-            SCHEMA.CatholicChurch,
-            SCHEMA.HinduTemple,
-            SCHEMA.Mosque,
-            SCHEMA.Synagogue,
-            SCHEMA.Playground,
-            SCHEMA.PoliceStation,
-            SCHEMA.PublicToilet,
-            SCHEMA.RVPark,
-            SCHEMA.StadiumOrArena,
-            SCHEMA.SubwayStation,
-            SCHEMA.TaxiStand,
-            SCHEMA.TrainStation,
-            SCHEMA.Zoo,
-            SCHEMA.Landform,
-            SCHEMA.BodyOfWater,
-            SCHEMA.Canal,
-            SCHEMA.LakeBodyOfWater,
-            SCHEMA.OceanBodyOfWater,
-            SCHEMA.Pond,
-            SCHEMA.Reservoir,
-            SCHEMA.RiverBodyOfWater,
-            SCHEMA.SeaBodyOfWater,
-            SCHEMA.Waterfall,
-            SCHEMA.Continent,
-            SCHEMA.Mountain,
-            SCHEMA.Volcano,
-            SCHEMA.LandmarksOrHistoricalBuildings,
-            SCHEMA.LocalBusiness,
-            SCHEMA.Residence,
-            SCHEMA.ApartmentComplex,
-            SCHEMA.GatedResidenceCommunity,
-            SCHEMA.TouristAttraction,
-            SCHEMA.TouristDestination
+            SDO.Place,
+            SDO.Accommodation,
+            SDO.Apartment,
+            SDO.CampingPitch,
+            SDO.House,
+            SDO.SingleFamilyResidence,
+            SDO.Room,
+            SDO.HotelRoom,
+            SDO.MeetingRoom,
+            SDO.Suite,
+            SDO.AdministrativeArea,
+            SDO.City,
+            SDO.Country,
+            SDO.SchoolDistrict,
+            SDO.State,
+            SDO.CivicStructure,
+            SDO.Airport,
+            SDO.Aquarium,
+            SDO.Beach,
+            SDO.BoatTerminal,
+            SDO.Bridge,
+            SDO.BusStation,
+            SDO.BusStop,
+            SDO.Campground,
+            SDO.Cemetery,
+            SDO.Crematorium,
+            SDO.EducationalOrganization,
+            SDO.EventVenue,
+            SDO.FireStation,
+            SDO.GovernmentBuilding,
+            SDO.CityHall,
+            SDO.Courthouse,
+            SDO.DefenceEstablishment,
+            SDO.Embassy,
+            SDO.LegislativeBuilding,
+            SDO.Hospital,
+            SDO.MovieTheater,
+            SDO.Museum,
+            SDO.MusicVenue,
+            SDO.Park,
+            SDO.ParkingFacility,
+            SDO.PerformingArtsTheater,
+            SDO.PlaceOfWorship,
+            SDO.BuddhistTemple,
+            SDO.Church,
+            SDO.CatholicChurch,
+            SDO.HinduTemple,
+            SDO.Mosque,
+            SDO.Synagogue,
+            SDO.Playground,
+            SDO.PoliceStation,
+            SDO.PublicToilet,
+            SDO.RVPark,
+            SDO.StadiumOrArena,
+            SDO.SubwayStation,
+            SDO.TaxiStand,
+            SDO.TrainStation,
+            SDO.Zoo,
+            SDO.Landform,
+            SDO.BodyOfWater,
+            SDO.Canal,
+            SDO.LakeBodyOfWater,
+            SDO.OceanBodyOfWater,
+            SDO.Pond,
+            SDO.Reservoir,
+            SDO.RiverBodyOfWater,
+            SDO.SeaBodyOfWater,
+            SDO.Waterfall,
+            SDO.Continent,
+            SDO.Mountain,
+            SDO.Volcano,
+            SDO.LandmarksOrHistoricalBuildings,
+            SDO.LocalBusiness,
+            SDO.Residence,
+            SDO.ApartmentComplex,
+            SDO.GatedResidenceCommunity,
+            SDO.TouristAttraction,
+            SDO.TouristDestination
         ]
         schema_event = [
-            SCHEMA.Event,
-            SCHEMA.BusinessEvent,
-            SCHEMA.ChildrensEvent,
-            SCHEMA.ComedyEvent,
-            SCHEMA.CourseInstance,
-            SCHEMA.DanceEvent,
-            SCHEMA.DeliveryEvent,
-            SCHEMA.EducationEvent,
-            SCHEMA.EventSeries,
-            SCHEMA.ExhibitionEvent,
-            SCHEMA.Festival,
-            SCHEMA.FoodEvent,
-            SCHEMA.Hackathon,
-            SCHEMA.LiteraryEvent,
-            SCHEMA.MusicEvent,
-            SCHEMA.PublicationEvent,
-            SCHEMA.BroadcastEvent,
-            SCHEMA.OnDemandEvent,
-            SCHEMA.SaleEvent,
-            SCHEMA.ScreeningEvent,
-            SCHEMA.SocialEvent,
-            SCHEMA.SportsEvent,
-            SCHEMA.TheaterEvent,
-            SCHEMA.UserInteraction,
-            SCHEMA.UserBlocks,
-            SCHEMA.UserCheckins,
-            SCHEMA.UserComments,
-            SCHEMA.UserDownloads,
-            SCHEMA.UserLikes,
-            SCHEMA.UserPageVisits,
-            SCHEMA.UserPlays,
-            SCHEMA.UserPlusOnes,
-            SCHEMA.UserTweets,
-            SCHEMA.VisualArtsEvent
+            SDO.Event,
+            SDO.BusinessEvent,
+            SDO.ChildrensEvent,
+            SDO.ComedyEvent,
+            SDO.CourseInstance,
+            SDO.DanceEvent,
+            SDO.DeliveryEvent,
+            SDO.EducationEvent,
+            SDO.EventSeries,
+            SDO.ExhibitionEvent,
+            SDO.Festival,
+            SDO.FoodEvent,
+            SDO.Hackathon,
+            SDO.LiteraryEvent,
+            SDO.MusicEvent,
+            SDO.PublicationEvent,
+            SDO.BroadcastEvent,
+            SDO.OnDemandEvent,
+            SDO.SaleEvent,
+            SDO.ScreeningEvent,
+            SDO.SocialEvent,
+            SDO.SportsEvent,
+            SDO.TheaterEvent,
+            SDO.UserInteraction,
+            SDO.UserBlocks,
+            SDO.UserCheckins,
+            SDO.UserComments,
+            SDO.UserDownloads,
+            SDO.UserLikes,
+            SDO.UserPageVisits,
+            SDO.UserPlays,
+            SDO.UserPlusOnes,
+            SDO.UserTweets,
+            SDO.VisualArtsEvent
         ]
 
-        # Build triples about the data feed
-        for dataset in cgif.subjects((RDF.type, SCHEMA.DataCatalog, True)):
-            if cgif.objects():
+        # Build statements about data feed
+        datafeed = next(self.store.subjects((RDF.type, schema_data_feed, True)), None)
+        if datafeed != None:
+            nfdi.add((datafeed, RDF.type, NFDICORE.Dataset))
+            for datafeed_same in self.store.objects((datafeed, SDO.sameAs, True)):
+                nfdi.add((datafeed, OWL.sameAs, datafeed_same))
 
+            # Set up empty lists for higher-level metadata to use later
+            datafeed_element_publishers = []
+            datafeed_element_licenses = []
+            datafeed_elements = []
 
+            # Build statements about data portal
+            dataportal = next(self.store.objects((datafeed, SDO.includedInDataCatalog, True)), None)
+            if dataportal != None:
+                nfdi.add((dataportal, RDF.type, NFDICORE.DataPortal))
+                nfdi.add((dataportal, NFDICORE.dataset, datafeed))
+                for dataportal_same in self.store.objects((dataportal, SDO.sameAs, True)):
+                    nfdi.add((dataportal, OWL.sameAs, dataportal_same))
 
-
-        for data_portal in cgif.subjects((RDF.type, SCHEMA.DataCatalog, True)):
-            if cgif.objects():
+                # Grab portal-level metadata to use later
+                for datafeed_element_publisher in self.store.objects((dataportal, SDO.publisher, True)):
+                    datafeed_element_publishers.append(datafeed_element_publisher)
             
-            datafeed_element_type in schema_person:
-            nfdi.add((data_portal, RDF.type, NFDICORE.DataPortal))
+            # Grab feed-level metadata to use later
+            for datafeed_element_license in self.store.objects((datafeed, SDO.licence, True)):
+                datafeed_element_licenses.append(datafeed_element_license)
 
-        # Build central data feed elements
-        for datafeed_element in cgif.objects((SCHEMA.DataFeedItem, SCHEMA.item, None, True)):
-            nfdi.add((datafeed_element, RDF.type, CTO.DatafeedElement))
-            type_identified = False
+            # Collect data feed elements in lists
+            for datafeed_element_schema in self.store.objects((datafeed, SDO.dataFeedElement, True)):
+                if (datafeed_element_schema, RDF.type, SDO.DataFeedItem) in self.store:
+                    datafeed_element = next(self.store.objects((datafeed_element_schema, SDO.item, True)), None)
+                    if datafeed_element != None:
+                        datafeed_elements.append(datafeed_element)
 
-            # Perform checks for a specific nfdicore/cto type
-            for datafeed_element_type in cgif.objects(datafeed_element, RDF.type, True):
+            # Collect individual data feed elements
+            for datafeed_element in self.store.subjects((SDO.isPartOf, datafeed, True)):
+                datafeed_elements.append(datafeed_element)
 
-                # Person
-                if type_identified == False and datafeed_element_type in schema_person:
-                    nfdi.add((datafeed_element, RDF.type, NFDICORE.Person))
-                    type_identified == True
+            # Build statements about data feed element
+            for datafeed_element in datafeed_elements:
+                nfdi.add((datafeed_element, CTO.elementOf, datafeed))
+                nfdi.add((datafeed_element, RDF.type, CTO.DatafeedElement))
 
-                # Organization
-                if type_identified == False and datafeed_element_type in schema_organization:
-                    nfdi.add((datafeed_element, RDF.type, NFDICORE.Organization))
-                    type_identified == True
+                # Check for additional, specific nfdicore/cto type
+                datafeed_element_type = next(self.store.objects(datafeed_element, RDF.type, True), None)
+                if datafeed_element_type != None:
+                    if datafeed_element_type in schema_person:         # Person
+                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Person))
+                    elif datafeed_element_type in schema_organization: # Organization
+                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Organization))
+                    elif datafeed_element_type in schema_place:        # Place
+                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Place))
+                    elif datafeed_element_type in schema_event:        # Event
+                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Event))
+                    else:                                              # Item (incl. creative works)
+                        nfdi.add((datafeed_element, RDF.type, CTO.Item))
 
-                # Place
-                elif type_identified == False and datafeed_element_type in schema_place:
-                    nfdi.add((datafeed_element, RDF.type, NFDICORE.Place))
-                    type_identified == True
+                # Build statements for label
+                for datafeed_element_label in self.store.objects((datafeed_element, SDO.name, True)):
+                    nfdi.add((datafeed_element, RDFS.label, datafeed_element_label))
 
-                # Event
-                elif type_identified == False and datafeed_element_type in schema_event:
-                    nfdi.add((datafeed_element, RDF.type, NFDICORE.Event))
-                    type_identified == True
+                # Build statements for URL
+                nfdi.add((datafeed_element, SDO.url, datafeed_element))
 
-                # Item (includes creative works)
-                elif type_identified == False:
-                    nfdi.add((datafeed_element, RDF.type, CTO.Item))
-                    type_identified == True
+                # Build statements for publisher
+                for datafeed_element_publisher in datafeed_element_publishers:
+                    nfdi.add((datafeed_element, NFDICORE.publisher, datafeed_element_publisher))
 
+                # Build statements for license
+                if len(self.store.objects((datafeed_element, SDO.license, True))) > 0:
+                    for datafeed_element_license in self.store.objects((datafeed_element, SDO.license, True)):
+                        nfdi.add((datafeed_element, NFDICORE.license, datafeed_element_license))
+                else:
+                    for datafeed_element_license in datafeed_element_licenses:
+                        nfdi.add((datafeed_element, NFDICORE.license, datafeed_element_license))
 
+                # Build statements for image
+                for datafeed_element_image in self.store.objects((datafeed_element, SDO.image, True)):
+                    nfdi.add((datafeed_element, SDO.image, datafeed_element_image))
 
+                # Build statements for lyrics
+                for datafeed_element_lyrics_schema in self.store.objects((datafeed_element, SDO.lyrics, True)):
+                    datafeed_element_lyrics = next(self.store.objects((datafeed_element_lyrics_schema, SDO.text, True)), None)
+                    if datafeed_element_lyrics != None:
+                        nfdi.add((datafeed_element, MO.lyrics, datafeed_element_lyrics))
+                        nfdi.add((datafeed_element_lyrics, RDF.type, MO.Lyrics))
 
-        # TODO:
-        # - Add properties of DatafeedElement
-        # - Adapt logic to single resources in addition to lists
-        # - Add research information triples
+                # Build statements for date
+                for datafeed_element_date in self.store.objects((datafeed_element, SDO.temporalCoverage, True)):
+                    if len(self.store.triples((datafeed_element_date, RDF.type, SDO.DateTime, True))) > 0:
+                        nfdi.add((datafeed_element, CTO.creationPeriod, datafeed_element_date))
+                    else:
+                        nfdi.add((datafeed_element, CTO.approximatePeriod, datafeed_element_date))
 
-"""
-cto:elementOf <https://nfdi4culture.de/id/E4229> ;
-nfdicore:license <https://creativecommons.org/licenses/by-nc/4.0/> ;
-nfdicore:publisher <https://nfdi4culture.de/id/E1834> ;
+                # Build statements for external vocabularies
+                # External queries desirable to add extra triples (TODO): CTO.elementType, CTO.subjectConcept,
+                # CTO.relatedPerson, CTO.relatedOrganisation, CTO.relatedEvent, CTO.relatedLocation, CTO.relatedItem
+                for datafeed_element_vocab in self.store.objects((datafeed_element, SDO.keywords, True)):
+                    if str(datafeed_element_vocab).startswith('http://sws.geonames.org/'):                  # GeoNames
+                        nfdi.add((datafeed_element, CTO.geonames, datafeed_element_vocab))
+                        nfdi.add((datafeed_element, CTO.relatedLocation, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('https://iconclass.org/'):                  # Iconclass
+                        nfdi.add((datafeed_element, CTO.iconclass, datafeed_element_vocab))
+                        nfdi.add((datafeed_element, CTO.subjectConcept, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('http://vocab.getty.edu/page/aat/'):        # Getty AAT
+                        nfdi.add((datafeed_element, CTO.aat, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('https://d-nb.info/gnd/'):                  # GND
+                        nfdi.add((datafeed_element, CTO.gnd, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('http://www.wikidata.org/entity/'):         # Wikidata
+                        nfdi.add((datafeed_element, CTO.wikidata, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('https://viaf.org/viaf/'):                  # VIAF
+                        nfdi.add((datafeed_element, CTO.viaf, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('https://rism.online/'):                    # RISM
+                        nfdi.add((datafeed_element, CTO.rism, datafeed_element_vocab))
+                    elif str(datafeed_element_vocab).startswith('https://database.factgrid.de/wiki/Item:'): # FactGrid
+                        nfdi.add((datafeed_element, CTO.factgrid, datafeed_element_vocab))
 
-schema:image <https://corpusvitrearum.de/typo3temp/cvma/_processed_/pics/medium/4485.jpg> ;
-schema:url <https://corpusvitrearum.de/id/F4485> ;
-rdfs:label "Engel mit Dudelsack"@de ;
-
-cto:approximatePeriod "vor 1397" ;
-cto:creationPeriod "1380-01-01T00:00:00/1400-12-31T23:59:59" ;
-plus others of schema:temporalCoverage
-
-cto:aat <http://vocab.getty.edu/page/aat/300263722> ;
-cto:elementType <http://vocab.getty.edu/page/aat/300263722> ;
-cto:elementTypeLiteral "Glaskunst (Objektgattung)"@de ;
-
-cto:subjectConcept <https://iconclass.org/11G21> .
-cto:iconclass <https://iconclass.org/11G21> ;
-cto:subjectConceptLiteral
-plus others of cto:externalVocabulary
-
-cto:relatedLocation <http://sws.geonames.org/11427995> ;
-cto:geonames <http://sws.geonames.org/11427995> ;
-plus others of cto:externalVocabulary
-
-cto:relatedPerson
-plus others of cto:externalVocabulary
-
-cto:relatedItem
-plus others of cto:externalVocabulary
-
-cto:relatedEvent
-plus others of cto:externalVocabulary
-
-cto:relatedOrganisation
-plus others of cto:externalVocabulary
-
-cto:sourceFile
-"""
+        # Save result
+        self.nfdi = nfdi

@@ -7,6 +7,8 @@
 
 
 # Import libraries
+from datetime import date
+from lxml import etree
 
 # Import script modules
 from classes.retrieve import *
@@ -14,26 +16,17 @@ from classes.retrieve import *
 
 class HydraRetrieveResource(HydraRetrieve):
 
-    # Variables
-    something = None
 
-
-    def __init__(self, command, output, report, morph):
+    def __init__(self, report:object):
         '''
         Retrieve individual resource files
 
             Parameters:
-                command (str): ???
-                output (str): ???
-                report (str): ???
-                morph (str): ???
+                report (object): The report object to use
         '''
 
         # Inherit from base class
-        super().__init__()
-
-        # Assign variables
-        self.something = something
+        super().__init__(report)
 
 
     def __str__(self):
@@ -42,77 +35,12 @@ class HydraRetrieveResource(HydraRetrieve):
         '''
 
         # Put together a string
-        return self.something
+        return 'Retrieval data and methods for individual resource files'
 
 
-    def _determine_file_type(self, headers:dict, getFileExtension:bool = False) -> str:
-        '''
-        Determines the best file type and extension based on the server response
-
-            Parameters:
-                headers (dict): Headers of the server response as a dictionary
-                getFileExtension (bool): Determines whether the type or the extension is returned
-            
-            Returns:
-                str: Best file extension
-        '''
-
-        # Retrieve content type
-        content_type = headers['Content-Type']
-
-        # Get best file type and extension, list originally based on
-        # https://github.com/RDFLib/rdflib/blob/main/rdflib/parser.py#L237
-        # and extended based on further RDFLib documentation
-        if 'text/html' in content_type:
-            file_type = 'rdfa'
-            file_extension = 'html'
-        elif 'application/xhtml+xml' in content_type:
-            file_type = 'rdfa'
-            file_extension = 'xhtml'
-        elif 'application/rdf+xml' in content_type:
-            file_type = 'xml'
-            file_extension = 'xml'
-        elif 'text/n3' in content_type:
-            file_type = 'n3'
-            file_extension = 'n3'
-        elif 'text/turtle' in content_type or 'application/x-turtle' in content_type:
-            file_type = 'turtle'
-            file_extension = 'ttl'
-        elif 'application/trig' in content_type:
-            file_type = 'trig'
-            file_extension = 'trig'
-        elif 'application/trix' in content_type:
-            file_type = 'trix'
-            file_extension = 'trix'
-        elif 'application/n-quads' in content_type:
-            file_type = 'nquads'
-            file_extension = 'nq'
-        elif 'application/ld+json' in content_type:
-            file_type = 'json-ld'
-            file_extension = 'jsonld'
-        elif 'application/json' in content_type:
-            file_type = 'json-ld'
-            file_extension = 'json'
-        elif 'application/hex+x-ndjson' in content_type:
-            file_type = 'hext'
-            file_extension = 'hext'
-        elif 'text/plain' in content_type:
-            file_type = 'nt'
-            file_extension = 'nt'
-
-        # Non-RDF file types that may be useful
-        # When you add a file type here, make sure you also list it in the config dictionary
-        elif 'application/xml' in content_type:
-            file_type = 'lido'
-            file_extension = 'xml'
-        else:
-            raise Exception('Hydra Scraper does not recognise this file type.')
-
-        # Return file extension or type
-        if getFileExtension == True:
-            return file_extension
-        else:
-            return file_type
+    # TODO read()
+    # TODO morph()
+    # TODO save()
 
 
     def convert_lido_to_cgif(self, lido:str, supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = '') -> Graph:
@@ -524,106 +452,6 @@ class HydraRetrieveResource(HydraRetrieve):
 
 #         # Notify object that it is populated
 #         self.populated = True
-
-#         # Provide final status
-#         self.status.append(status_report)
-
-
-#     def save_triples(self, triple_filter:str = 'none', file_name:str = 'resources'):
-#         '''
-#         Saves all downloaded triples into a single Turtle file
-
-#             Parameters:
-#                 triple_filter (str, optional): Name of a filter (e.g. 'cgif') to apply to triples before saving them, default to 'none'
-#                 file_name (str, optional): Name of the triple file without a file extension, defaults to 'resources'
-#         '''
-
-#         # Provide initial status
-#         status_report = {
-#             'success': False,
-#             'reason': ''
-#         }
-
-#         # Prevent routine if object is not populated yet
-#         if self.populated != True:
-#             status_report['reason'] = 'A list of triples can only be written when the resources were read.'
-#         else:
-
-#             # Generate filter description to use in status updates
-#             filter_description = ''
-#             if triple_filter == 'cgif':
-#                 filter_description = 'CGIF-filtered '
-
-#             # Optionally filter CGIF triples
-#             if triple_filter == 'cgif':
-#                 # TODO Add CGIF filters here
-#                 filtered_triples = self.triples
-
-#             # Initial progress
-#             echo_progress('Saving list of ' + filter_description + 'resource triples', 0, 100)
-
-#             # Compile file if there are triples
-#             if len(self.triples):
-#                 file_path = self.target_folder + '/' + file_name + '.ttl'
-#                 if triple_filter == 'cgif':
-#                     filtered_triples.serialize(destination=file_path, format='turtle')
-#                 else:
-#                     self.triples.serialize(destination=file_path, format='turtle')
-
-#                 # Compile success status
-#                 status_report['success'] = True
-#                 status_report['reason'] = 'All ' + filter_description + 'resource triples listed in a Turtle file.'
-
-#             # Report if there are no resources
-#             else:
-#                 status_report['reason'] = 'No ' + filter_description + 'resource triples to list in a Turtle file.'
-
-#             # Final progress
-#             echo_progress('Saving list of ' + filter_description + 'resource triples', 100, 100)
-
-#         # Provide final status
-#         self.status.append(status_report)
-
-
-#     def save_table(self, table_data:list = [], file_name:str = 'resources'):
-#         '''
-#         Saves specified data from all downloaded triples into a single CSV file
-
-#             Parameters:
-#                 table_data (list, optional): List of properties to save, defaults to all
-#                 file_name (str, optional): Name of the table file without a file extension, defaults to 'resources'
-#         '''
-
-#         # Provide initial status
-#         status_report = {
-#             'success': False,
-#             'reason': ''
-#         }
-
-#         # Prevent routine if object is not populated yet
-#         if self.populated != True:
-#             status_report['reason'] = 'A data table can only be written when the resources were read.'
-#         else:
-
-#             # Initial progress
-#             echo_progress('Saving table from resource data', 0, 100)
-
-#             # Compile table if there are triples
-#             if len(self.triples):
-#                 file_path = self.target_folder + '/' + file_name
-#                 tabular_data = convert_triples_to_table(self.triples, table_data)
-#                 save_csv(tabular_data, file_path)
-
-#                 # Compile success status
-#                 status_report['success'] = True
-#                 status_report['reason'] = 'Resource data listed in a table.'
-
-#             # Report if there are no resources
-#             else:
-#                 status_report['reason'] = 'No resource data to list in a table.'
-
-#             # Final progress
-#             echo_progress('Saving table from resource data', 100, 100)
 
 #         # Provide final status
 #         self.status.append(status_report)

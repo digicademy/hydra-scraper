@@ -11,21 +11,39 @@ from sys import argv
 
 # Import script modules
 from classes.command import *
-from classes.morph import *
-from classes.output import *
 from classes.report import *
-from classes.retrieve import *
+from classes.retrieve_feed import *
+from classes.retrieve_resource import *
+from classes.retrieve_graph import *
 
 
 # Set up config and reporting
 command = HydraCommand(argv)
 report = HydraReport(command.quiet)
 
+#feed = HydraRetrieveFeed()
+#resource = HydraRetrieveResource()
+
 #
 
-list = HydraRetrieveList() # read, save, _remove_blank_lines
-file = HydraRetrieveFile() # read, save, morph, _morph_lido_to_nfdi
-graph = HydraRetrieveGraph() # read, save, morph, _morph_cgif_to_nfdi
+graph = HydraRetrieveGraph(report)
+
+# Compile triples
+if 'resource_triples' in command.download:
+    graph.save(command.target_folder_path, 'resource_triples.ttl', 'ttl')
+
+# Compile NFDI-style triples
+if 'resource_nfdi' in command.download:
+    graph.morph('cgif-to-nfdi')
+    graph.save(command.target_folder_path, 'resource_nfdi.ttl', 'nfdi')
+
+# Compile CSV table
+if 'resource_table' in command.download:
+    graph.morph('to-csv', command.table_data)
+    graph.save(command.target_folder_path, 'resource_table.csv', 'csv')
+
+# Update status from graph object
+report.status += graph.report.status
 
 #
 
@@ -85,18 +103,6 @@ report.finish()
 #     else:
 #         save_resources = False
 #     beacon.populate(save_resources, command.clean_resource_names, command.source_file, command.source_folder, command.supplement_data_feed, command.supplement_data_catalog, command.supplement_data_catalog_publisher)
-
-#     # Compile resource triples if requested
-#     if 'resource_triples' in command.download:
-#         beacon.save_triples()
-
-#     # Compile resource CGIF triples if requested
-#     if 'resource_cgif' in command.download:
-#         beacon.save_triples('cgif', 'resources_cgif')
-
-#     # Compile resource table if requested
-#     if 'resource_table' in command.download:
-#         beacon.save_csv(command.table_data)
 
 #     # Add status message
 #     status.extend(beacon.status)
