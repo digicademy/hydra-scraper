@@ -8,25 +8,73 @@
 
 # Import libraries
 from glob import glob
+from math import ceil
 from re import search
+from rdflib import Graph, Namespace
+from time import sleep
 
 # Import script modules
 from classes.retrieve import *
 
+# Define namespaces
+from rdflib.namespace import RDF, SDO
+HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
 
 class HydraRetrieveFeed(HydraRetrieve):
 
+    # Variables
+    feed = []
+    feed_url = None
+    feed_file = None
+    store = None
 
-    def __init__(self, report:object):
+
+    def __init__(self, report:object, feed_file:str = None, feed_url:str = None, content_type:str = None, max_number_of_paginated_lists:int = 0, retrieval_delay:float = 0, download:bool = False, file_path:str = None):
         '''
         Retrieve data feeds like beacon files or APIs
 
             Parameters:
                 report (object): The report object to use
+                feed_file (str): Path to the file to read
+                feed_url (str): URL of the endpoint API to read
+                content_type (str): Content type to request
+                max_number_of_paginated_lists (int): Allowed number of lists to retrieve
+                retrieval_delay (float): Delay between requests
+                download (bool): Whether to save individual list files or not
+                file_path (str): Path to target folder if list files are to be saved
         '''
 
         # Inherit from base class
         super().__init__(report)
+
+        # Assign argument to object
+        self.feed_url = feed_url
+        self.feed_file = feed_file
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Routine: beacon file
+        if self.feed_file != None:
+            self.report.echo_progress('Reading a Beacon file', 0, 100)
+            status = self.__read_list(self.feed_file)
+            self.report.echo_progress('Reading a Beacon file', 100, 100)
+
+        # Routine: endpoint URL
+        elif self.feed_url != None:
+            self.report.echo_progress('Reading an endpoint URL', 0, 100)
+            status = self.__read_api(self.feed_url, content_type, max_number_of_paginated_lists, retrieval_delay, 'Reading an endpoint URL', download, file_path)
+            self.report.echo_progress('Reading an endpoint URL', 100, 100)
+
+        # Routine: error
+        else:
+            status['reason'] = 'Neither Beacon file nor endpoint URL given.'
+
+        # Update status
+        self.report.status.append(status)
 
 
     def __str__(self):
@@ -35,28 +83,101 @@ class HydraRetrieveFeed(HydraRetrieve):
         '''
 
         # Put together a string
-        return 'Retrieval data and methods for feeds like beacon files or APIs'
+        if self.feed_url != None:
+            return 'Feed based on web data from ' + self.feed_url + '.'
+        elif self.feed_file != None:
+            return 'Feed based on file data from ' + self.feed_file + '.'
+        else:
+            return 'Empty feed without a data source.'
 
 
-    # TODO read()
-    # TODO morph()
-    # TODO save()
-
-
-    def _read_list(self, file_path:str) -> list:
+    def morph(self, routine:str, url_filter:str = None, url_replace:str = None, url_replace_with:str = None, url_add:str = None):
         '''
-        Reads a list file and returns each line as a list
+        Morphs the feed to a different format
 
             Parameters:
-                file_path (str): Path to the file to read
+                routine (str): Transformation routine to use
+                url_filter (str): String as a filter for resource URLs
+                url_replace (str): String to replace in resource URLs
+                url_replace_with (str): String to replace the previous one with
+                url_add (str): Addition to the end of each resource URL
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Routine: URLs
+        if routine == 'urls':
+            self.report.echo_progress('Altering list of resource URLs in feed', 0, 100)
+            if self.feed == []:
+                status['reason'] = 'No resource URLs to alter.'
+            else:
+                self.__morph_urls(url_filter, url_replace, url_replace_with, url_add)
+                status['success'] = True
+                status['reason'] = 'Resource URLs in feed altered.'
+            self.report.echo_progress('Altering list of resource URLs in feed', 100, 100)
+
+        # Update status
+        self.report.status.append(status)
+
+
+    def save(self, target_folder_path:str, file_name:str, routine:str = None):
+        '''
+        Saves graph data to a file
+
+            Parameters:
+                target_folder_path (str): Path of the folder to create files in
+                file_name (str): Name of the file to create
+                routine (str): Specific data to save
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Construct file name
+        file_path = target_folder_path + '/' + file_name
+
+        # Routine: Beacon file
+        if routine == 'beacon':
+            self.report.echo_progress('Saving Beacon file', 0, 100)
+            if self.feed == []:
+                status['reason'] = 'No resource URLs to list in Beacon file.'
+            else:
+                self.__save_list(self.feed, file_path)
+                status['success'] = True
+                status['reason'] = 'Beacon file saved.'
+            self.report.echo_progress('Saving Beacon file', 100, 100)
+
+        # Update status
+        self.report.status.append(status)
+
+
+    def __read_list(self, feed_file:str) -> dict:
+        '''
+        Read a list file and save each line in a list
+
+            Parameters:
+                feed_file (str): Path to the file to read
 
             Returns:
-                list: List of individual lines
+                dict: Status report
         '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': 'No resources listed in Beacon file.'
+        }
 
         # Open file
         try:
-            f = open(file_path, 'r')
+            f = open(feed_file, 'r')
             content = f.read()
 
             # Optionally identify an ID pattern
@@ -67,7 +188,7 @@ class HydraRetrieveFeed(HydraRetrieve):
                     pattern = None
 
             # Clean empty lines and comments
-            content = self._strip_lines(content)
+            content = self.__strip_lines(content)
             lines = iter(content.splitlines())
 
             # Go through each line
@@ -87,394 +208,195 @@ class HydraRetrieveFeed(HydraRetrieve):
                     line = pattern.replace('{ID}', line)
                 entries.append(line)
 
-            # Return list
-            return entries
+                # Report success
+                status['success'] = True
+                status['reason'] = 'Beacon file read successfully.'
 
-        # Report if file is not found
+            # Update list
+            self.feed = entries
+
+        # Do nothing if file not found
         except:
-            return []
+            status['reason'] = 'Beacon file was not found.'
 
 
-    def _save_list(self, file_path:str, list_to_save:list):
+    def __read_api(self, feed_url:str, content_type:str = None, max_number_of_paginated_lists:int = 0, retrieval_delay:float = 0, progress_message:str = '', download:bool = False, file_path:str = None) -> dict:
+        '''
+        Read an endpoint API and save both triples and individual resource URLs
+
+            Parameters:
+                feed_url (str): URL of the endpoint API to read
+                content_type (str): Content type to request
+                max_number_of_paginated_lists (int): Allowed number of lists to retrieve
+                retrieval_delay (float): Delay between requests
+                progress_message (str): Message to display while paging through lists
+                download (bool): Whether to save individual list files or not
+                file_path (str): Path to target folder if list files are to be saved
+
+            Returns:
+                dict: Status report
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Set up variables
+        current_list = feed_url
+        next_list = ''
+        final_list = ''
+        number_of_resources = 0
+        resources_per_list = 0
+        number_of_lists = 0
+        number = 0
+
+        # Main loop to retrieve lists
+        while current_list != final_list:
+            number += 1
+
+            # Retrieve file
+            list_data = self.__download_file(next_list, content_type)
+            if list_data != None:
+
+                # Optionally save file
+                if download and file_path != None:
+                    file_path += '/lists/' + str(number) + '.' + list_data['file_extension']
+                    self.__save_file(list_data['content'], file_path)
+                    status['success'] = True
+                    status['reason'] = 'All lists downloaded successfully.'
+
+            # Get out of loop if list file is missing
+            else:
+                status['success'] = False
+                status['reason'] = 'One of the paginated lists was not available.'
+                break
+
+            # Parse file
+            try:
+                store_new = Graph()
+                store_new.parse(data=list_data['content'], format=list_data['file_type'])
+            except:
+                status['success'] = False
+                status['reason'] = 'The endpoint response could not be parsed as RDF-style data.'
+                break
+
+            # Add individual resource URLs to list
+            for o in store_new.objects(None, HYDRA.member, True):
+                self.feed.extend(o.toPython())
+            for o in store_new.objects(None, SDO.item, True):
+                self.feed.extend(o.toPython())
+
+            # Get total number of items per list on first list
+            if number == 1:
+                if len(self.feed) != 0:
+                    resources_per_list = len(self.feed)
+                else:
+                    status['success'] = False
+                    status['reason'] = 'The endpoint does not contain any resources.'
+                    break
+
+            # Get URL of current, next, and final list
+            for o in store_new.objects(None, HYDRA.view, True):
+                current_list = o.toPython()
+            for o in store_new.objects(None, HYDRA.next, True):
+                next_list = o.toPython()
+            for o in store_new.objects(None, HYDRA.last, True):
+                final_list = o.toPython()
+
+            # Get out of loop if API is paginated without a final list
+            if next_list != '' and final_list == '':
+                status['success'] = False
+                status['reason'] = 'The endpoint response is paginated but does not specify a final list.'
+                break
+
+            # Get total number of resources and calculate number of lists
+            for o in store_new.objects(None, HYDRA.totalItems, True):
+                number_of_resources = int(o.toPython())
+            number_of_lists = int(ceil(number_of_resources / resources_per_list))
+
+            # Remove pagination from triples
+            store_new.remove((None, HYDRA.totalItems, None))
+            store_new.remove((None, HYDRA.view, None))
+            store_new.remove((None, HYDRA.first, None))
+            store_new.remove((None, HYDRA.last, None))
+            store_new.remove((None, HYDRA.next, None))
+            store_new.remove((None, HYDRA.previous, None))
+            store_new.remove((None, RDF.type, HYDRA.PartialCollectionView))
+
+            # Add list triples to object
+            self.store += store_new
+
+            # Delay next retrieval to avoid server block
+            self.report.echo_progress(progress_message, number, number_of_lists)
+            sleep(retrieval_delay)
+
+            # Get out of loop if there is no next page
+            if next_list == '':
+                break
+
+            # Get out of loop if maximum number of lists is reached
+            if number > max_number_of_paginated_lists:
+                status['success'] = False
+                status['reason'] = 'Maximum number of allowed lists was reached.'
+                break
+
+        # Return status
+        return status
+
+
+    def __save_list(self, list_to_save:list, file_path:str):
         '''
         Saves a list to a file
 
             Parameters:
+                list_to_save (list): List of entries to be saved to file
                 file_path (str): Path of the file to create
-                list_to_save (list): List of entries to save to file
         '''
 
-        # Prepare file and save each line
-        lines = ["{}\n".format(index) for index in list_to_save]
-        with open(file_path, 'w') as f:
-            f.writelines(lines)
+        # Convert lines to file content
+        content = ["{}\n".format(index) for index in list_to_save]
+        self.__save_file(self, content, file_path)
 
 
-    def _list_files_in_folder(self, folder_path:str) -> list:
+    def __morph_urls(self, filter:str = None, replace:str = None, replace_with:str = None, add:str = None):
         '''
-        Reads a local folder and returns each file name as a list
+        Mofifies the list of individual resource URLs
 
             Parameters:
-                folder_path (str): Path to the folder to read
-
-            Returns:
-                list: List of individual file names
+                filter (str): String applied to filter resource URLs
+                replace (str): String to replace in listed URLs before retrieving a resource
+                replace_with (str): String to use as a replacement before retrieving a resource
+                add (str): String to add to each URL before retrieving a resource
         '''
 
-        # Prepare folder path and empty list
-        folder_path = folder_path + '/**/*'
-        entries = []
+        # Simplify input
+        if filter == None:
+            filter = ''
+        if replace == None:
+            replace = ''
+        if replace_with == None:
+            replace_with = ''
+        if add == None:
+            add = ''
 
-        # Add each file to list
-        for file_path in glob(folder_path, recursive = True):
-            entries.append(file_path)
+        # Check each URL
+        morphed_feed = []
+        for url in self.feed:
 
-        # Return list
-        return entries
-    
+            # Filter list
+            if filter != '':
+                if filter not in url:
+                    url = ''
+            if url != '':
 
-
-# # Import libraries
-# from rdflib import Graph, Namespace
-# from math import ceil
-# from time import sleep
-
-# # Define namespaces
-# from rdflib.namespace import RDF
-# HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
-# SCHEMA = Namespace('http://schema.org/')
-
-
-# # Base class for a Hydra API to process
-# class Hydra:
-
-
-#     # Variables
-#     status = []
-#     populated = None
-#     triples = Graph()
-#     triples.bind('hydra', HYDRA)
-#     triples.bind('schema', SCHEMA)
-#     resources = []
-#     target_folder = ''
-#     entry_point_url = ''
-#     content_type = ''
-#     current_list_url = ''
-#     next_list_url = ''
-#     final_list_url = ''
-#     number_of_resources = 0
-#     resources_per_list = 0
-#     number_of_lists = 0
-
-
-#     def __init__(self, target_folder:str, entry_point_url:str, content_type:str = ''):
-#         '''
-#         Sets up a Hydra entry point to process
-
-#             Parameters:
-#                 target_folder (str): Name of the downloads subfolder to store files in
-#                 entry_point_url (str): URL to use as an entry point for a scraping run
-#                 content_type (str, optional): Content type to request when retrieving resources, defaults to none
-#         '''
-
-#         # Assign variables
-#         self.target_folder = is actually command.target_folder
-#         self.entry_point_url = entry_point_url
-#         self.content_type = content_type
-#         self.current_list_url = entry_point_url
-#         self.next_list_url = entry_point_url
-
-
-#     def __str__(self):
-#         '''
-#         String representation of instances of this object
-#         '''
-
-#         # Put together a string
-#         if self.populated == None:
-#             return 'Hydra entry point to be scraped at ' + self.entry_point_url
-#         elif self.populated == False:
-#             return 'Hydra entry point at ' + self.entry_point_url + ' being processed'
-#         elif self.populated == True:
-#             return 'Processed Hydra entry point at ' + self.entry_point_url
-
-
-#     def __modify_resource_urls(self, resource_url_filter:str = '', resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
-#         '''
-#         Mofifies the list of individual resource URLs on demand
-
-#             Parameters:
-#                 resources (list): List of resource URLs to modify
-#                 resource_url_filter (str, optional): String applied to filter resource URLs, defaults to an empty string
-#                 resource_url_replace (str, optional): String to replace in listed URLs before retrieving a resource, defaults to an empty string
-#                 resource_url_replace_with (str, optional): String to use as a replacement before retrieving a resource, defaults to an empty string
-#                 resource_url_add (str, optional): String to add to each URL before retrieving a resource, defaults to an empty string
-#         '''
-
-#         # Empty list for revised URLs
-#         modified_resources = []
-
-#         # Check each URL in the list
-#         for url in self.resources:
-#             if resource_url_filter != '':
-#                 if resource_url_filter not in url:
-#                     url = ''
-#             if url != '':
-#                 if resource_url_replace != '':
-#                     url = url.replace(resource_url_replace, resource_url_replace_with)
-#                 if resource_url_add != '':
-#                     url = url + resource_url_add
-#                 modified_resources.append(url)
+                # Replace and add URL parts
+                if replace != '':
+                    url = url.replace(replace, replace_with)
+                if add != '':
+                    url = url + add
+                morphed_feed.append(url)
             
-#         # Use the revised URLs instead of the original
-#         self.resources = modified_resources
-
-
-#     def __get_triple(self, graph:object, predicate:str, list_items:bool = False) -> str | int:
-#         '''
-#         Helper function to return a single object or a list of objects from triples
-
-#             Parameters:
-#                 graph (object): Graph to perform the get request on
-#                 predicate (str): Predicate to find in all triples
-#                 list_items (bool, optional): Switch to determine whether to return a list or a single item, defaults to False
-
-#             Returns:
-#                 str | int: Last object string identified by the predicate
-#         '''
-
-#         # Find triples
-#         triples = graph.objects(None, predicate, unique=True)
-
-#         # Find a single item
-#         if list_items == False:
-#             result = ''
-#             for triple in triples:
-#                 result = triple.toPython()
-
-#         # Find a list of items
-#         else:
-#             result = []
-#             for triple in triples:
-#                 result.append(triple.toPython())
-
-#         # Return the result
-#         return result
-
-
-#     def populate(self, save_original_files:bool = True, resource_url_filter:str = '', resource_url_replace:str = '', resource_url_replace_with:str = '', resource_url_add:str = ''):
-#         '''
-#         Pages through the Hydra API, populates the object, and optionally stores the original files in the process
-
-#             Parameters:
-#                 save_original_files (bool, optional): Switch to also save original files on download, defaults to True
-#                 resource_url_filter (str, optional): String applied to filter resource URLs, defaults to an empty string
-#                 resource_url_replace (str, optional): String to replace in resource URLs, defaults to an empty string
-#                 resource_url_replace_with (str, optional): String to use as a replacement in resource URLs, defaults to an empty string
-#                 resource_url_add (str, optional): String to add to each resource URL, defaults to an empty string
-#         '''
-
-#         # Notify object that it is being populated
-#         self.populated = False
-
-#         # Provide initial status
-#         status_report = {
-#             'success': True,
-#             'reason': 'All lists retrieved successfully.'
-#         }
-
-#         # Main loop to retrieve list files
-#         number = 0
-#         while self.current_list_url != self.final_list_url:
-#             number += 1
-
-#             # Retrieve file
-#             hydra = download_file(self.next_list_url, self.content_type)
-#             if hydra != None:
-
-#                 # Optionally save file
-#                 if save_original_files:
-#                     file_folder = self.target_folder + '/lists'
-#                     common.create_folder(file_folder)
-#                     file_path = file_folder + '/' + str(number) + '.' + hydra['file_extension']
-#                     save_file(hydra['content'], file_path)
-#                     status_report['reason'] = 'All lists saved to download folder.'
-
-#             # Throw error if list file is missing
-#             else:
-#                 status_report['success'] = False
-#                 status_report['reason'] = 'One of the paginated lists is not available.'
-#                 break
-
-#             # Add triples to object storage
-#             try:
-#                 hydra_triples = Graph()
-#                 hydra_triples.bind('hydra', HYDRA)
-#                 hydra_triples.bind('schema', SCHEMA)
-#                 hydra_triples.parse(data=hydra['content'], format=hydra['file_type'])
-#             except:
-#                 status_report['success'] = False
-#                 status_report['reason'] = 'The Hydra API could not be parsed as RDF-style data.'
-#                 break
-
-#             # Add each individual resource URL to main resource list
-#             self.resources.extend(self.__get_triple(hydra_triples, HYDRA.member, True))
-#             self.resources.extend(self.__get_triple(hydra_triples, SCHEMA.item, True))
-
-#             # Get total number of items per list (only makes sense on first page)
-#             if number == 1:
-#                 if len(self.resources) != 0:
-#                     self.resources_per_list = len(self.resources)
-#                 else:
-#                     status_report['success'] = False
-#                     status_report['reason'] = 'The Hydra API does not contain any resources.'
-#                     break
-
-#             # Retrieve URL of current, next, and final list
-#             self.current_list_url = self.__get_triple(hydra_triples, HYDRA.view)
-#             self.next_list_url = self.__get_triple(hydra_triples, HYDRA.next)
-#             self.final_list_url = self.__get_triple(hydra_triples, HYDRA.last)
-
-#             # Throw error if the API is paginated but there is no final list
-#             if self.next_list_url != '' and self.final_list_url == '':
-#                 status_report['success'] = False
-#                 status_report['reason'] = 'The Hydra API is paginated but does not specify a final list.'
-#                 break
-
-#             # Get total number of resources and calculate number of lists
-#             self.number_of_resources = int(self.__get_triple(hydra_triples, HYDRA.totalItems))
-#             self.number_of_lists = int(ceil(self.number_of_resources / self.resources_per_list))
-
-#             # Remove pagination info from triples, but leave HYDRA.collection and HYDRA.member intact
-#             hydra_triples.remove((None, HYDRA.totalItems, None))
-#             hydra_triples.remove((None, HYDRA.view, None))
-#             hydra_triples.remove((None, HYDRA.first, None))
-#             hydra_triples.remove((None, HYDRA.last, None))
-#             hydra_triples.remove((None, HYDRA.next, None))
-#             hydra_triples.remove((None, HYDRA.previous, None))
-#             hydra_triples.remove((None, RDF.type, HYDRA.PartialCollectionView))
-
-#             # Add list triples to object triples
-#             self.triples += hydra_triples
-
-#             # Delay next retrieval to avoid a server block
-#             echo_progress('Retrieving API lists', number, self.number_of_lists)
-#             sleep(command.retrieval_delay)
-
-#             # Get out of loop if there is no next page
-#             if self.next_list_url == '':
-#                 break
-
-#             # Throw error if maximum number of lists is reached as a safety net
-#             if number > command.max_number_of_paginated_lists:
-#                 status_report['success'] = False
-#                 status_report['reason'] = 'Maximum number of allowed lists was reached.'
-#                 break
-
-#         # Filter, replace or augment strings in resource URLs if requested
-#         if resource_url_filter != '' or resource_url_replace != '' or resource_url_add != '':
-#             self.__modify_resource_urls(resource_url_filter, resource_url_replace, resource_url_replace_with, resource_url_add)
-
-#         # Notify object that it is populated
-#         self.populated = True
-
-#         # Provide final status
-#         self.status.append(status_report)
-
-
-#     def save_beacon(self, file_name:str = 'beacon'):
-#         '''
-#         Lists all individual resources in a beacon file
-
-#             Parameters:
-#                 file_name (str, optional): Name of the beacon file without a file extension, defaults to 'beacon'
-#         '''
-
-#         # Provide initial status
-#         status_report = {
-#             'success': False,
-#             'reason': ''
-#         }
-
-#         # Prevent routine if object is not populated yet
-#         if self.populated != True:
-#             status_report['reason'] = 'A beacon file can only be written when the API was read.'
-#         else:
-
-#             # Initial progress
-#             echo_progress('Saving beacon file', 0, 100)
-
-#             # Save file if there are resources
-#             if self.resources != []:
-#                 file_path = self.target_folder + '/' + file_name + '.txt'
-#                 save_list(file_path, self.resources)
-
-#                 # Compile success status
-#                 status_report['success'] = True
-#                 status_report['reason'] = 'All resources listed in a beacon file.'
-
-#             # Report if there are no resources
-#             else:
-#                 status_report['reason'] = 'No resources to list in a beacon file.'
-
-#             # Final progress
-#             echo_progress('Saving beacon file', 100, 100)
-
-#         # Provide final status
-#         self.status.append(status_report)
-
-
-#     def save_triples(self, triple_filter:str = 'none', file_name:str = 'lists'):
-#         '''
-#         Saves all downloaded triples into a single Turtle file
-
-#             Parameters:
-#                 triple_filter (str, optional): Name of a filter (e.g. 'cgif') to apply to triples before saving them, default to 'none'
-#                 file_name (str, optional): Name of the triple file without a file extension, defaults to 'lists'
-#         '''
-
-#         # Provide initial status
-#         status_report = {
-#             'success': False,
-#             'reason': ''
-#         }
-
-#         # Prevent routine if object is not populated yet
-#         if self.populated != True:
-#             status_report['reason'] = 'A list of triples can only be written when the API was read.'
-#         else:
-
-#             # Generate filter description to use in status updates
-#             filter_description = ''
-#             if triple_filter == 'cgif':
-#                 filter_description = 'CGIF-filtered '
-
-#             # Optionally filter CGIF triples
-#             if triple_filter == 'cgif':
-#                 # TODO Add CGIF filters here
-#                 filtered_triples = self.triples
-
-#             # Initial progress
-#             echo_progress('Saving list of ' + filter_description + 'API triples', 0, 100)
-
-#             # Compile file if there are triples
-#             if len(self.triples):
-#                 file_path = self.target_folder + '/' + file_name + '.ttl'
-#                 if triple_filter == 'cgif':
-#                     filtered_triples.serialize(destination=file_path, format='turtle')
-#                 else:
-#                     self.triples.serialize(destination=file_path, format='turtle')
-
-#                 # Compile success status
-#                 status_report['success'] = True
-#                 status_report['reason'] = 'All ' + filter_description + 'API triples listed in a Turtle file.'
-
-#             # Report if there are no resources
-#             else:
-#                 status_report['reason'] = 'No ' + filter_description + 'API triples to list in a Turtle file.'
-
-#             # Final progress
-#             echo_progress('Saving list of ' + filter_description + 'API triples', 100, 100)
-
-#         # Provide final status
-#         self.status.append(status_report)
+        # Use the revised URLs instead of the original
+        self.feed = morphed_feed

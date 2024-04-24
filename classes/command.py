@@ -29,7 +29,7 @@ class HydraCommand:
     download = []
     source_url = None
     source_file = None
-    source_folder = None
+    source_folder = None # TODO
     content_type = None
     target_folder = None
     target_folder_path = None
@@ -101,7 +101,7 @@ class HydraCommand:
         )
         allowed_arguments.add_argument(
             '-taget_folder', '--taget_folder',
-            default = self._generate_timestamp(),
+            default = self.__generate_timestamp(),
             type = Path,
             help = 'Download to this subfolder of the download folder'
         )
@@ -203,9 +203,13 @@ class HydraCommand:
             elif self.source_folder != None and self.content_type == None:
                 raise ValueError('Hydra Scraper called with a folder name but without a content type.')
 
-        # Create target folder
+        # Create target folder(s)
         self.target_folder_path = self.target_folder_base + '/' + self.target_folder
-        self._create_folder(self.target_folder_path)
+        self.__create_folder(self.target_folder_path)
+        if 'lists' in self.download:
+            self.__create_folder(self.target_folder_path + '/lists')
+        if 'resources' in self.download:
+            self.__create_folder(self.target_folder_path + '/resources')
 
 
     def __str__(self):
@@ -220,7 +224,7 @@ class HydraCommand:
             return 'Empty scraping command.'
 
 
-    def _generate_timestamp(self) -> str:
+    def __generate_timestamp(self) -> str:
         '''
         Produce a current timestamp
 
@@ -236,7 +240,7 @@ class HydraCommand:
         return str(timestamp)
 
 
-    def _create_folder(folder_name:str):
+    def __create_folder(folder_name:str):
         '''
         Creates a folder with a given name
 

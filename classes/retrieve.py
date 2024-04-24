@@ -40,7 +40,7 @@ class HydraRetrieve:
         return 'Basic retrieval methods intended to be inherited'
 
 
-    def _strip_string(self, input:str) -> str:
+    def __strip_string(self, input:str) -> str:
         '''
         Takes a string, removes quotation marks and newlines, and returns the string
 
@@ -60,7 +60,7 @@ class HydraRetrieve:
         return input
 
 
-    def _strip_lines(self, input:str) -> str:
+    def __strip_lines(self, input:str) -> str:
         '''
         Takes a multi-line string, removes empty lines and comments, and returns the string
 
@@ -81,7 +81,7 @@ class HydraRetrieve:
         return linesep.join(lines)
 
 
-    def _download_file(self, url:str, content_type:str = None) -> dict:
+    def __download_file(self, url:str, content_type:str = None) -> dict:
         '''
         Retrieves a file from a URL and returns the content
 
@@ -109,12 +109,12 @@ class HydraRetrieve:
             # If response is valid, get clean file content
             else:
                 headers = dict(response.headers.items())
-                file_type = self._determine_file_type(headers, False)
-                file_extension = self._determine_file_type(headers, True)
+                file_type = self.__determine_file_type(headers, False)
+                file_extension = self.__determine_file_type(headers, True)
                 content = response.read().decode('utf-8')
 
                 # If present, isolate embedded JSON-LD as it is not supported by RDFLib yet
-                if self._determine_file_type(headers, False) == 'rdfa':
+                if self.__determine_file_type(headers, False) == 'rdfa':
                     embedded_jsonld = content.find('application/ld+json')
                     if embedded_jsonld != -1:
                         embedded_jsonld_start = content.find('>', embedded_jsonld) + 1
@@ -127,7 +127,7 @@ class HydraRetrieve:
                             content = content[embedded_jsonld_start:embedded_jsonld_end]
 
                             # Remove empty lines
-                            content = self._strip_lines(content)
+                            content = self.__strip_lines(content)
 
                 # Structure the data
                 simple_response = {
@@ -144,7 +144,7 @@ class HydraRetrieve:
         return simple_response
 
 
-    def _local_file(self, file_path:str, content_type:str) -> dict:
+    def __local_file(self, file_path:str, content_type:str) -> dict:
         '''
         Retrieves a local file and returns the content
 
@@ -165,8 +165,8 @@ class HydraRetrieve:
                 headers = {
                     'Content-Type': content_type
                 }
-                file_type = self._determine_file_type(headers, False)
-                file_extension = self._determine_file_type(headers, True)
+                file_type = self.__determine_file_type(headers, False)
+                file_extension = self.__determine_file_type(headers, True)
 
                 # Structure the data
                 simple_response = {
@@ -183,7 +183,7 @@ class HydraRetrieve:
         return simple_response
 
 
-    def _save_file(self, content:str, file_path:str):
+    def __save_file(self, content:str, file_path:str):
         '''
         Saves content to a file with a specified name and extension
 
@@ -198,7 +198,7 @@ class HydraRetrieve:
         f.flush
 
 
-    def _determine_file_type(self, headers:dict, get_file_extension:bool = False) -> str:
+    def __determine_file_type(self, headers:dict, get_file_extension:bool = False) -> str:
         '''
         Determines the best file type and extension based on the server response
 

@@ -28,16 +28,20 @@ class HydraRetrieveGraph(HydraRetrieve):
     csv = None
 
 
-    def __init__(self, report:object):
+    def __init__(self, report:object, store:object):
         '''
         Retrieve and compile graph data
 
             Parameters:
                 report (object): The report object to use
+                store (object): The graph to use
         '''
 
         # Inherit from base class
         super().__init__(report)
+
+        # Assign argument to object
+        self.store = store
 
 
     def __str__(self):
@@ -46,7 +50,10 @@ class HydraRetrieveGraph(HydraRetrieve):
         '''
 
         # Put together a string
-        return 'Retrieval data and methods for graph data'
+        if len(self.store) > 0:
+            return 'Graph containing ' + str(len(self.store)) + ' triples.'
+        else:
+            return 'Empty graph without any triples.'
 
 
     def morph(self, routine:str, csv_predicates:list = None):
@@ -70,7 +77,7 @@ class HydraRetrieveGraph(HydraRetrieve):
             if self.store == None:
                 status['reason'] = 'No graph data to list in a CSV table.'
             else:
-                self._morph_to_csv(csv_predicates)
+                self.__morph_to_csv(csv_predicates)
                 status['success'] = True
                 status['reason'] = 'Graph data listed in a CSV table.'
             self.report.echo_progress('Producing CSV table from graph data', 100, 100)
@@ -81,7 +88,7 @@ class HydraRetrieveGraph(HydraRetrieve):
             if self.store == None:
                 status['reason'] = 'No graph data to convert to NFDI style.'
             else:
-                self._morph_cgif_to_nfdi()
+                self.__morph_cgif_to_nfdi()
                 status['success'] = True
                 status['reason'] = 'Graph data converted to NFDI style.'
             self.report.echo_progress('Converting graph data to NFDI style', 100, 100)
@@ -115,7 +122,7 @@ class HydraRetrieveGraph(HydraRetrieve):
             if self.csv == None:
                 status['reason'] = 'No CSV data to save.'
             else:
-                self._save_file(file_path, self.csv)
+                self.__save_file(self.csv, file_path)
                 status['success'] = True
                 status['reason'] = 'CSV data saved to file.'
             self.report.echo_progress('Saving CSV data', 100, 100)
@@ -146,7 +153,7 @@ class HydraRetrieveGraph(HydraRetrieve):
         self.report.status.append(status)
 
 
-    def _morph_to_csv(self, csv_predicates:list = None):
+    def __morph_to_csv(self, csv_predicates:list = None):
         '''
         Converts triples into tabular CSV data
 
@@ -190,25 +197,25 @@ class HydraRetrieveGraph(HydraRetrieve):
                     for all_predicate1 in all_predicates:
                         for object1 in self.store.objects((entity, all_predicate1, None)):
                             if all_predicate1 == predicate and isinstance(object1, (Literal, URIRef)):
-                                new_line_entries.append(self._strip_string(str(object1)))
+                                new_line_entries.append(self.__strip_string(str(object1)))
 
                             # Ordered list, multiple levels
                             elif all_predicate1 == predicate and isinstance(object1, BNode):
-                                new_line_entries.extend(self._morph_to_csv_ol(self.store, object1))
+                                new_line_entries.extend(self.__morph_to_csv_ol(self.store, object1))
 
                             # Nested properties, level 2
                             else:
                                 for all_predicate2 in all_predicates:
                                     for object2 in self.store.objects((object1, all_predicate2, None)):
                                         if all_predicate2 == predicate and isinstance(object2, (Literal, URIRef)):
-                                            new_line_entries.append(self._strip_string(str(object2)))
+                                            new_line_entries.append(self.__strip_string(str(object2)))
 
                                         # Nested properties, level 3
                                         else:
                                             for all_predicate3 in all_predicates:
                                                 for object3 in self.store.objects((object2, all_predicate3, None)):
                                                     if all_predicate3 == predicate and isinstance(object3, (Literal, URIRef)):
-                                                        new_line_entries.append(self._strip_string(str(object3)))
+                                                        new_line_entries.append(self.__strip_string(str(object3)))
 
                     # Produce entry for this predicate
                     new_line_entry = ', '.join(new_line_entries)
@@ -222,7 +229,7 @@ class HydraRetrieveGraph(HydraRetrieve):
             self.csv += '"' + '","'.join(output_line) + '"\n'
 
 
-    def _morph_to_csv_ol(self, previous:BNode) -> list:
+    def __morph_to_csv_ol(self, previous:BNode) -> list:
         '''
         Helper to page through ordered lists when querying properties to print them as a CSV table
 
@@ -239,30 +246,23 @@ class HydraRetrieveGraph(HydraRetrieve):
         # Dig one level further down the ordered list
         for entry in self.store.objects((previous, None)):
             if isinstance(entry, (Literal, URIRef)) and entry != URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'):
-                entries.append(self._strip_string(str(entry)))
+                entries.append(self.__strip_string(str(entry)))
 
             # Keep digging if there is more
             elif isinstance(entry, BNode):
-                entries.extend(self._morph_to_csv_ol(entry))
+                entries.extend(self.__morph_to_csv_ol(entry))
 
         # Return list
         return entries
 
 
-    def _morph_cgif_to_nfdi(self):
+    def __morph_cgif_to_nfdi(self):
         '''
         Converts CGIF (or schema.org) triples to nfdicore/cto ones
         '''
 
-        # Set up nfdicore/cto graph
-        nfdi = Graph()
-        nfdi.bind('rdf', RDF)
-        nfdi.bind('rdfs', RDFS)
-        nfdi.bind('owl', OWL)
-        nfdi.bind('schema', SDO)
-        nfdi.bind('nfdicore', NFDICORE)
-        nfdi.bind('cto', CTO)
-        nfdi.bind('mo', MO)
+        # Set up variable
+        nfdi = None
 
         # Set up lists of schema.org classes for data feed, person, organization, place, and event
         # Lists collated on 17/4/2024, periodical update desirable (TODO)
@@ -567,123 +567,137 @@ class HydraRetrieveGraph(HydraRetrieve):
             SDO.VisualArtsEvent
         ]
 
-        # Build statements about data feed
+        # Identify main data feed
         datafeed = next(self.store.subjects((RDF.type, schema_data_feed, True)), None)
         if datafeed != None:
-            nfdi.add((datafeed, RDF.type, NFDICORE.Dataset))
-            for datafeed_same in self.store.objects((datafeed, SDO.sameAs, True)):
-                nfdi.add((datafeed, OWL.sameAs, datafeed_same))
+            if len(self.store.triples((datafeed, SDO.dataFeedElement, None, True))) > 0 or len(self.store.triples((None, SDO.isPartOf, datafeed, True))) > 0:
 
-            # Set up empty lists for higher-level metadata to use later
-            datafeed_element_publishers = []
-            datafeed_element_licenses = []
-            datafeed_elements = []
+                # Set up nfdicore/cto graph
+                nfdi = Graph()
+                nfdi.bind('rdf', RDF)
+                nfdi.bind('rdfs', RDFS)
+                nfdi.bind('owl', OWL)
+                nfdi.bind('schema', SDO)
+                nfdi.bind('nfdicore', NFDICORE)
+                nfdi.bind('cto', CTO)
+                nfdi.bind('mo', MO)
 
-            # Build statements about data portal
-            dataportal = next(self.store.objects((datafeed, SDO.includedInDataCatalog, True)), None)
-            if dataportal != None:
-                nfdi.add((dataportal, RDF.type, NFDICORE.DataPortal))
-                nfdi.add((dataportal, NFDICORE.dataset, datafeed))
-                for dataportal_same in self.store.objects((dataportal, SDO.sameAs, True)):
-                    nfdi.add((dataportal, OWL.sameAs, dataportal_same))
+                # Build statements about data feed
+                nfdi.add((datafeed, RDF.type, NFDICORE.Dataset))
+                for datafeed_same in self.store.objects((datafeed, SDO.sameAs, True)):
+                    nfdi.add((datafeed, OWL.sameAs, datafeed_same))
 
-                # Grab portal-level metadata to use later
-                for datafeed_element_publisher in self.store.objects((dataportal, SDO.publisher, True)):
-                    datafeed_element_publishers.append(datafeed_element_publisher)
-            
-            # Grab feed-level metadata to use later
-            for datafeed_element_license in self.store.objects((datafeed, SDO.licence, True)):
-                datafeed_element_licenses.append(datafeed_element_license)
+                # Set up empty lists for higher-level metadata to use later
+                datafeed_element_publishers = []
+                datafeed_element_licenses = []
+                datafeed_elements = []
 
-            # Collect data feed elements in lists
-            for datafeed_element_schema in self.store.objects((datafeed, SDO.dataFeedElement, True)):
-                if (datafeed_element_schema, RDF.type, SDO.DataFeedItem) in self.store:
-                    datafeed_element = next(self.store.objects((datafeed_element_schema, SDO.item, True)), None)
-                    if datafeed_element != None:
-                        datafeed_elements.append(datafeed_element)
+                # Build statements about data portal
+                dataportal = next(self.store.objects((datafeed, SDO.includedInDataCatalog, True)), None)
+                if dataportal != None:
+                    nfdi.add((dataportal, RDF.type, NFDICORE.DataPortal))
+                    nfdi.add((dataportal, NFDICORE.dataset, datafeed))
+                    for dataportal_same in self.store.objects((dataportal, SDO.sameAs, True)):
+                        nfdi.add((dataportal, OWL.sameAs, dataportal_same))
 
-            # Collect individual data feed elements
-            for datafeed_element in self.store.subjects((SDO.isPartOf, datafeed, True)):
-                datafeed_elements.append(datafeed_element)
+                    # Grab portal-level metadata to use later
+                    for datafeed_element_publisher in self.store.objects((dataportal, SDO.publisher, True)):
+                        datafeed_element_publishers.append(datafeed_element_publisher)
+                
+                # Grab feed-level metadata to use later
+                for datafeed_element_license in self.store.objects((datafeed, SDO.licence, True)):
+                    datafeed_element_licenses.append(datafeed_element_license)
 
-            # Build statements about data feed element
-            for datafeed_element in datafeed_elements:
-                nfdi.add((datafeed_element, CTO.elementOf, datafeed))
-                nfdi.add((datafeed_element, RDF.type, CTO.DatafeedElement))
+                # Collect data feed elements in lists
+                for datafeed_element_schema in self.store.objects((datafeed, SDO.dataFeedElement, True)):
+                    if (datafeed_element_schema, RDF.type, SDO.DataFeedItem) in self.store:
+                        datafeed_element = next(self.store.objects((datafeed_element_schema, SDO.item, True)), None)
+                        if datafeed_element != None:
+                            datafeed_elements.append(datafeed_element)
 
-                # Check for additional, specific nfdicore/cto type
-                datafeed_element_type = next(self.store.objects(datafeed_element, RDF.type, True), None)
-                if datafeed_element_type != None:
-                    if datafeed_element_type in schema_person:         # Person
-                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Person))
-                    elif datafeed_element_type in schema_organization: # Organization
-                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Organization))
-                    elif datafeed_element_type in schema_place:        # Place
-                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Place))
-                    elif datafeed_element_type in schema_event:        # Event
-                        nfdi.add((datafeed_element, RDF.type, NFDICORE.Event))
-                    else:                                              # Item (incl. creative works)
-                        nfdi.add((datafeed_element, RDF.type, CTO.Item))
+                # Collect individual data feed elements
+                for datafeed_element in self.store.subjects((SDO.isPartOf, datafeed, True)):
+                    datafeed_elements.append(datafeed_element)
 
-                # Build statements for label
-                for datafeed_element_label in self.store.objects((datafeed_element, SDO.name, True)):
-                    nfdi.add((datafeed_element, RDFS.label, datafeed_element_label))
+                # Build statements about data feed element
+                for datafeed_element in datafeed_elements:
+                    nfdi.add((datafeed_element, CTO.elementOf, datafeed))
+                    nfdi.add((datafeed_element, RDF.type, CTO.DatafeedElement))
 
-                # Build statements for URL
-                nfdi.add((datafeed_element, SDO.url, datafeed_element))
+                    # Check for additional, specific nfdicore/cto type
+                    datafeed_element_type = next(self.store.objects(datafeed_element, RDF.type, True), None)
+                    if datafeed_element_type != None:
+                        if datafeed_element_type in schema_person:         # Person
+                            nfdi.add((datafeed_element, RDF.type, NFDICORE.Person))
+                        elif datafeed_element_type in schema_organization: # Organization
+                            nfdi.add((datafeed_element, RDF.type, NFDICORE.Organization))
+                        elif datafeed_element_type in schema_place:        # Place
+                            nfdi.add((datafeed_element, RDF.type, NFDICORE.Place))
+                        elif datafeed_element_type in schema_event:        # Event
+                            nfdi.add((datafeed_element, RDF.type, NFDICORE.Event))
+                        else:                                              # Item (incl. creative works)
+                            nfdi.add((datafeed_element, RDF.type, CTO.Item))
 
-                # Build statements for publisher
-                for datafeed_element_publisher in datafeed_element_publishers:
-                    nfdi.add((datafeed_element, NFDICORE.publisher, datafeed_element_publisher))
+                    # Build statements for label
+                    for datafeed_element_label in self.store.objects((datafeed_element, SDO.name, True)):
+                        nfdi.add((datafeed_element, RDFS.label, datafeed_element_label))
 
-                # Build statements for license
-                if len(self.store.objects((datafeed_element, SDO.license, True))) > 0:
-                    for datafeed_element_license in self.store.objects((datafeed_element, SDO.license, True)):
-                        nfdi.add((datafeed_element, NFDICORE.license, datafeed_element_license))
-                else:
-                    for datafeed_element_license in datafeed_element_licenses:
-                        nfdi.add((datafeed_element, NFDICORE.license, datafeed_element_license))
+                    # Build statements for URL
+                    nfdi.add((datafeed_element, SDO.url, datafeed_element))
 
-                # Build statements for image
-                for datafeed_element_image in self.store.objects((datafeed_element, SDO.image, True)):
-                    nfdi.add((datafeed_element, SDO.image, datafeed_element_image))
+                    # Build statements for publisher
+                    for datafeed_element_publisher in datafeed_element_publishers:
+                        nfdi.add((datafeed_element, NFDICORE.publisher, datafeed_element_publisher))
 
-                # Build statements for lyrics
-                for datafeed_element_lyrics_schema in self.store.objects((datafeed_element, SDO.lyrics, True)):
-                    datafeed_element_lyrics = next(self.store.objects((datafeed_element_lyrics_schema, SDO.text, True)), None)
-                    if datafeed_element_lyrics != None:
-                        nfdi.add((datafeed_element, MO.lyrics, datafeed_element_lyrics))
-                        nfdi.add((datafeed_element_lyrics, RDF.type, MO.Lyrics))
-
-                # Build statements for date
-                for datafeed_element_date in self.store.objects((datafeed_element, SDO.temporalCoverage, True)):
-                    if len(self.store.triples((datafeed_element_date, RDF.type, SDO.DateTime, True))) > 0:
-                        nfdi.add((datafeed_element, CTO.creationPeriod, datafeed_element_date))
+                    # Build statements for license
+                    if len(self.store.objects((datafeed_element, SDO.license, True))) > 0:
+                        for datafeed_element_license in self.store.objects((datafeed_element, SDO.license, True)):
+                            nfdi.add((datafeed_element, NFDICORE.license, datafeed_element_license))
                     else:
-                        nfdi.add((datafeed_element, CTO.approximatePeriod, datafeed_element_date))
+                        for datafeed_element_license in datafeed_element_licenses:
+                            nfdi.add((datafeed_element, NFDICORE.license, datafeed_element_license))
 
-                # Build statements for external vocabularies
-                # External queries desirable to add extra triples (TODO): CTO.elementType, CTO.subjectConcept,
-                # CTO.relatedPerson, CTO.relatedOrganisation, CTO.relatedEvent, CTO.relatedLocation, CTO.relatedItem
-                for datafeed_element_vocab in self.store.objects((datafeed_element, SDO.keywords, True)):
-                    if str(datafeed_element_vocab).startswith('http://sws.geonames.org/'):                  # GeoNames
-                        nfdi.add((datafeed_element, CTO.geonames, datafeed_element_vocab))
-                        nfdi.add((datafeed_element, CTO.relatedLocation, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('https://iconclass.org/'):                  # Iconclass
-                        nfdi.add((datafeed_element, CTO.iconclass, datafeed_element_vocab))
-                        nfdi.add((datafeed_element, CTO.subjectConcept, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('http://vocab.getty.edu/page/aat/'):        # Getty AAT
-                        nfdi.add((datafeed_element, CTO.aat, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('https://d-nb.info/gnd/'):                  # GND
-                        nfdi.add((datafeed_element, CTO.gnd, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('http://www.wikidata.org/entity/'):         # Wikidata
-                        nfdi.add((datafeed_element, CTO.wikidata, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('https://viaf.org/viaf/'):                  # VIAF
-                        nfdi.add((datafeed_element, CTO.viaf, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('https://rism.online/'):                    # RISM
-                        nfdi.add((datafeed_element, CTO.rism, datafeed_element_vocab))
-                    elif str(datafeed_element_vocab).startswith('https://database.factgrid.de/wiki/Item:'): # FactGrid
-                        nfdi.add((datafeed_element, CTO.factgrid, datafeed_element_vocab))
+                    # Build statements for image
+                    for datafeed_element_image in self.store.objects((datafeed_element, SDO.image, True)):
+                        nfdi.add((datafeed_element, SDO.image, datafeed_element_image))
+
+                    # Build statements for lyrics
+                    for datafeed_element_lyrics_schema in self.store.objects((datafeed_element, SDO.lyrics, True)):
+                        datafeed_element_lyrics = next(self.store.objects((datafeed_element_lyrics_schema, SDO.text, True)), None)
+                        if datafeed_element_lyrics != None:
+                            nfdi.add((datafeed_element, MO.lyrics, datafeed_element_lyrics))
+                            nfdi.add((datafeed_element_lyrics, RDF.type, MO.Lyrics))
+
+                    # Build statements for date
+                    for datafeed_element_date in self.store.objects((datafeed_element, SDO.temporalCoverage, True)):
+                        if len(self.store.triples((datafeed_element_date, RDF.type, SDO.DateTime, True))) > 0:
+                            nfdi.add((datafeed_element, CTO.creationPeriod, datafeed_element_date))
+                        else:
+                            nfdi.add((datafeed_element, CTO.approximatePeriod, datafeed_element_date))
+
+                    # Build statements for external vocabularies
+                    # External queries desirable to add extra triples (TODO): CTO.elementType, CTO.subjectConcept,
+                    # CTO.relatedPerson, CTO.relatedOrganisation, CTO.relatedEvent, CTO.relatedLocation, CTO.relatedItem
+                    for datafeed_element_vocab in self.store.objects((datafeed_element, SDO.keywords, True)):
+                        if str(datafeed_element_vocab).startswith('http://sws.geonames.org/'):                  # GeoNames
+                            nfdi.add((datafeed_element, CTO.geonames, datafeed_element_vocab))
+                            nfdi.add((datafeed_element, CTO.relatedLocation, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('https://iconclass.org/'):                  # Iconclass
+                            nfdi.add((datafeed_element, CTO.iconclass, datafeed_element_vocab))
+                            nfdi.add((datafeed_element, CTO.subjectConcept, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('http://vocab.getty.edu/page/aat/'):        # Getty AAT
+                            nfdi.add((datafeed_element, CTO.aat, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('https://d-nb.info/gnd/'):                  # GND
+                            nfdi.add((datafeed_element, CTO.gnd, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('http://www.wikidata.org/entity/'):         # Wikidata
+                            nfdi.add((datafeed_element, CTO.wikidata, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('https://viaf.org/viaf/'):                  # VIAF
+                            nfdi.add((datafeed_element, CTO.viaf, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('https://rism.online/'):                    # RISM
+                            nfdi.add((datafeed_element, CTO.rism, datafeed_element_vocab))
+                        elif str(datafeed_element_vocab).startswith('https://database.factgrid.de/wiki/Item:'): # FactGrid
+                            nfdi.add((datafeed_element, CTO.factgrid, datafeed_element_vocab))
 
         # Save result
-        self.nfdi = nfdi
+        if nfdi != None:
+            self.nfdi = nfdi

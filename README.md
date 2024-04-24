@@ -176,3 +176,6 @@ Use GitHub to make the release. Use semantic versioning.
 
 - Possibly switch LIDO support to `epoz/lidolator` and nfdicore/cto support to `epoz/nfdi4culture_python_package` after contributing features
 - Possibly use the system's download folder to actually distribute the package
+- CGIF-to-NFDI routine:
+  - Investigate automatic retrieval of remote info to add triples
+  - Investigate ways to dynamically generate schema.org class lists

@@ -43,6 +43,29 @@ class HydraRetrieveResource(HydraRetrieve):
     # TODO save()
 
 
+    def __list_files_in_folder(self, folder_path:str) -> list:
+        '''
+        Reads a local folder and returns each file name as a list
+
+            Parameters:
+                folder_path (str): Path to the folder to read
+
+            Returns:
+                list: List of individual file names
+        '''
+
+        # Prepare folder path and empty list
+        folder_path = folder_path + '/**/*'
+        entries = []
+
+        # Add each file to list
+        for file_path in glob(folder_path, recursive = True):
+            entries.append(file_path)
+
+        # Return list
+        return entries
+
+
     def convert_lido_to_cgif(self, lido:str, supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = '') -> Graph:
         '''
         Converts a LIDO file to CGIF triples and returns them as a Graph object
@@ -92,7 +115,7 @@ class HydraRetrieveResource(HydraRetrieve):
                 # SCHEMA.name
                 schema_names = lido_descriptive.iterfind('.//{http://www.lido-schema.org}objectIdentificationWrap/{http://www.lido-schema.org}titleWrap/{http://www.lido-schema.org}titleSet/{http://www.lido-schema.org}appellationValue')
                 for schema_name in schema_names:
-                    language = self._convert_lido_to_cgif_with_language(schema_name)
+                    language = self.__convert_lido_to_cgif_with_language(schema_name)
                     if language != None:
                         cgif_triples.add((resource, SCHEMA.name, Literal(schema_name.text, lang = language)))
                     else:
@@ -106,8 +129,8 @@ class HydraRetrieveResource(HydraRetrieve):
 
                 # SCHEMA.keywords: get work type, subjects, and location
                 schema_keywords = set()
-                schema_keywords.update(self._convert_lido_to_cgif_with_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectClassificationWrap/{http://www.lido-schema.org}objectWorkTypeWrap/{http://www.lido-schema.org}objectWorkType'))
-                schema_keywords.update(self._convert_lido_to_cgif_with_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectRelationWrap/{http://www.lido-schema.org}subjectWrap/{http://www.lido-schema.org}subjectSet/{http://www.lido-schema.org}subject/{http://www.lido-schema.org}subjectConcept'))
+                schema_keywords.update(self.__convert_lido_to_cgif_with_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectClassificationWrap/{http://www.lido-schema.org}objectWorkTypeWrap/{http://www.lido-schema.org}objectWorkType'))
+                schema_keywords.update(self.__convert_lido_to_cgif_with_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectRelationWrap/{http://www.lido-schema.org}subjectWrap/{http://www.lido-schema.org}subjectSet/{http://www.lido-schema.org}subject/{http://www.lido-schema.org}subjectConcept'))
                 schema_keywords.add(schema_content_location)
 
                 # SCHEMA.keywords: write property
@@ -146,9 +169,9 @@ class HydraRetrieveResource(HydraRetrieve):
 
                 # SCHEMA.license: get all relevant licences
                 schema_licences = set()
-                schema_licences.update(self._convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsWorkSet/{http://www.lido-schema.org}rightsType'))
-                schema_licences.update(self._convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}recordRights/{http://www.lido-schema.org}rightsType'))
-                schema_licences.update(self._convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsResource/{http://www.lido-schema.org}rightsType'))
+                schema_licences.update(self.__convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsWorkSet/{http://www.lido-schema.org}rightsType'))
+                schema_licences.update(self.__convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}recordRights/{http://www.lido-schema.org}rightsType'))
+                schema_licences.update(self.__convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsResource/{http://www.lido-schema.org}rightsType'))
 
                 # SCHEMA.license: write property
                 for schema_licence in schema_licences:
@@ -194,7 +217,7 @@ class HydraRetrieveResource(HydraRetrieve):
                     cgif_triples.add((URIRef(schema_creator.text), RDF.type, SCHEMA.Organization))
                     schema_creator_name = schema_creator.getparent().find('.//{http://www.lido-schema.org}legalBodyName/{http://www.lido-schema.org}appellationValue')
                     if schema_creator_name != None:
-                        language = self._convert_lido_to_cgif_with_language(schema_creator_name)
+                        language = self.__convert_lido_to_cgif_with_language(schema_creator_name)
                         if language != None:
                             cgif_triples.add((URIRef(schema_creator.text), SCHEMA.name, Literal(schema_creator_name.text, lang = language)))
                         else:
@@ -211,7 +234,7 @@ class HydraRetrieveResource(HydraRetrieve):
         return cgif_triples
 
 
-    def _convert_lido_to_cgif_with_language(self, language_element:any) -> str:
+    def __convert_lido_to_cgif_with_language(self, language_element:any) -> str:
         '''
         Retrieves the language of a given LIDO element
 
@@ -236,7 +259,7 @@ class HydraRetrieveResource(HydraRetrieve):
         return language
 
 
-    def _convert_lido_to_cgif_with_concepts(self, lido_root:any, element_path:str) -> list:
+    def __convert_lido_to_cgif_with_concepts(self, lido_root:any, element_path:str) -> list:
         '''
         Finds a LIDO concept IDs in an element tree according to LIDO 1.0 or 1.1
 
