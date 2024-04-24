@@ -8,10 +8,9 @@
 
 # Import libraries
 from argparse import ArgumentParser
-from argparse import FileType
 from datetime import datetime
 from os import makedirs
-from pathlib import Path
+from os.path import exists
 from validators import url
 
 
@@ -29,7 +28,7 @@ class HydraCommand:
     download = []
     source_url = None
     source_file = None
-    source_folder = None # TODO
+    source_folder = None
     content_type = None
     target_folder = None
     target_folder_path = None
@@ -78,19 +77,19 @@ class HydraCommand:
         allowed_arguments.add_argument(
             '-source_url', '--source_url',
             default = None,
-            type = url,
+            type = str,
             help = 'Entry-point URL to scrape content from'
         )
         allowed_arguments.add_argument(
             '-source_file', '--source_file',
             default = None,
-            type = FileType('r', encoding='UTF-8'),
+            type = str,
             help = 'Path to Beacon file containing URLs to scrape'
         )
         allowed_arguments.add_argument(
             '-source_folder', '--source_folder',
             default = None,
-            type = Path,
+            type = str,
             help = 'Path to folder containing files to scrape'
         )
         allowed_arguments.add_argument(
@@ -100,9 +99,9 @@ class HydraCommand:
             help = 'Content type to request or use when scraping'
         )
         allowed_arguments.add_argument(
-            '-taget_folder', '--taget_folder',
+            '-target_folder', '--target_folder',
             default = self.__generate_timestamp(),
-            type = Path,
+            type = str,
             help = 'Download to this subfolder of the download folder'
         )
         allowed_arguments.add_argument(
@@ -146,19 +145,19 @@ class HydraCommand:
         allowed_arguments.add_argument(
             '-supplement_data_feed', '--supplement_data_feed',
             default = None,
-            type = url,
+            type = str,
             help = 'URI of a data feed to bind LIDO files to'
         )
         allowed_arguments.add_argument(
             '-supplement_data_catalog', '--supplement_data_catalog',
             default = None,
-            type = url,
+            type = str,
             help = 'URI of a data catalog the data feed belongs to'
         )
         allowed_arguments.add_argument(
             '-supplement_data_catalog_publisher', '--supplement_data_catalog_publisher',
             default = None,
-            type = url,
+            type = str,
             help = 'URI of the publisher of the catalog'
         )
         allowed_arguments.add_argument(
@@ -190,16 +189,30 @@ class HydraCommand:
         self.supplement_data_catalog_publisher = arguments.supplement_data_catalog_publisher
         self.quiet = arguments.quiet
 
+        # Further input checks
+        if not url(self.source_url):
+            raise ValueError('Hydra Scraper called with malformed source URL.')
+        if not url(self.supplement_data_feed):
+            raise ValueError('Hydra Scraper called with malformed supplement data feed.')
+        if not url(self.supplement_data_catalog):
+            raise ValueError('Hydra Scraper called with malformed supplement data catalog.')
+        if not url(self.supplement_data_catalog_publisher):
+            raise ValueError('Hydra Scraper called with malformed supplement data catalog publisher.')
+        if not exists(self.source_file):
+            raise ValueError('Hydra Scraper called with invalid source file.')
+        if not exists(self.source_folder):
+            raise ValueError('Hydra Scraper called with invalid source folder.')
+
         # More complex argument requirements
         if 'lists' in self.download or 'list_triples' in self.download or 'list_nfdi' in self.download or 'beacon' in self.download:
             if self.source_url == None:
-                raise ValueError('Hydra Scraper called without valid source URL.')
+                raise ValueError('Hydra Scraper called without source URL.')
         elif 'resources' in self.download:
             if self.source_url == None and self.source_file == None:
-                raise ValueError('Hydra Scraper called without valid source URL or file name.')
+                raise ValueError('Hydra Scraper called without source URL or file name.')
         elif 'resource_triples' in self.download or 'resource_nfdi' in self.download or 'resource_table' in self.download:
             if self.source_url == None and self.source_file == None and self.source_folder == None:
-                raise ValueError('Hydra Scraper called without valid source URL, file, or folder name.')
+                raise ValueError('Hydra Scraper called without source URL, file, or folder name.')
             elif self.source_folder != None and self.content_type == None:
                 raise ValueError('Hydra Scraper called with a folder name but without a content type.')
 
