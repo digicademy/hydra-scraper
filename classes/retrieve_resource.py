@@ -8,6 +8,7 @@
 
 # Import libraries
 from datetime import date
+from glob import glob
 from lxml import etree
 from rdflib import Graph
 from time import sleep
@@ -22,176 +23,244 @@ from rdflib.namespace import SDO
 class HydraRetrieveResource(HydraRetrieve):
 
     # Variables
-    resources = []
+    remote_resources = []
+    local_resources = []
     store = None
 
 
     # READ ####################################################################
 
 
-    def __init__(self, report:object):
+    def __init__(self, report:object, routine:str, remote_resources:list = None, source_or_target_path:str = None, content_type:str = None, clean_resource_names:list = None, retrieval_delay:float = 0, store_triples:bool = True, download:bool = False):
         '''
         Retrieve individual resource files
 
             Parameters:
                 report (object): The report object to use
+                routine (str): Reading routine to use
+                remote_resources (list): List of remote resources to load into the object
+                source_or_target_path (str): Local folder to save files to or containing files to read
+                content_type (str): Content type to request
+                clean_resource_names (list): List of strings to remove from a resource URL to build its file name
+                retrieval_delay (float): Delay between requests
+                store_triples (bool): Whether to try to store triples from resource files or not
+                download (bool): Whether to save individual list files or not
         '''
 
         # Inherit from base class
         super().__init__(report)
 
+        # Assign argument to object
+        if remote_resources != None:
+            self.remote_resources = remote_resources
 
-#     content_type = ''
-#     target_folder = ''
-#     number_of_resources = 0
-#     missing_resources = 0
-#     missing_resources_list = []
-#     incompatible_resources = 0
-#     incompatible_resources_list = []
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
 
+        # Routine: remote files
+        if routine == 'remote':
+            progress_message = 'Reading remote resource files'
+            self.report.echo_progress(progress_message, 0, 100)
+            status = self.__read_remote(content_type, clean_resource_names, retrieval_delay, progress_message, store_triples, download, source_or_target_path)
+            self.report.echo_progress(progress_message, 100, 100)
 
-#     def populate(self, save_original_files:bool = True, clean_resource_urls:list = [], beacon_file:str = '', local_folder:str = '', supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = ''):
-#         '''
-#         Retrieves all individual resources from the list, populates the object, and optionally stores the original files in the process
+        # Routine: local files
+        elif routine == 'local':
+            progress_message = 'Reading local resource files'
+            self.report.echo_progress(progress_message, 0, 100)
+            status = self.__read_local(content_type, source_or_target_path, progress_message)
+            self.report.echo_progress(progress_message, 100, 100)
 
-#             Parameters:
-#                 save_original_files (bool, optional): Switch to also save original files on download, defaults to True
-#                 clean_resource_urls (list, optional): List of substrings to remove in the resource URLs to produce a resource's file name, defaults to empty list that enumerates resources
-#                 beacon_file (str, optional): Path to the beacon file to process, defaults to an empty string
-#                 local_folder (str, optional): Path to a local folder with an existing file dump to process, defaults to an empty string
-#                 supplement_data_feed (str, optional): URI of a data feed to bind LIDO files to (defaults to none)
-#                 supplement_data_catalog (str, optional): URI of a data catalog that the data feed belongs to (defaults to none)
-#                 supplement_data_catalog_publisher (str, optional): URI of the publisher of the data catalog (defaults to none)
-#         '''
+        # Routine: error
+        else:
+            status['reason'] = 'Invalid reading routine called.'
 
-#         # Notify object that it is being populated
-#         self.populated = False
-
-#         # Provide initial status
-#         status_report = {
-#             'success': True,
-#             'reason': 'All resources retrieved successfully.'
-#         }
-#         echo_progress('Retrieving individual resources', 0, 100)
-
-#         # If requested, get list of individual resources from beacon file
-#         if beacon_file != '':
-#             self.resources = read_list(beacon_file)
-
-#         # If requested, get list of individual resources from local folder
-#         elif local_folder != '':
-#             self.resources = read_folder(local_folder)
-#             self.resources_from_folder = True
-
-#         # Throw error if resource list is empty
-#         if self.resources == []:
-#             status_report['success'] = False
-#             status_report['reason'] = 'There were no resources to retrieve.'
-
-#         # Count number of resources
-#         else:
-#             self.number_of_resources = len(self.resources)
-
-#             # Main loop to retrieve resource files
-#             for number, resource_url in enumerate(self.resources, start = 1):
-
-#                 # Retrieve file
-#                 if self.resources_from_folder == True:
-#                     resource = retrieve_local_file(resource_url, self.content_type)
-#                 else:
-#                     resource = download_file(resource_url, self.content_type)
-#                 if resource != None:
-
-#                     # Optionally save file
-#                     if save_original_files:
-#                         file_folder = self.target_folder + '/resources'
-#                         common.create_folder(file_folder)
-
-#                         # Clean up file name if required
-#                         if clean_resource_urls == []:
-#                             file_name = str(number)
-#                         else:
-#                             file_name = resource_url
-#                             for clean_resource_url in clean_resource_urls:
-#                                 file_name = file_name.replace(clean_resource_url, '')
-
-#                         # Save file
-#                         file_path = file_folder + '/' + file_name + '.' + resource['file_extension']
-#                         save_file(resource['content'], file_path)
-#                         status_report['reason'] = 'All resources saved to download folder.'
-
-#                 # Report if download failed
-#                 else:
-#                     self.missing_resources += 1
-#                     self.missing_resources_list.append(resource_url)
-#                     continue
-
-#                 # Add triples to object storage from RDF sources
-#                 if resource['file_type'] not in command.allowed_non_rdf_formats:
-#                     try:
-#                         self.triples.parse(data=resource['content'], format=resource['file_type'])
-#                     except:
-#                         self.incompatible_resources += 1
-#                         self.incompatible_resources_list.append(resource_url)
-#                         continue
-
-#                 # Add triples to object storage from LIDO sources
-#                 elif resource['file_type'] == 'lido':
-#                     lido_cgif = convert_lido_to_cgif(resource['content'], supplement_data_feed, supplement_data_catalog, supplement_data_catalog_publisher)
-#                     if lido_cgif != None:
-#                         self.triples += lido_cgif
-#                     else:
-#                         self.incompatible_resources += 1
-#                         self.incompatible_resources_list.append(resource_url)
-
-#                 # Delay next retrieval to avoid a server block
-#                 echo_progress('Retrieving individual resources', number, self.number_of_resources)
-#                 if self.resources_from_folder == False:
-#                     sleep(command.retrieval_delay)
-
-#             # Report any failed state
-#             if self.missing_resources >= self.number_of_resources:
-#                 status_report['success'] = False
-#                 status_report['reason'] = 'All resources were missing.'
-#             elif self.missing_resources > 0 and self.incompatible_resources > 0:
-#                 status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing and ' + str(self.incompatible_resources) + ' were not compatible.'
-#                 status_report['missing'] = self.missing_resources_list
-#                 status_report['incompatible'] = self.incompatible_resources_list
-#             elif self.missing_resources > 0:
-#                 status_report['reason'] = 'Resources retrieved, but ' + str(self.missing_resources) + ' were missing.'
-#                 status_report['missing'] = self.missing_resources_list
-#             elif self.incompatible_resources > 0:
-#                 status_report['reason'] = 'Resources retrieved, but ' + str(self.incompatible_resources) + ' were not compatible.'
-#                 status_report['incompatible'] = self.incompatible_resources_list
-
-#         # Notify object that it is populated
-#         self.populated = True
-
-#         # Provide final status
-#         self.status.append(status_report)
+        # Update status
+        self.report.status.append(status)
 
 
-    def __list_files_in_folder(self, folder_path:str) -> list:
+    def __read_remote(self, content_type:str = None, clean_resource_names:list = None, retrieval_delay:float = 0, progress_message:str = '', store_triples:bool = True, download:bool = False, target_path:str = None) -> dict:
         '''
-        Reads a local folder and returns each file name as a list
+        Retrieves all remote resources and populates the triple store
 
             Parameters:
-                folder_path (str): Path to the folder to read
+                content_type (str): Content type to request
+                clean_resource_names (list): List of strings to remove from a resource URL to build its file name
+                retrieval_delay (float): Delay between requests
+                progress_message (str): Message to display while paging through lists
+                store_triples (bool): Whether to try to store triples from resource files or not
+                download (bool): Whether to save individual list files or not
+                target_path (str): Path to target folder if list files are to be saved
 
             Returns:
-                list: List of individual file names
+                dict: Status report
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Set up variables
+        number_of_resources = len(self.remote_resources)
+        missing_resources = []
+        incompatible_resources = []
+        
+        # Check if there is data to read
+        if number_of_resources == 0:
+            status['reason'] = 'There were no remote resources to retrieve.'
+        else:
+
+            # Main loop to retrieve resource files
+            for number, resource_url in enumerate(self.remote_resources, start = 1):
+
+                # Retrieve file
+                resource_data = self.__download_file(resource_url, content_type)
+                if resource_data != None:
+
+                    # Optionally clean file name
+                    if download and target_path != None:
+                        if clean_resource_names != None:
+                            file_name = resource_url
+                            for clean_resource_name in clean_resource_names:
+                                file_name = file_name.replace(clean_resource_name, '')
+                        else:
+                            file_name = str(number)
+
+                        # Optionally save file
+                        target_path += '/resources/' + file_name + '.' + resource_data['file_extension']
+                        self.__save_file(resource_data['content'], target_path)
+                        status['success'] = True
+                        status['reason'] = 'All resources downloaded successfully.'
+
+                    # Provide generic info
+                    else:
+                        status['success'] = True
+                        status['reason'] = 'All resources retrieved successfully.'
+
+                    # Gather resource triples
+                    if store_triples:
+                        try:
+                            store_new = Graph()
+                            store_new.parse(data=resource_data['content'], format=resource_data['file_type'])
+                        except:
+                            incompatible_resources.append(resource_url)
+                            continue
+
+                    # Add resource triples to object
+                    self.store += store_new
+
+                # Report if download failed
+                else:
+                    missing_resources.append(resource_url)
+                    continue
+
+                # Delay next retrieval to avoid server block
+                self.report.echo_progress(progress_message, number, number_of_resources)
+                sleep(retrieval_delay)
+
+            # Report any failed state
+            if len(missing_resources) >= number_of_resources:
+                status['success'] = False
+                status['reason'] = 'All resources were missing.'
+            elif len(missing_resources) > 0 and len(incompatible_resources) > 0:
+                status['reason'] = 'Resources retrieved, but ' + str(len(missing_resources)) + ' were missing and ' + str(len(incompatible_resources)) + ' were not compatible.'
+                status['missing'] = missing_resources
+                status['incompatible'] = incompatible_resources
+            elif self.missing_resources > 0:
+                status['reason'] = 'Resources retrieved, but ' + str(len(missing_resources)) + ' were missing.'
+                status['missing'] = missing_resources
+            elif self.incompatible_resources > 0:
+                status['reason'] = 'Resources retrieved, but ' + str(len(incompatible_resources)) + ' were not compatible.'
+                status['incompatible'] = incompatible_resources
+
+        # Return status
+        return status
+
+
+    def __read_local(self, source_path:str, content_type:str = None, progress_message:str = '') -> dict:
+        '''
+        Retrieves all remote resources and populates the triple store
+
+            Parameters:
+                source_path (str): Path to the folder to read
+                content_type (str): Content type to request
+                progress_message (str): Message to display while paging through lists
+
+            Returns:
+                dict: Status report
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Set up variables
+        self.__read_local_list(source_path)
+        number_of_resources = len(self.local_resources)
+        incompatible_resources = []
+        
+        # Check if there is data to read
+        if number_of_resources == 0:
+            status['reason'] = 'There were no local resources to retrieve.'
+        else:
+
+            # Main loop to retrieve resource files
+            for number, resource_path in enumerate(self.local_resources, start = 1):
+
+                # Retrieve file
+                resource_data = self.__local_file(resource_path, content_type)
+                if resource_data != None:
+                    status['success'] = True
+                    status['reason'] = 'All resources retrieved successfully.'
+
+                    # Gather resource triples
+                    try:
+                        store_new = Graph()
+                        store_new.parse(data=resource_data['content'], format=resource_data['file_type'])
+                    except:
+                        incompatible_resources.append(resource_path)
+                        continue
+
+                    # Add resource triples to object
+                    self.store += store_new
+
+                # Report progress
+                self.report.echo_progress(progress_message, number, number_of_resources)
+
+            # Report any failed state
+            if self.incompatible_resources > 0:
+                status['reason'] = 'Resources retrieved, but ' + str(len(incompatible_resources)) + ' were not compatible.'
+                status['incompatible'] = incompatible_resources
+
+        # Return status
+        return status
+
+
+    def __read_local_list(self, source_path:str):
+        '''
+        Reads a local folder and saves all file paths in the list of local resource
+
+            Parameters:
+                source_path (str): Path to the folder to read
         '''
 
         # Prepare folder path and empty list
-        folder_path = folder_path + '/**/*'
+        source_path += '/**/*'
         entries = []
 
         # Add each file to list
-        for file_path in glob(folder_path, recursive = True):
-            entries.append(file_path)
+        for source_path in glob(source_path, recursive = True):
+            entries.append(source_path)
 
         # Return list
-        return entries
+        self.local_resources = entries
 
 
     # STRING ##################################################################
@@ -212,7 +281,37 @@ class HydraRetrieveResource(HydraRetrieve):
     # MORPH ###################################################################
 
 
-    def convert_lido_to_cgif(self, lido:str, supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = '') -> Graph:
+    def morph(self, routine:str, csv_predicates:list = None):
+        '''
+        Morphs individual resources to a different format
+
+            Parameters:
+                routine (str): Transformation routine to use
+                csv_predicates (list): List of predicates to include in CSV morph
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Routine: LIDO to NFDI
+        if routine == 'lido-to-nfdi':
+            progress_message = 'Converting LIDO files to NFDI-style triples'
+            self.report.echo_progress(progress_message, 0, 100)
+            status = self.__morph_lido_to_nfdi() # TODO
+            self.report.echo_progress(progress_message, 100, 100)
+
+        # Routine: error
+        else:
+            status['reason'] = 'Invalid transformation routine called.'
+
+        # Update status
+        self.report.status.append(status)
+
+
+    def __morph_lido_to_nfdi(self, lido:str, supplement_data_feed:str = '', supplement_data_catalog:str = '', supplement_data_catalog_publisher:str = '') -> Graph:
         '''
         Converts a LIDO file to CGIF triples and returns them as a Graph object
 
@@ -261,7 +360,7 @@ class HydraRetrieveResource(HydraRetrieve):
                 # SCHEMA.name
                 schema_names = lido_descriptive.iterfind('.//{http://www.lido-schema.org}objectIdentificationWrap/{http://www.lido-schema.org}titleWrap/{http://www.lido-schema.org}titleSet/{http://www.lido-schema.org}appellationValue')
                 for schema_name in schema_names:
-                    language = self.__convert_lido_to_cgif_with_language(schema_name)
+                    language = self.__morph_lido_to_cgif_language(schema_name)
                     if language != None:
                         cgif_triples.add((resource, SCHEMA.name, Literal(schema_name.text, lang = language)))
                     else:
@@ -275,8 +374,8 @@ class HydraRetrieveResource(HydraRetrieve):
 
                 # SCHEMA.keywords: get work type, subjects, and location
                 schema_keywords = set()
-                schema_keywords.update(self.__convert_lido_to_cgif_with_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectClassificationWrap/{http://www.lido-schema.org}objectWorkTypeWrap/{http://www.lido-schema.org}objectWorkType'))
-                schema_keywords.update(self.__convert_lido_to_cgif_with_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectRelationWrap/{http://www.lido-schema.org}subjectWrap/{http://www.lido-schema.org}subjectSet/{http://www.lido-schema.org}subject/{http://www.lido-schema.org}subjectConcept'))
+                schema_keywords.update(self.__morph_lido_to_nfdi_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectClassificationWrap/{http://www.lido-schema.org}objectWorkTypeWrap/{http://www.lido-schema.org}objectWorkType'))
+                schema_keywords.update(self.__morph_lido_to_nfdi_concepts(lido_descriptive, './/{http://www.lido-schema.org}objectRelationWrap/{http://www.lido-schema.org}subjectWrap/{http://www.lido-schema.org}subjectSet/{http://www.lido-schema.org}subject/{http://www.lido-schema.org}subjectConcept'))
                 schema_keywords.add(schema_content_location)
 
                 # SCHEMA.keywords: write property
@@ -315,9 +414,9 @@ class HydraRetrieveResource(HydraRetrieve):
 
                 # SCHEMA.license: get all relevant licences
                 schema_licences = set()
-                schema_licences.update(self.__convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsWorkSet/{http://www.lido-schema.org}rightsType'))
-                schema_licences.update(self.__convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}recordRights/{http://www.lido-schema.org}rightsType'))
-                schema_licences.update(self.__convert_lido_to_cgif_with_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsResource/{http://www.lido-schema.org}rightsType'))
+                schema_licences.update(self.__morph_lido_to_nfdi_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsWorkSet/{http://www.lido-schema.org}rightsType'))
+                schema_licences.update(self.__morph_lido_to_nfdi_concepts(lido_administrative, './/{http://www.lido-schema.org}recordRights/{http://www.lido-schema.org}rightsType'))
+                schema_licences.update(self.__morph_lido_to_nfdi_concepts(lido_administrative, './/{http://www.lido-schema.org}rightsResource/{http://www.lido-schema.org}rightsType'))
 
                 # SCHEMA.license: write property
                 for schema_licence in schema_licences:
@@ -363,7 +462,7 @@ class HydraRetrieveResource(HydraRetrieve):
                     cgif_triples.add((URIRef(schema_creator.text), RDF.type, SCHEMA.Organization))
                     schema_creator_name = schema_creator.getparent().find('.//{http://www.lido-schema.org}legalBodyName/{http://www.lido-schema.org}appellationValue')
                     if schema_creator_name != None:
-                        language = self.__convert_lido_to_cgif_with_language(schema_creator_name)
+                        language = self.__morph_lido_to_nfdi_language(schema_creator_name)
                         if language != None:
                             cgif_triples.add((URIRef(schema_creator.text), SCHEMA.name, Literal(schema_creator_name.text, lang = language)))
                         else:
@@ -380,7 +479,7 @@ class HydraRetrieveResource(HydraRetrieve):
         return cgif_triples
 
 
-    def __convert_lido_to_cgif_with_language(self, language_element:any) -> str:
+    def __morph_lido_to_nfdi_language(self, language_element:any) -> str:
         '''
         Retrieves the language of a given LIDO element
 
@@ -405,7 +504,7 @@ class HydraRetrieveResource(HydraRetrieve):
         return language
 
 
-    def __convert_lido_to_cgif_with_concepts(self, lido_root:any, element_path:str) -> list:
+    def __morph_lido_to_nfdi_concepts(self, lido_root:any, element_path:str) -> list:
         '''
         Finds a LIDO concept IDs in an element tree according to LIDO 1.0 or 1.1
 

@@ -7,7 +7,6 @@
 
 
 # Import libraries
-from glob import glob
 from math import ceil
 from re import search
 from rdflib import Graph, Namespace
@@ -190,6 +189,11 @@ class HydraRetrieveFeed(HydraRetrieve):
                     self.__save_file(list_data['content'], file_path)
                     status['success'] = True
                     status['reason'] = 'All lists downloaded successfully.'
+                
+                # Provide generic info
+                else:
+                    status['success'] = True
+                    status['reason'] = 'All lists retrieved successfully.'
 
             # Get out of loop if list file is missing
             else:

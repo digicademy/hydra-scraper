@@ -39,7 +39,7 @@ This scraper is a command-line tool. Use `python go.py` to run the script in
 interactive mode. Alternatively, use the configuration options listed below to
 run the script without interaction.
 
-- `-download '<value>' '<value>'`: list of downloads you require, possible values:
+- `-download <value> <value>`: list of downloads you require, possible values:
   - `lists`: all Hydra-paginated lists (requires `-source_url`)
   - `list_triples`: all RDF triples in a Hydra API (requires`-source_url`)
   - `list_nfdi`: nfdicore/cto triples from a CGIF-compatible Hydra API (requires`-source_url`)
@@ -48,20 +48,20 @@ run the script without interaction.
   - `resource_triples`: all RDF triples of resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_nfdi`: Cnfdicore/cto triples from CGIF-compatible resources (requires `-source_url`/`_file`/`_folder`)
   - `resource_table`: CSV table of data in resources (requires `-source_url`/`_file`/`_folder`)
-- `-source_url '<url>'`: entry-point URL to scrape content from (default: none)
-- `-source_file '<path to file>'`: path to Beacon file containing URLs to scrape (default: none)
-- `-source_folder '<name of folder>'`: path to folder containing files to scrape (default: none, requires `-content_type`)
-- `-content_type '<string>'`: content type to request or use when scraping (default: none)
-- `-target_folder '<name of folder>'`: download to this subfolder of the download folder (default: timestamp)
-- `-resource_url_filter '<string>'`: string as a filter for resource lists (default: none)
-- `-resource_url_replace '<string>'`: string to replace in resource lists (default: none)
-- `-resource_url_replace_with '<string>'`: string to replace the previous one with (default: none)
-- `-resource_url_add '<string>'`: addition to the end of each resource URL (default: none)
-- `-clean_resource_names '<string>' '<string>'`: list of strings to remove from resource URLs to build their file name (default: enumeration)
-- `-table_data '<string>' '<string>'`: list of property URIs to compile in a table (default: all)
-- `-supplement_data_feed '<url>'`: URI of a data feed to bind LIDO files to (default: none)
-- `-supplement_data_catalog '<url>'`: URI of a data catalog the data feed belongs to (default: none)
-- `-supplement_data_catalog_publisher '<url>'`: URI of the publisher of the catalog (default: none)
+- `-source_url <url>`: entry-point URL to scrape content from (default: none)
+- `-source_file <path to file>`: path to Beacon file containing URLs to scrape (default: none)
+- `-source_folder <name of folder>`: path to folder containing files to scrape (default: none, requires `-content_type`)
+- `-content_type <string>`: content type to request or use when scraping (default: none)
+- `-target_folder <name of folder>`: download to this subfolder of the download folder (default: timestamp)
+- `-resource_url_filter <string>`: string as a filter for resource lists (default: none)
+- `-resource_url_replace <string>`: string to replace in resource lists (default: none)
+- `-resource_url_replace_with <string>`: string to replace the previous one with (default: none)
+- `-resource_url_add <string>`: addition to the end of each resource URL (default: none)
+- `-clean_resource_names <string> <string>`: list of strings to remove from resource URLs to build their file name (default: enumeration)
+- `-table_data <uri> <uri>`: list of property URIs to compile in a table (default: all)
+- `-supplement_data_feed <url>`: URI of a data feed to bind LIDO files to (default: none)
+- `-supplement_data_catalog <url>`: URI of a data catalog the data feed belongs to (default: none)
+- `-supplement_data_catalog_publisher <url>`: URI of the publisher of the catalog (default: none)
 
 ## Examples
 
@@ -107,31 +107,31 @@ python go.py -download resource_nfdi -source_folder downloads/sample-nfdi -conte
 All available **JSON-LD** data:
 
 ```
-python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.json -target_folder cvma-jsonld -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/,/about.json
+python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.json -target_folder cvma-jsonld -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/ /about.json
 ```
 
 All available **RDF/XML** data:
 
 ```
-python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.rdf -target_folder cvma-rdfxml -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/,/about.rdf
+python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.rdf -target_folder cvma-rdfxml -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/ /about.rdf
 ```
 
 All available **Turtle** data:
 
 ```
-python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.ttl -target_folder cvma-turtle -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/,/about.ttl
+python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.ttl -target_folder cvma-turtle -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/ /about.ttl
 ```
 
 All available **CGIF (JSON-LD)** data:
 
 ```
-python go.py -download lists list_triples list_nfdi beacon resources resource_triples resource_nfdi -source_url https://corpusvitrearum.de/id/about.cgif -target_folder cvma-nfdi -resource_url_filter https://corpusvitrearum.de/id/F -resource_url_add /about.cgif -clean_resource_names https://corpusvitrearum.de/id/,/about.cgif
+python go.py -download lists list_triples list_nfdi beacon resources resource_triples resource_nfdi -source_url https://corpusvitrearum.de/id/about.cgif -target_folder cvma-nfdi -resource_url_filter https://corpusvitrearum.de/id/F -resource_url_add /about.cgif -clean_resource_names https://corpusvitrearum.de/id/ /about.cgif
 ```
 
 All available **LIDO** data:
 
 ```
-python go.py -download beacon resources -source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html -target_folder cvma-lido -resource_url_add /about.lido -clean_resource_names https://corpusvitrearum.de/id/,/about.lido
+python go.py -download beacon resources -source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html -target_folder cvma-lido -resource_url_add /about.lido -clean_resource_names https://corpusvitrearum.de/id/ /about.lido
 ```
 
 All available **embedded metadata**:
