@@ -75,31 +75,50 @@ operating system, you may need to use `python3` instead of `python`.
 Grab all **portal data** as triples:
 
 ```
-python go.py -download resource_triples -source_url https://nfdi4culture.de/resource.ttl -target_folder n4c-turtle
+python go.py \
+-download resource_triples \
+-source_url https://nfdi4culture.de/resource.ttl \
+-target_folder n4c-turtle
 ```
 
 Get **NFDI-style data** from an API entry point:
 
 ```
-python go.py -download list_nfdi -source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html -target_folder sample-nfdi
+python go.py \
+-download list_nfdi \
+-source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html \
+-target_folder sample-nfdi
 ```
 
 Get **NFDI-style data from a Beacon** file:
 
 ```
-python go.py -download resource_nfdi -source_file downloads/sample-nfdi/beacon.txt -target_folder sample-nfdi
+python go.py \
+-download resource_nfdi \
+-source_file downloads/sample-nfdi/beacon.txt \
+-target_folder sample-nfdi
 ```
 
 Get **NFDI-style data from a Beacon** file that lists LIDO files:
 
 ```
-python go.py -download resource_nfdi -source_file downloads/sample-nfdi/beacon.txt -target_folder sample-nfdi -supplement_data_feed https://corpusvitrearum.de/cvma-digital/bildarchiv.html -supplement_data_catalog https://corpusvitrearum.de -supplement_data_catalog_publisher https://nfdi4culture.de/id/E1834
+python go.py \
+-download resource_nfdi \
+-source_file downloads/sample-nfdi/beacon.txt \
+-target_folder sample-nfdi \
+-supplement_data_feed https://corpusvitrearum.de/cvma-digital/bildarchiv.html \
+-supplement_data_catalog https://corpusvitrearum.de \
+-supplement_data_catalog_publisher https://nfdi4culture.de/id/E1834
 ```
 
 Get **NFDI-style data from a file dump**:
 
 ```
-python go.py -download resource_nfdi -source_folder downloads/sample-nfdi -content_type application/ld+json -target_folder sample-nfdi
+python go.py \
+-download resource_nfdi \
+-source_folder downloads/sample-nfdi \
+-content_type application/ld+json \
+-target_folder sample-nfdi
 ```
 
 ### Corpus Vitrearum Germany
@@ -107,49 +126,89 @@ python go.py -download resource_nfdi -source_folder downloads/sample-nfdi -conte
 All available **JSON-LD** data:
 
 ```
-python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.json -target_folder cvma-jsonld -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/ /about.json
+python go.py \
+-download lists list_triples beacon resources resource_triples \
+-source_url https://corpusvitrearum.de/id/about.json \
+-target_folder cvma-jsonld \
+-resource_url_filter https://corpusvitrearum.de/id/F \
+-clean_resource_names https://corpusvitrearum.de/id/ /about.json
 ```
 
 All available **RDF/XML** data:
 
 ```
-python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.rdf -target_folder cvma-rdfxml -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/ /about.rdf
+python go.py \
+-download lists list_triples beacon resources resource_triples \
+-source_url https://corpusvitrearum.de/id/about.rdf \
+-target_folder cvma-rdfxml \
+-resource_url_filter https://corpusvitrearum.de/id/F \
+-clean_resource_names https://corpusvitrearum.de/id/ /about.rdf
 ```
 
 All available **Turtle** data:
 
 ```
-python go.py -download lists list_triples beacon resources resource_triples -source_url https://corpusvitrearum.de/id/about.ttl -target_folder cvma-turtle -resource_url_filter https://corpusvitrearum.de/id/F -clean_resource_names https://corpusvitrearum.de/id/ /about.ttl
+python go.py \
+-download lists list_triples beacon resources resource_triples \
+-source_url https://corpusvitrearum.de/id/about.ttl \
+-target_folder cvma-turtle \
+-resource_url_filter https://corpusvitrearum.de/id/F \
+-clean_resource_names https://corpusvitrearum.de/id/ /about.ttl
 ```
 
 All available **CGIF (JSON-LD)** data:
 
 ```
-python go.py -download lists list_triples list_nfdi beacon resources resource_triples resource_nfdi -source_url https://corpusvitrearum.de/id/about.cgif -target_folder cvma-nfdi -resource_url_filter https://corpusvitrearum.de/id/F -resource_url_add /about.cgif -clean_resource_names https://corpusvitrearum.de/id/ /about.cgif
+python go.py \
+-download lists list_triples list_nfdi beacon resources resource_triples resource_nfdi \
+-source_url https://corpusvitrearum.de/id/about.cgif \
+-target_folder cvma-nfdi \
+-resource_url_filter https://corpusvitrearum.de/id/F \
+-resource_url_add /about.cgif \
+-clean_resource_names https://corpusvitrearum.de/id/ /about.cgif
 ```
 
 All available **LIDO** data:
 
 ```
-python go.py -download beacon resources -source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html -target_folder cvma-lido -resource_url_add /about.lido -clean_resource_names https://corpusvitrearum.de/id/ /about.lido
+python go.py \
+-download beacon resources \
+-source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html \
+-target_folder cvma-lido \
+-resource_url_add /about.lido \
+-clean_resource_names https://corpusvitrearum.de/id/ /about.lido
 ```
 
 All available **embedded metadata**:
 
 ```
-python go.py -download lists list_triples list_nfdi beacon resources resource_triples resource_nfdi -source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html -target_folder cvma-embedded -clean_resource_names https://corpusvitrearum.de/id/
+python go.py \
+-download lists list_triples list_nfdi beacon resources resource_triples resource_nfdi \
+-source_url https://corpusvitrearum.de/cvma-digital/bildarchiv.html \
+-target_folder cvma-embedded \
+-clean_resource_names https://corpusvitrearum.de/id/
 ```
 
 **Table** of specific metadata:
 
 ```
-python go.py -download resource_table -source_url https://corpusvitrearum.de/id/about.json -target_folder cvma-jsonld -resource_url_filter https://corpusvitrearum.de/id/F -table_data http://purl.org/dc/elements/1.1/Title http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState http://iptc.org/std/Iptc4xmpExt/2008-02-29/City http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId http://ns.adobe.com/exif/1.0/GPSLatitude http://ns.adobe.com/exif/1.0/GPSLongitude https://lod.academy/cvma/ns/xmp/AgeDeterminationStart https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd https://lod.academy/cvma/ns/xmp/IconclassNotation
+python go.py \
+-download resource_table \
+-source_url https://corpusvitrearum.de/id/about.json \
+-target_folder cvma-jsonld \
+-resource_url_filter https://corpusvitrearum.de/id/F \
+-table_data http://purl.org/dc/elements/1.1/Title http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState http://iptc.org/std/Iptc4xmpExt/2008-02-29/City http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId http://ns.adobe.com/exif/1.0/GPSLatitude http://ns.adobe.com/exif/1.0/GPSLongitude https://lod.academy/cvma/ns/xmp/AgeDeterminationStart https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd https://lod.academy/cvma/ns/xmp/IconclassNotation
 ```
 
 Table of specific metadata **from an existing dump**:
 
 ```
-python go.py -download resource_table -source_folder downloads/cvma-jsonld/resources -content_type application/ld+json -target_folder cvma-jsonld -table_data http://purl.org/dc/elements/1.1/Title http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState http://iptc.org/std/Iptc4xmpExt/2008-02-29/City http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId http://ns.adobe.com/exif/1.0/GPSLatitude http://ns.adobe.com/exif/1.0/GPSLongitude https://lod.academy/cvma/ns/xmp/AgeDeterminationStart https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd https://lod.academy/cvma/ns/xmp/IconclassNotation
+python go.py \
+-download resource_table \
+-source_folder downloads/cvma-jsonld/resources \
+-content_type application/ld+json \
+-target_folder cvma-jsonld \
+-table_data http://purl.org/dc/elements/1.1/Title http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState http://iptc.org/std/Iptc4xmpExt/2008-02-29/City http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId http://ns.adobe.com/exif/1.0/GPSLatitude http://ns.adobe.com/exif/1.0/GPSLongitude https://lod.academy/cvma/ns/xmp/AgeDeterminationStart https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd https://lod.academy/cvma/ns/xmp/IconclassNotation
 ```
 
 ## Contributing

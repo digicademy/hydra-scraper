@@ -85,9 +85,13 @@ if command.source_folder != None or 'resources' in command.download or 'resource
         if 'resource_triples' in command.download:
             resource_graph.save(command.target_folder_path, 'resource_triples.ttl', 'triples')
 
-        # Compile NFDI-style triples
+        # Compile NFDI-style triples (and first parse LIDO if requested)
         if 'resource_nfdi' in command.download:
-            resource_graph.morph('cgif-to-nfdi')
+            if command.supplement_data_feed != None and command.supplement_data_catalog != None and command.supplement_data_catalog_publisher != None:
+                resource.morph(command.supplement_data_feed, command.supplement_data_catalog, command.supplement_data_catalog_publisher)
+                resource_graph.nfdi = resource.nfdi
+            else:
+                resource_graph.morph('cgif-to-nfdi')
             resource_graph.save(command.target_folder_path, 'resource_nfdi.ttl', 'nfdi')
 
         # Compile CSV table
