@@ -78,7 +78,7 @@ if 'resources' in command.download or 'resource_triples' in command.download or 
 
         # Compile triples
         if 'resource_triples' in command.download:
-            resource_graph.save(command.target_folder_path, 'resource_triples.ttl', 'ttl')
+            resource_graph.save(command.target_folder_path, 'resource_triples.ttl', 'triples')
 
         # Compile NFDI-style triples
         if 'resource_nfdi' in command.download:

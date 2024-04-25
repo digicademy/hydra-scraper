@@ -29,6 +29,9 @@ class HydraRetrieveFeed(HydraRetrieve):
     store = None
 
 
+    # READ ####################################################################
+
+
     def __init__(self, report:object, feed_file:str = None, feed_url:str = None, content_type:str = None, max_number_of_paginated_lists:int = 0, retrieval_delay:float = 0, download:bool = False, file_path:str = None):
         '''
         Retrieve data feeds like beacon files or APIs
@@ -59,100 +62,21 @@ class HydraRetrieveFeed(HydraRetrieve):
 
         # Routine: beacon file
         if self.feed_file != None:
-            self.report.echo_progress('Reading a Beacon file', 0, 100)
+            progress_message = 'Reading a Beacon file'
+            self.report.echo_progress(progress_message, 0, 100)
             status = self.__read_list(self.feed_file)
-            self.report.echo_progress('Reading a Beacon file', 100, 100)
+            self.report.echo_progress(progress_message, 100, 100)
 
         # Routine: endpoint URL
         elif self.feed_url != None:
-            self.report.echo_progress('Reading an endpoint URL', 0, 100)
-            status = self.__read_api(self.feed_url, content_type, max_number_of_paginated_lists, retrieval_delay, 'Reading an endpoint URL', download, file_path)
-            self.report.echo_progress('Reading an endpoint URL', 100, 100)
+            progress_message = 'Reading an endpoint URL'
+            self.report.echo_progress(progress_message, 0, 100)
+            status = self.__read_api(self.feed_url, content_type, max_number_of_paginated_lists, retrieval_delay, progress_message, download, file_path)
+            self.report.echo_progress(progress_message, 100, 100)
 
         # Routine: error
         else:
             status['reason'] = 'Neither Beacon file nor endpoint URL given.'
-
-        # Update status
-        self.report.status.append(status)
-
-
-    def __str__(self):
-        '''
-        String representation of instances of this object
-        '''
-
-        # Put together a string
-        if self.feed_url != None:
-            return 'Feed based on web data from ' + self.feed_url + '.'
-        elif self.feed_file != None:
-            return 'Feed based on file data from ' + self.feed_file + '.'
-        else:
-            return 'Empty feed without a data source.'
-
-
-    def morph(self, routine:str, url_filter:str = None, url_replace:str = None, url_replace_with:str = None, url_add:str = None):
-        '''
-        Morphs the feed to a different format
-
-            Parameters:
-                routine (str): Transformation routine to use
-                url_filter (str): String as a filter for resource URLs
-                url_replace (str): String to replace in resource URLs
-                url_replace_with (str): String to replace the previous one with
-                url_add (str): Addition to the end of each resource URL
-        '''
-
-        # Provide initial status
-        status = {
-            'success': False,
-            'reason': ''
-        }
-
-        # Routine: URLs
-        if routine == 'urls':
-            self.report.echo_progress('Altering list of resource URLs in feed', 0, 100)
-            if self.feed == []:
-                status['reason'] = 'No resource URLs to alter.'
-            else:
-                self.__morph_urls(url_filter, url_replace, url_replace_with, url_add)
-                status['success'] = True
-                status['reason'] = 'Resource URLs in feed altered.'
-            self.report.echo_progress('Altering list of resource URLs in feed', 100, 100)
-
-        # Update status
-        self.report.status.append(status)
-
-
-    def save(self, target_folder_path:str, file_name:str, routine:str = None):
-        '''
-        Saves graph data to a file
-
-            Parameters:
-                target_folder_path (str): Path of the folder to create files in
-                file_name (str): Name of the file to create
-                routine (str): Specific data to save
-        '''
-
-        # Provide initial status
-        status = {
-            'success': False,
-            'reason': ''
-        }
-
-        # Construct file name
-        file_path = target_folder_path + '/' + file_name
-
-        # Routine: Beacon file
-        if routine == 'beacon':
-            self.report.echo_progress('Saving Beacon file', 0, 100)
-            if self.feed == []:
-                status['reason'] = 'No resource URLs to list in Beacon file.'
-            else:
-                self.__save_list(self.feed, file_path)
-                status['success'] = True
-                status['reason'] = 'Beacon file saved.'
-            self.report.echo_progress('Saving Beacon file', 100, 100)
 
         # Update status
         self.report.status.append(status)
@@ -346,21 +270,60 @@ class HydraRetrieveFeed(HydraRetrieve):
         return status
 
 
-    def __save_list(self, list_to_save:list, file_path:str):
+    # STRING ##################################################################
+
+
+    def __str__(self):
         '''
-        Saves a list to a file
+        String representation of instances of this object
+        '''
+
+        # Put together a string
+        if self.feed_url != None:
+            return 'Feed based on web data from ' + self.feed_url + '.'
+        elif self.feed_file != None:
+            return 'Feed based on file data from ' + self.feed_file + '.'
+        else:
+            return 'Empty feed without a data source.'
+
+
+    # MORPH ###################################################################
+
+
+    def morph(self, routine:str, url_filter:str = None, url_replace:str = None, url_replace_with:str = None, url_add:str = None):
+        '''
+        Morphs the feed to a different format
 
             Parameters:
-                list_to_save (list): List of entries to be saved to file
-                file_path (str): Path of the file to create
+                routine (str): Transformation routine to use
+                url_filter (str): String as a filter for resource URLs
+                url_replace (str): String to replace in resource URLs
+                url_replace_with (str): String to replace the previous one with
+                url_add (str): Addition to the end of each resource URL
         '''
 
-        # Convert lines to file content
-        content = ["{}\n".format(index) for index in list_to_save]
-        self.__save_file(self, content, file_path)
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Routine: URLs
+        if routine == 'urls':
+            progress_message = 'Altering list of resource URLs in feed'
+            self.report.echo_progress(progress_message, 0, 100)
+            status = self.__morph_urls(url_filter, url_replace, url_replace_with, url_add)
+            self.report.echo_progress(progress_message, 100, 100)
+
+        # Routine: error
+        else:
+            status['reason'] = 'Invalid transformation routine called.'
+
+        # Update status
+        self.report.status.append(status)
 
 
-    def __morph_urls(self, filter:str = None, replace:str = None, replace_with:str = None, add:str = None):
+    def __morph_urls(self, filter:str = None, replace:str = None, replace_with:str = None, add:str = None) -> dict:
         '''
         Mofifies the list of individual resource URLs
 
@@ -369,34 +332,123 @@ class HydraRetrieveFeed(HydraRetrieve):
                 replace (str): String to replace in listed URLs before retrieving a resource
                 replace_with (str): String to use as a replacement before retrieving a resource
                 add (str): String to add to each URL before retrieving a resource
+
+            Returns:
+                dict: Status report
         '''
 
-        # Simplify input
-        if filter == None:
-            filter = ''
-        if replace == None:
-            replace = ''
-        if replace_with == None:
-            replace_with = ''
-        if add == None:
-            add = ''
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
 
-        # Check each URL
-        morphed_feed = []
-        for url in self.feed:
+        # Check if there is data to transform
+        if self.feed == []:
+            status['reason'] = 'No resource URLs to alter.'
+        else:
 
-            # Filter list
-            if filter != '':
-                if filter not in url:
-                    url = ''
-            if url != '':
+            # Simplify input
+            if filter == None:
+                filter = ''
+            if replace == None:
+                replace = ''
+            if replace_with == None:
+                replace_with = ''
+            if add == None:
+                add = ''
 
-                # Replace and add URL parts
-                if replace != '':
-                    url = url.replace(replace, replace_with)
-                if add != '':
-                    url = url + add
-                morphed_feed.append(url)
-            
-        # Use the revised URLs instead of the original
-        self.feed = morphed_feed
+            # Check each URL
+            morphed_feed = []
+            for url in self.feed:
+
+                # Filter list
+                if filter != '':
+                    if filter not in url:
+                        url = ''
+                if url != '':
+
+                    # Replace and add URL parts
+                    if replace != '':
+                        url = url.replace(replace, replace_with)
+                    if add != '':
+                        url = url + add
+                    morphed_feed.append(url)
+                
+            # Use the revised URLs instead of the original
+            self.feed = morphed_feed
+            status['success'] = True
+            status['reason'] = 'Resource URLs in feed altered.'
+
+        # Return status
+        return status
+
+
+    # SAVE ####################################################################
+
+
+    def save(self, target_folder_path:str, file_name:str, routine:str = None):
+        '''
+        Saves graph data to a file
+
+            Parameters:
+                target_folder_path (str): Path of the folder to create files in
+                file_name (str): Name of the file to create
+                routine (str): Specific data to save
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+
+        # Construct file name
+        file_path = target_folder_path + '/' + file_name
+
+        # Routine: Beacon file
+        if routine == 'beacon':
+            progress_message = 'Saving Beacon file'
+            self.report.echo_progress(progress_message, 0, 100)
+            status = self.__save_list(self.feed, file_path)
+            self.report.echo_progress(progress_message, 100, 100)
+
+        # Routine: error
+        else:
+            status['reason'] = 'Invalid saving routine called.'
+
+        # Update status
+        self.report.status.append(status)
+
+
+    def __save_list(self, list_to_save:list, file_path:str) -> dict:
+        '''
+        Saves a list to a file
+
+            Parameters:
+                list_to_save (list): List of entries to be saved to file
+                file_path (str): Path of the file to create
+
+            Returns:
+                dict: Status report
+        '''
+
+        # Provide initial status
+        status = {
+            'success': False,
+            'reason': ''
+        }
+        
+        # Check if there is data to save
+        if self.feed == []:
+            status['reason'] = 'No resource URLs to list in Beacon file.'
+        else:
+
+            # Convert lines to file content
+            content = ["{}\n".format(index) for index in list_to_save]
+            self.__save_file(self, content, file_path)
+            status['success'] = True
+            status['reason'] = 'Beacon file saved.'
+
+        # Return status
+        return status
