@@ -14,7 +14,7 @@ from distutils.core import setup
 setup(
     name = 'hydra-scraper',
     version = '0.9.0',
-    description = 'Comprehensive scraper for Hydra-paginated APIs, Beacon files, and RDF file dumps',
+    description = 'Comprehensive scraper for paginated APIs, Beacon files, and RDF file dumps',
     author = 'Jonatan Jalle Steller',
     author_email = 'jonatan.steller@adwmainz.de',
     url = 'https://github.com/digicademy/hydra-scraper',

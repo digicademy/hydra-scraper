@@ -7,7 +7,7 @@
    viewBox="0 0 2000 651"
    version="1.1"
    id="svg5"
-   inkscape:version="1.3.1 (91b66b0783, 2023-11-16)"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
    sodipodi:docname="workflows.svg"
    inkscape:export-filename="workflows.png"
    inkscape:export-xdpi="300"
@@ -28,9 +28,9 @@
      inkscape:document-units="px"
      showgrid="false"
      showguides="true"
-     inkscape:zoom="0.2102413"
-     inkscape:cx="1086.8464"
-     inkscape:cy="-54.699052"
+     inkscape:zoom="0.4204826"
+     inkscape:cx="863.29375"
+     inkscape:cy="224.74176"
      inkscape:window-width="1440"
      inkscape:window-height="831"
      inkscape:window-x="0"
@@ -205,7 +205,7 @@
          x="253.92122"
          y="145.41068"
          style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:'Barlow Medium';text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan13">RDF API</tspan></text><text
+         id="tspan13">RDF feed</tspan></text><text
        xml:space="preserve"
        style="font-size:32.2808px;line-height:1.15;font-family:'Noto Color Emoji';-inkscape-font-specification:'Noto Color Emoji';stroke-width:1.21053"
        x="302.34219"
@@ -215,7 +215,7 @@
          x="302.34219"
          y="338.31693"
          style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:'Barlow Medium';text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan14">Beacon file</tspan></text><text
+         id="tspan14">Beacon feed</tspan></text><text
        xml:space="preserve"
        style="font-size:32.2808px;line-height:1.15;font-family:'Noto Color Emoji';-inkscape-font-specification:'Noto Color Emoji';stroke-width:1.21053"
        x="350.76318"
@@ -225,7 +225,7 @@
          x="350.76318"
          y="531.22302"
          style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:'Barlow Medium';text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan18">RDF/LIDO file dump</tspan></text><path
+         id="tspan18">RDF/XML file dump</tspan></text><path
        style="fill:none;stroke:#0088cc;stroke-width:3.63158;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1-7-7-2-2)"
        d="m 1062.5563,349.77361 c 87.0364,0 159.291,19.60781 304.2594,19.60781"
        id="path18"
@@ -250,7 +250,7 @@
          x="1606.8501"
          y="183.89105"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:Barlow;text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan19">Triples from lists</tspan></text><rect
+         id="tspan19">Feed triples (+NFDI)</tspan></text><rect
        style="fill:#ecece8;fill-opacity:0.496113;stroke-width:2.29884;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
        id="rect20"
        width="383.71085"
@@ -267,7 +267,7 @@
          x="1558.4288"
          y="591.96222"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:Barlow;text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan20">CSV table from resources</tspan></text><rect
+         id="tspan20">CSV table from members</tspan></text><rect
        style="fill:#ecece8;fill-opacity:0.496113;stroke-width:2.29884;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
        id="rect21"
        width="383.71085"
@@ -284,7 +284,7 @@
          x="1582.6396"
          y="387.92673"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:Barlow;text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan21">Dump of resource files</tspan></text><rect
+         id="tspan21">Dump of member files</tspan></text><rect
        style="fill:#ecece8;fill-opacity:0.496113;stroke-width:2.29884;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
        id="rect27"
        width="383.71085"
@@ -318,7 +318,7 @@
          x="1679.4816"
          y="489.9444"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:Barlow;text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan28">Triples from resources</tspan></text><rect
+         id="tspan28">Member triples (+NFDI)</tspan></text><rect
        style="fill:#ecece8;fill-opacity:0.496113;stroke-width:2.29884;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
        id="rect29"
        width="383.71085"
@@ -335,7 +335,7 @@
          x="1727.9026"
          y="81.873413"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.2808px;line-height:1.15;font-family:Barlow;-inkscape-font-specification:Barlow;text-align:center;text-anchor:middle;stroke-width:1.21053"
-         id="tspan29">Dump of list files</tspan></text><path
+         id="tspan29">Dump of feed files</tspan></text><path
        style="fill:none;stroke:#8800aa;stroke-width:3.63158;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1-7-7-2-2)"
        d="m 1062.5563,412.72104 c 87.0364,0 203.1787,65.94131 401.1015,65.94131"
        id="path29"

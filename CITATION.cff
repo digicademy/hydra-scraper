@@ -15,18 +15,19 @@ repository-code: >-
 abstract: >-
   This scraper provides a command-line toolset to pull data
   from various sources, such as Hydra paginated APIs,
-  beacon files, or local file dumps. The tool
-  differentiates between resource lists and individual
-  resource files in RDF-compatible formats such as JSON-LD
-  or Turtle, but it can also handle, for example, LIDO
-  files. Command-line calls can be combined and adapted to
+  Beacon files, or local file dumps. The tool
+  differentiates between feeds and their members in
+  RDF-compatible formats such as JSON-LD or Turtle, but it
+  can also handle XML files using, for example, the LIDO
+  schema. Command-line calls can be combined and adapted to
   build fully-fledged scraping mechanisms, including the
-  ability output a set of triples. The script was
+  ability to output a set of triples. The script was
   originally developed as an API testing tool for of the
   Corpus Vitrearum Germany (CVMA) at the Academy of
   Sciences and Literature Mainz. It was later expanded to
   add functionality around the Culture Graph Interchange
-  Format (CGIF).
+  Format (CGIF) and the nfdicore ontology with the cto
+  module.
 keywords:
   - scraping
   - Hydra Core Vocabulary
@@ -36,7 +37,8 @@ keywords:
   - Culture Knowledge Graph
   - NFDI
   - NFDI4Culture
+  - XML
   - LIDO
 license: MIT
 version: 0.9.0
-date-released: '2024-04-26'
+date-released: '2024-05-13'

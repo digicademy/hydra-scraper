@@ -2,11 +2,12 @@
 
 ## 0.9.0
 
-- Refactor code to use a single main script and several classes instead of a helper library
-- Add routine to process CGIF to the nfdicore/cto ontology
-- Switch LIDO conversion from targeting CGIF to nfdicore/cto
-- Simplify command-line interface and argument parsing
-- Add `-quiet` option to not report intermiedate progress
+- Refactor and rewrite the scraper using classes and class inheritance to avoid intransparent helper libraries
+- Central library to produce triples for the nfdicore/cto ontology
+- Switch CGIF and LIDO routines to produce nfdicore/cto
+- Reshuffle command-line interface and argument parsing to improve extensibility
+- Add a `-quiet` option to stop reporting intermiedate progress
+- Set up further ingest formats
 
 ## 0.8.4
 
