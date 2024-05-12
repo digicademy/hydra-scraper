@@ -52,8 +52,7 @@ class HyOrganise:
 
         # Set up list of allowed arguments
         hy_args = ArgumentParser(
-            prog = 'go.py',
-            description = 'Comprehensive scraper for Hydra-paginated APIs, Beacon files, and RDF file dumps'
+            description = 'Comprehensive scraper for paginated APIs, Beacon files, and RDF file dumps'
         )
         hy_args.add_argument(
             '-s', '--start',
@@ -250,7 +249,7 @@ class HyOrganise:
         return str(timestamp)
 
 
-    def __create_folder(folder_name:str):
+    def __create_folder(self, folder_name:str):
         '''
         Creates a folder with a given name
 
@@ -291,4 +290,4 @@ class HyOrganise:
                 report = report + '\n\nIncompatible data:\n- ' + '\n- '.join(entry['incompatible'])
 
         # Display result
-        print(report)
+        print('\n' + report)
