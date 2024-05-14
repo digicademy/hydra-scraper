@@ -40,14 +40,14 @@ indicate what kind of scraping run you desire.
 
 - `-s` or `--start <value>`: type of starting point for the scraping run:
   - `rdf-feed`: an RDF-based, optionally Hydra-paginated feed API or embedded metadata
+  - `xml-feed`: a local or remote XML file listing individual files (CMIF)
   - `beacon-feed`: a local or remote text file listing one URL per line (Beacon)
   - `dump-folder`: a local folder of individual files
-  - `xml-feed`: a local or remote XML file listing individual files (CMIF)
   - `dump-file`: a local file containing all information to process
 - `-l` or `--location <url or folder or file>`: source URL, folder, or file path (depending on the start parameter)
 - `-m` or `--markup <value>`: markup to query during the scraping run:
-  - `rdf-feed`: use RDF triples contained in the feed
-  - `rdf-members`: use RDF triples contained in individual feed members
+  - `feed`: use RDF triples contained in the RDF or XML feed
+  - `rdf`: use RDF triples contained in individual files
   - `lido`: use LIDO files
   - `tei`: use TEI files
   - `mei`: use MEI files
@@ -100,25 +100,25 @@ python go.py -s 'rdf-feed -l https://nfdi4culture.de/resource.ttl -m rdf-members
 Get **NFDI-style data** from an API entry point:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -m rdf-feed -o triples-nfdi -n sample-nfdi
+python go.py -s rdf-feed -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -m rdf-feed -o triples-nfdi -n sample-nfdi -p
 ```
 
 Get **NFDI-style data from a local Beacon** file:
 
 ```bash
-python go.py -s beacon-feed -l downloads/sample-nfdi/beacon.txt -m rdf-members -o triples-nfdi -n sample-nfdi
+python go.py -s beacon-feed -l downloads/sample-nfdi/beacon.txt -m rdf-members -o triples-nfdi -n sample-nfdi -p
 ```
 
 Get **NFDI-style data from a Beacon** file that lists LIDO files:
 
 ```bash
-python go.py -s beacon-feed -l downloads/sample-nfdi/beacon.txt -m lido -o triples-nfdi -n sample-nfdi -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -ac https://corpusvitrearum.de -ap https://nfdi4culture.de/id/E1834
+python go.py -s beacon-feed -l downloads/sample-nfdi/beacon.txt -m lido -o triples-nfdi -n sample-nfdi -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -ac https://corpusvitrearum.de -ap https://nfdi4culture.de/id/E1834 -p
 ```
 
 Get **NFDI-style data from a file dump**:
 
 ```bash
-python go.py -s dump-folder -l downloads/sample-nfdi/files -m rdf-members -o triples-nfdi -n sample-nfdi -d application/ld+json
+python go.py -s dump-folder -l downloads/sample-nfdi/files -m rdf-members -o triples-nfdi -n sample-nfdi -d application/ld+json -p
 ```
 
 ### Corpus Vitrearum Germany

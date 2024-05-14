@@ -19,7 +19,7 @@ class HyOrganise:
     # Config
     delay = 0.02
     folder = 'downloads'
-    max_number_paginated_lists = 500
+    max_pagination = 500
 
     # Vars
     start = None
@@ -58,9 +58,9 @@ class HyOrganise:
             '-s', '--start',
             choices = [
                 'rdf-feed',
+                'xml-feed',
                 'beacon-feed',
                 'dump-folder',
-                'xml-feed',
                 'dump-file'
             ],
             required = True,
@@ -76,8 +76,8 @@ class HyOrganise:
         hy_args.add_argument(
             '-m', '--markup',
             choices = [
-                'rdf-feed',
-                'rdf-members',
+                'feed',
+                'rdf',
                 'lido',
                 'tei',
                 'mei',
