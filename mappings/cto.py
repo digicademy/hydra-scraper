@@ -1,4 +1,4 @@
-# Classes to provide nfdicore/cto triples
+# Classes to serialise nfdicore/cto triples
 # Currently targeting nfdicore 2.0.0 and cto 2.2.0
 #
 # This file is part of the Hydra Scraper package.
@@ -12,6 +12,7 @@ from datetime import date, datetime
 from rdflib import Graph, Namespace
 from rdflib.term import BNode, Literal, URIRef
 from validators import url
+from ingest import FeedData, FeedElementData
 
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, SDO, SKOS, XSD
@@ -30,422 +31,1025 @@ FG = Namespace('https://database.factgrid.de/wiki/Item:')
 ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
 
 
-# FEED OBJECT #################################################################
-
-
-class Feed:
-
-
-    def __new__(self, feed_uri:str|Literal|URIRef, feed_uri_same:str|list|Literal|URIRef = None, connect:bool = False, catalog_uri:str|Literal|URIRef = None, catalog_uri_same:str|list|Literal|URIRef = None):
-        '''
-        Produce all triples for an nfdicore/cto feed
-
-            Parameters:
-                feed_uri (str|Literal|URIRef): URI of the feed, preferably an NFDI4Culture IRI
-                feed_uri_same (str|list|Literal|URIRef): Additional URIs identifying the same feed
-                connect (bool): Prepare triples for the connection of research data to research information
-                catalog_uri (str|Literal|URIRef): URI of the catalog the feed belongs to, preferably an NFDI4Culture IRI
-                catalog_uri_same (str|list|Literal|URIRef): Additional URIs identifying the same catalog
-        '''
-
-        # Set up graph
-        output = spacify_graph()
-
-        # FEED
-
-        # Feed URI
-        feed_uri = urify(feed_uri)
-        if feed_uri == None:
-            raise ValueError('A feed URI was not valid.')
-        else:
-            output.add((feed_uri, RDF.type, NFDICORE.Dataset))
-
-            # Optional date modified
-            if connect:
-                today = date.today()
-                output.add((feed_uri, SDO.dateModified, Literal(today, datatype=XSD.date)))
-
-            # Same as feed URI
-            feed_uri_same = urify_list(feed_uri_same)
-            for i in feed_uri_same:
-                output.add((feed_uri, OWL.sameAs, i))
-
-            # Catalog URI
-            catalog_uri = urify(catalog_uri)
-            if catalog_uri != None:
-                output.add((catalog_uri, RDF.type, NFDICORE.DataPortal))
-                output.add((catalog_uri, NFDICORE.dataset, feed_uri))
-
-                # Same as catalog URI
-                catalog_uri_same = urify_list(catalog_uri_same)
-                for i in catalog_uri_same:
-                    output.add((catalog_uri, OWL.sameAs, i))
-
-        # Return graph
-        return output
-    
-
-# FEED ELEMENT OBJECT #########################################################
+# FEED ELEMENT ################################################################
 
 
 class FeedElement:
+    '''
+    Object designed to serialise all triples for an nfdicore/cto feed element
+    '''
+
+    store = None
 
 
-    def __new__(self, feed_uri:str|Literal|URIRef, element_type:str|URIRef, element_uri:str|Literal|URIRef, element_uri_same:str|list|Literal|URIRef = None, connect:bool = False, label:str|list|Literal|URIRef = None, label_alt:str|list|Literal|URIRef = None, shelf_mark:str|list|Literal|URIRef = None, image:str|list|Literal|URIRef = None, lyrics:str|list|Literal|URIRef = None, text_incipit:str|list|Literal|URIRef = None, music_incipit:dict|list = None, source_file:str|list|Literal|URIRef = None, iiif_image_api:str|list|Literal|URIRef = None, iiif_presentation_api:str|list|Literal|URIRef = None, ddb_api:str|list|Literal|URIRef = None, oaipmh_api:str|list|Literal|URIRef = None, publisher:str|list|Literal|URIRef = None, license:str|list|Literal|URIRef = None, vocab_element_type:str|list|Literal|URIRef = None, vocab_subject_concept:str|list|Literal|URIRef = None, vocab_related_location:str|list|Literal|URIRef = None, vocab_related_event:str|list|Literal|URIRef = None, vocab_related_organization:str|list|Literal|URIRef = None, vocab_holding_organization:str|list|Literal|URIRef = None, vocab_related_person:str|list|Literal|URIRef = None, vocab_further:str|list|Literal|URIRef = None, related_item:str|list|Literal|URIRef = None, birth_date:str|int|date|datetime|list|Literal = None, death_date:str|int|date|datetime|list|Literal = None, foundation_date:str|int|date|datetime|list|Literal = None, dissolution_date:str|int|date|datetime|list|Literal = None, start_date:str|int|date|datetime|list|Literal = None, end_date:str|int|date|datetime|list|Literal = None, creation_date:str|int|date|datetime|list|Literal = None, creation_period:str|list|Literal = None, destruction_date:str|int|date|datetime|list|Literal = None, approximate_period:str|list|Literal = None, existence_period:str|list|Literal = None):
+    @property
+    def feed_uri(self):
         '''
-        Produce all triples for an nfdicore/cto feed element
+        URI of the feed that the element is part of (provides single URIRef)
+        '''
+        return self._feed_uri
+
+    @feed_uri.setter
+    def feed_uri(self, value:str|Literal|URIRef|None):
+        self._feed_uri = urify(value)
+
+
+    @property
+    def element_type(self):
+        '''
+        Schema.org class URI or generic string 'person', 'organization', 'place', 'event', or 'item' (provides single URIRef or string)
+        '''
+        return self._element_type
+
+    @element_type.setter
+    def element_type(self, value:str|URIRef|None):
+        self._element_type = spacify_uri(value)
+
+
+    @property
+    def element_uri(self):
+        '''
+        URI of the feed element (provides single URIRef)
+        '''
+        return self._element_uri
+
+    @element_uri.setter
+    def element_uri(self, value:str|Literal|URIRef|None):
+        self._element_uri = urify(value)
+
+
+    @property
+    def element_uri_same(self):
+        '''
+        Additional URIs identifying the same feed element (provides list of URIRef)
+        '''
+        return self._element_uri_same
+
+    @element_uri_same.setter
+    def element_uri_same(self, value:str|list|Literal|URIRef|None):
+        self._element_uri_same = urify_list(value)
+
+
+    @property
+    def label(self):
+        '''
+        Main text label of the feed element (provides list of Literal)
+        '''
+        return self._label
+
+    @label.setter
+    def label(self, value:str|list|Literal|URIRef|None):
+        self._label = literalify_list(value)
+
+
+    @property
+    def label_alt(self):
+        '''
+        Alternative text label of the feel element (provides list of Literal)
+        '''
+        return self._label_alt
+
+    @label_alt.setter
+    def label_alt(self, value:str|list|Literal|URIRef|None):
+        self._label_alt = literalify_list(value)
+
+
+    @property
+    def shelf_mark(self):
+        '''
+        Shelf mark in a holding repository, such as a library (provides list of Literal)
+        '''
+        return self._shelf_mark
+
+    @shelf_mark.setter
+    def shelf_mark(self, value:str|list|Literal|URIRef|None):
+        self._shelf_mark = literalify_list(value)
+
+
+    @property
+    def image(self):
+        '''
+        URL of an image representation of the element (provides list of Literal)
+        '''
+        return self._image
+
+    @image.setter
+    def image(self, value:str|list|Literal|URIRef|None):
+        self._image = literalify_list(value, SDO.URL)
+
+
+    @property
+    def lyrics(self):
+        '''
+        Lyrics of a musical composition (provides list of Literal)
+        '''
+        return self._lyrics
+
+    @lyrics.setter
+    def lyrics(self, value:str|list|Literal|URIRef|None):
+        self._lyrics = literalify_list(value)
+
+
+    @property
+    def text_incipit(self):
+        '''
+        First few words of text content (provides list of Literal)
+        '''
+        return self._text_incipit
+
+    @text_incipit.setter
+    def text_incipit(self, value:str|list|Literal|URIRef|None):
+        self._text_incipit = literalify_list(value)
+
+
+    @property
+    def music_incipit(self):
+        '''
+        Dictionary with the keys 'uri' (optional), 'clef', 'key_sig', 'time_sig', and 'pattern' (provides list of dict)
+        '''
+        return self._music_incipit
+
+    @music_incipit.setter
+    def music_incipit(self, value:dict|list|None):
+        self._music_incipit = dictify_list(value, ['uri', 'clef', 'key_sig', 'time_sig', 'pattern'])
+        checked = []
+        for i in self._music_incipit:
+            i['uri'] = urify(i['uri'])
+            i['clef'] = literalify(i['clef'])
+            i['key_sig'] = literalify(i['key_sig'])
+            i['time_sig'] = literalify(i['time_sig'])
+            i['pattern'] = literalify(i['pattern'])
+            checked.append(i)
+        self._music_incipit = checked
+
+
+    @property
+    def source_file(self):
+        '''
+        URL of the data source used for this element (provides list of Literal)
+        '''
+        return self._source_file
+
+    @source_file.setter
+    def source_file(self, value:str|list|Literal|URIRef|None):
+        self._source_file = literalify_list(value, SDO.URL)
+
+
+    @property
+    def iiif_image_api(self):
+        '''
+        URL of the IIIF Image API of this element (provides list of Literal)
+        '''
+        return self._iiif_image_api
+
+    @iiif_image_api.setter
+    def iiif_image_api(self, value:str|list|Literal|URIRef|None):
+        self._iiif_image_api = literalify_list(value, SDO.URL)
+
+
+    @property
+    def iiif_presentation_api(self):
+        '''
+        URL of the IIIF Presentation API of this element (provides list of Literal)
+        '''
+        return self._iiif_presentation_api
+
+    @iiif_presentation_api.setter
+    def iiif_presentation_api(self, value:str|list|Literal|URIRef|None):
+        self._iiif_presentation_api = literalify_list(value, SDO.URL)
+
+
+    @property
+    def ddb_api(self):
+        '''
+        URL of the DDB API of this element (provides list of Literal)
+        '''
+        return self._ddb_api
+
+    @ddb_api.setter
+    def ddb_api(self, value:str|list|Literal|URIRef|None):
+        self._ddb_api = literalify_list(value, SDO.URL)
+
+
+    @property
+    def oaipmh_api(self):
+        '''
+        URL of the OAI-PMH API of this element (provides list of Literal)
+        '''
+        return self._oaipmh_api
+
+    @oaipmh_api.setter
+    def oaipmh_api(self, value:str|list|Literal|URIRef|None):
+        self._oaipmh_api = literalify_list(value, SDO.URL)
+
+
+    @property
+    def publisher(self):
+        '''
+        URI of the publisher of the element (provides list of URIRef)
+        '''
+        return self._publisher
+
+    @publisher.setter
+    def publisher(self, value:str|list|Literal|URIRef|None):
+        self._publisher = urify_list(value)
+
+
+    @property
+    def license(self):
+        '''
+        URI of the element's license (provides list of URIRef)
+        '''
+        return self._license
+
+    @license.setter
+    def license(self, value:str|list|Literal|URIRef|None):
+        self._license = urify_list(value)
+
+
+    @property
+    def vocab_element_type(self):
+        '''
+        Getty AAT URI and/or another string indicating the element type (provides list of URIRef or Literal)
+        '''
+        return self._vocab_element_type
+
+    @vocab_element_type.setter
+    def vocab_element_type(self, value:str|tuple|list|Literal|URIRef|None):
+        self._vocab_element_type = tuplify_uri_literal_list(value)
+
+
+    @property
+    def vocab_subject_concept(self):
+        '''
+        URI and/or string of a subject, including Iconclass (provides list of URIRef or Literal)
+        '''
+        return self._vocab_subject_concept
+
+    @vocab_subject_concept.setter
+    def vocab_subject_concept(self, value:str|tuple|list|Literal|URIRef|None):
+        self._vocab_subject_concept = tuplify_uri_literal_list(value)
+
+
+    @property
+    def vocab_related_location(self):
+        '''
+        URI and/or string of a related place, including GeoNames (provides list of URIRef or Literal)
+        '''
+        return self._vocab_related_location
+
+    @vocab_related_location.setter
+    def vocab_related_location(self, value:str|tuple|list|Literal|URIRef|None):
+        self._vocab_related_location = tuplify_uri_literal_list(value)
+
+
+    @property
+    def vocab_related_event(self):
+        '''
+        URI and/or string of a related event (provides list of URIRef or Literal)
+        '''
+        return self._vocab_related_event
+
+    @vocab_related_event.setter
+    def vocab_related_event(self, value:str|tuple|list|Literal|URIRef|None):
+        self._vocab_related_event = tuplify_uri_literal_list(value)
+
+
+    @property
+    def vocab_related_organization(self):
+        '''
+        URI and/or string of a related organization, including ISILs (provides list of URIRef or Literal)
+        '''
+        return self._vocab_related_organization
+
+    @vocab_related_organization.setter
+    def vocab_related_organization(self, value:str|tuple|list|Literal|URIRef|None):
+        self._vocab_related_organization = tuplify_uri_literal_list(value)
+
+
+    @property
+    def vocab_related_person(self):
+        '''
+        URI and/or string of a related person (provides list of URIRef or Literal)
+        '''
+        return self._vocab_related_person
+
+    @vocab_related_person.setter
+    def vocab_related_person(self, value:str|tuple|list|Literal|URIRef|None):
+        self._vocab_related_person = tuplify_uri_literal_list(value)
+
+
+    @property
+    def vocab_further(self):
+        '''
+        URI of further vocabulary terms which do not fit other categories (provides list of URIRef)
+        '''
+        return self._vocab_further
+
+    @vocab_further.setter
+    def vocab_further(self, value:str|list|Literal|URIRef|None):
+        self._vocab_further = urify_list(value)
+
+
+    @property
+    def related_item(self):
+        '''
+        URI of a related creative work (provides list of URIRef)
+        '''
+        return self._related_item
+
+    @related_item.setter
+    def related_item(self, value:str|list|Literal|URIRef|None):
+        self._related_item = urify_list(value)
+
+
+    @property
+    def birth_date(self):
+        '''
+        Exact date, datetime, or timestamp of a person's birth (provides list of Literal)
+        '''
+        return self._birth_date
+
+    @birth_date.setter
+    def birth_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._birth_date = datify_list(value)
+
+
+    @property
+    def death_date(self):
+        '''
+        Exact date, datetime, or timestamp of a person's death (provides list of Literal)
+        '''
+        return self._death_date
+
+    @death_date.setter
+    def death_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._death_date = datify_list(value)
+
+
+    @property
+    def foundation_date(self):
+        '''
+        Exact date, datetime, or timestamp of an organisation's foundation (provides list of Literal)
+        '''
+        return self._foundation_date
+
+    @foundation_date.setter
+    def foundation_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._foundation_date = datify_list(value)
+
+
+    @property
+    def dissolution_date(self):
+        '''
+        Exact date, datetime, or timestamp of an organisation's dissolution (provides list of Literal)
+        '''
+        return self._dissolution_date
+
+    @dissolution_date.setter
+    def dissolution_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._dissolution_date = datify_list(value)
+
+
+    @property
+    def start_date(self):
+        '''
+        Exact date, datetime, or timestamp when an event started (provides list of Literal)
+        '''
+        return self._start_date
+
+    @start_date.setter
+    def start_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._start_date = datify_list(value)
+
+
+    @property
+    def end_date(self):
+        '''
+        Exact date, datetime, or timestamp when an event ended (provides list of Literal)
+        '''
+        return self._end_date
+
+    @end_date.setter
+    def end_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._end_date = datify_list(value)
+
+
+    @property
+    def creation_date(self):
+        '''
+        Exact date, datetime, or timestamp of an item's creation (provides list of Literal)
+        '''
+        return self._creation_date
+
+    @creation_date.setter
+    def creation_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._creation_date = datify_list(value)
+
+
+    @property
+    def creation_period(self):
+        '''
+        String providing an item's creation period (provides list of Literal)
+        '''
+        return self._creation_period
+
+    @creation_period.setter
+    def creation_period(self, value:str|list|Literal|None):
+        self._creation_period = periodify_or_literalify_list(value)
+
+
+    @property
+    def destruction_date(self):
+        '''
+        Exact date, datetime, or timestamp of an item's destruction (provides list of Literal)
+        '''
+        return self._destruction_date
+
+    @destruction_date.setter
+    def destruction_date(self, value:str|int|date|datetime|list|Literal|None):
+        self._destruction_date = datify_list(value)
+
+
+    @property
+    def approximate_period(self):
+        '''
+        String providing a period that an item is associated with (provides list of Literal)
+        '''
+        return self._approximate_period
+
+    @approximate_period.setter
+    def approximate_period(self, value:str|list|Literal|None):
+        self._approximate_period = periodify_or_literalify_list(value)
+
+
+    @property
+    def existence_period(self):
+        '''
+        String providing the period of an item's existence (provides list of Literal)
+        '''
+        return self._existence_period
+
+    @existence_period.setter
+    def existence_period(self, value:str|list|Literal|None):
+        self._existence_period = periodify_or_literalify_list(value)
+
+
+    def __init__(self, data:FeedElementData|None = None, prepare:bool = True):
+        '''
+        Object designed to serialise all triples for an nfdicore/cto feed
 
             Parameters:
-                feed_uri (str|Literal|URIRef): URI of the feed that the element is part of
-                element_type (str|URIRef): Schema.org class URI or generic string 'person', 'organization', 'place', 'event', or 'item'
-                element_uri (str|Literal|URIRef): URI of the feed element
-                element_uri_same (str|list|Literal|URIRef): Additional URIs identifying the same feed element
-                connect (bool): Prepare triples for the connection of research data to research information
-                label (str|list|Literal|URIRef): Main text label of the feed element
-                label_alt (str|list|Literal|URIRef): Alternative text label of the feel element
-                shelf_mark (str|list|Literal|URIRef): Shelf mark in a holding repository, such as a library
-                image (str|list|Literal|URIRef): URL of an image representation of the element
-                lyrics (str|list|Literal|URIRef): Lyrics of a musical composition
-                text_incipit (str|list|Literal|URIRef): First few words of text content
-                music_incipit (dict|list): Dictionary with the keys 'uri' (optional), 'clef', 'key_sig', 'time_sig', and 'pattern'
-                source_file (str|list|Literal|URIRef): URL of the data source used for this element
-                iiif_image_api (str|list|Literal|URIRef): URL of the IIIF Image API of this element
-                iiif_presentation_api (str|list|Literal|URIRef): URL of the IIIF Presentation API of this element
-                ddb_api (str|list|Literal|URIRef): URL of the DDB API of this element
-                oaipmh_api (str|list|Literal|URIRef): URL of the OAI-PMH API of this element
-                publisher (str|list|Literal|URIRef): URI of the publisher of the element
-                license (str|list|Literal|URIRef): URI of the element's license
-                vocab_element_type (str|list|Literal|URIRef): Getty AAT URI or another string indicating the element type
-                vocab_subject_concept (str|list|Literal|URIRef): URI or string of a subject, including Iconclass
-                vocab_related_location (str|list|Literal|URIRef): URI or string of a related place, including GeoNames
-                vocab_related_event (str|list|Literal|URIRef): URI or string of a related event
-                vocab_related_organization (str|list|Literal|URIRef): URI or string of a related organization, including ISILs
-                vocab_related_person (str|list|Literal|URIRef): URI or string of a related person
-                vocab_further (str|list|Literal|URIRef): URI of further vocabulary terms which do not fit other categories
-                related_item (str|list|Literal|URIRef): URI of a related creative work
-                birth_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp of a person's birth 
-                death_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp of a person's death
-                foundation_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp of an organisation's foundation
-                dissolution_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp of an organisation's dissolution
-                start_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp when an event started
-                end_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp when an event ended
-                creation_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp of an item's creation
-                creation_period (str|list|Literal): String providing an item's creation period
-                destruction_date (str|int|date|datetime|list|Literal): Exact date, datetime, or timestamp of an item's destruction
-                approximate_period (str|list|Literal): String providing a period that an item is associated with
-                existence_period (str|list|Literal): String providing the period of an item's existence
+                data (FeedElementData|None): Data object to set up the feed
+                prepare (bool): Add wrappers to prepare the connection of research data to research information
         '''
 
-        # Set up graph
-        output = spacify_graph()
+        # Assign arguments
+        self.prepare = prepare
 
-        # ELEMENT
+        # Use data object if available
+        if data:
+            self.feed_uri = data.feed_uri
+            self.element_type = data.element_type
+            self.element_uri = data.element_uri
+            self.element_uri_same = data.element_uri_same
+            self.label = data.label
+            self.label_alt = data.label_alt
+            self.shelf_mark = data.shelf_mark
+            self.image = data.image
+            self.lyrics = data.lyrics
+            self.text_incipit = data.text_incipit
+            self.music_incipit = data.music_incipit
+            self.source_file = data.source_file
+            self.iiif_image_api = data.iiif_image_api
+            self.iiif_presentation_api = data.iiif_presentation_api
+            self.ddb_api = data.ddb_api
+            self.oaipmh_api = data.oaipmh_api
+            self.publisher = data.publisher
+            self.license = data.license
+            self.vocab_element_type = data.vocab_element_type
+            self.vocab_subject_concept = data.vocab_subject_concept
+            self.vocab_related_location = data.vocab_related_location
+            self.vocab_related_event = data.vocab_related_event
+            self.vocab_related_organization = data.vocab_related_organization
+            self.vocab_related_person = data.vocab_related_person
+            self.vocab_further = data.vocab_further
+            self.related_item = data.related_item
+            self.birth_date = data.birth_date
+            self.death_date = data.death_date
+            self.foundation_date = data.foundation_date
+            self.dissolution_date = data.dissolution_date
+            self.start_date = data.start_date
+            self.end_date = data.end_date
+            self.creation_date = data.creation_date
+            self.creation_period = data.creation_period
+            self.destruction_date = data.destruction_date
+            self.approximate_period = data.approximate_period
+            self.existence_period = data.existence_period
 
-        # Check element and feed URIs
-        element_uri = urify(element_uri)
-        feed_uri = urify(feed_uri)
-        if element_uri == None:
-            raise ValueError('A feed element URI was not valid.')
-        elif feed_uri == None:
-            raise ValueError('A feed URI was not valid.')
+
+    def generate(self):
+        '''
+        Generate triples and fill the store attribute
+        '''
+
+        # Check requirements
+        if self.element_uri == None:
+            raise ValueError('The feed element URI is missing.')
+        elif self.feed_uri == None:
+            raise ValueError('The feed URI is missing.')
         else:
+            self.store = spacify_graph()
+
+            # ELEMENT
 
             # Element and feed URI
-            output.add((element_uri, RDF.type, CTO.DatafeedElement))
-            output.add((element_uri, CTO.elementOf, feed_uri))
+            self.store.add((self.element_uri, RDF.type, CTO.DatafeedElement))
+            self.store.add((self.element_uri, CTO.elementOf, self.feed_uri))
 
-            # Element type
-            if isinstance(element_type, URIRef):
-                element_type = spacify_uri(element_type)
             # Element type: person
-            if element_type == 'person' or element_type in sdo_person:
-                output.add((element_uri, RDF.type, NFDICORE.Person))
-            # Element type: organization
-            elif element_type == 'organization' or element_type == 'organisation' or element_type in sdo_organization:
-                output.add((element_uri, RDF.type, NFDICORE.Organization))
+            if self.element_type == 'person' or self.element_type in sdo_person:
+                self.store.add((self.element_uri, RDF.type, NFDICORE.Person))
+             # Element type: organization
+            elif self.element_type == 'organization' or self.element_type == 'organisation' or self.element_type in sdo_organization:
+                self.store.add((self.element_uri, RDF.type, NFDICORE.Organization))
             # Element type: place
-            elif element_type == 'place' or element_type == 'location' or element_type in sdo_place:
-                output.add((element_uri, RDF.type, NFDICORE.Place))
+            elif self.element_type == 'place' or self.element_type == 'location' or self.element_type in sdo_place:
+                self.store.add((self.element_uri, RDF.type, NFDICORE.Place))
             # Element type: event
-            elif element_type == 'event' or element_type == 'date' or element_type in sdo_event:
-                output.add((element_uri, RDF.type, NFDICORE.Event))
+            elif self.element_type == 'event' or self.element_type == 'date' or self.element_type in sdo_event:
+                self.store.add((self.element_uri, RDF.type, NFDICORE.Event))
             # Element type: item that is a schema.org creative work
-            elif element_type in sdo_item:
-                output.add((element_uri, RDF.type, element_type))
+            elif self.element_type in sdo_item:
+                self.store.add((self.element_uri, RDF.type, self.element_type))
             # Element type: generic item
             else:
-                output.add((element_uri, RDF.type, CTO.Item))
+                self.store.add((self.element_uri, RDF.type, CTO.Item))
 
             # Same as element URI
-            element_uri_same = urify_list(element_uri_same)
-            for i in element_uri_same:
-                output.add((element_uri, OWL.sameAs, i))
+            for i in self.element_uri_same:
+                self.store.add((self.element_uri, OWL.sameAs, i))
 
             # Optional wrapper
-            if connect:
+            if self.prepare:
                 wrapper = BNode()
-                output.add((feed_uri, SDO.dataFeedElement, wrapper))
-                output.add((wrapper, RDF.type, SDO.DataFeedItem))
-                output.add((wrapper, SDO.item, element_uri))
+                self.store.add((self.feed_uri, SDO.dataFeedElement, wrapper))
+                self.store.add((wrapper, RDF.type, SDO.DataFeedItem))
+                self.store.add((wrapper, SDO.item, self.element_uri))
 
             # LABEL AND REFERENCE LITERALS
 
             # Main label
-            label = literalify_list(label)
-            for i in label:
-                output.add((element_uri, RDFS.label, i))
+            for i in self.label:
+                self.store.add((self.element_uri, RDFS.label, i))
 
             # Alternative label
-            label_alt = literalify_list(label_alt)
-            for i in label_alt:
-                output.add((element_uri, SKOS.altLabel, i))
+            for i in self.label_alt:
+                self.store.add((self.element_uri, SKOS.altLabel, i))
 
             # Shelf mark
-            shelf_mark = literalify_list(shelf_mark)
-            for i in shelf_mark:
+            for i in self.shelf_mark:
                 i = Literal(str(i)) # Removes lang
-                output.add((element_uri, CTO.shelfMark, i))
+                self.store.add((self.element_uri, CTO.shelfMark, i))
 
             # MEDIA LITERALS
 
             # URL
-            element_url = literalify(element_uri, SDO.URL)
-            if element_url != None:
-                output.add((element_uri, SDO.url, element_url))
+            self.store.add((self.element_uri, SDO.url, literalify(self.element_uri, SDO.URL)))
 
             # Image
-            image = literalify_list(image, SDO.URL)
-            for i in image:
-                output.add((element_uri, SDO.image, i))
+            for i in self.image:
+                self.store.add((self.element_uri, SDO.image, i))
 
             # Lyrics
-            lyrics = literalify_list(lyrics)
-            for i in lyrics:
+            for i in self.lyrics:
                 blank = BNode()
-                output.add((element_uri, MO.lyrics, blank))
-                output.add((blank, RDF.type, MO.Lyrics))
-                output.add((blank, MO.text, i))
+                self.store.add((self.element_uri, MO.lyrics, blank))
+                self.store.add((blank, RDF.type, MO.Lyrics))
+                self.store.add((blank, MO.text, i))
 
             # Text incipit
-            text_incipit = literalify_list(text_incipit)
-            for i in text_incipit:
-                output.add((element_uri, CTO.textIncipit, i))
+            for i in self.text_incipit:
+                self.store.add((self.element_uri, CTO.textIncipit, i))
 
             # Music incipit
-            music_incipit = dictify_list(music_incipit, ['uri', 'clef', 'key_sig', 'time_sig', 'pattern'])
-            for i in music_incipit:
-                i_uri = urify(i['uri'])
-                i_clef = literalify(i['clef'])
-                i_key_sig = literalify(i['key_sig'])
-                i_time_sig = literalify(i['time_sig'])
-                i_pattern = literalify(i['pattern'])
-                if i_uri != None:
-                    uri_or_blank = i_uri
+            for i in self.music_incipit:
+                if i['uri'] != None:
+                    uri_or_blank = i['uri']
                 else:
                     uri_or_blank = BNode()
-                output.add((uri_or_blank, RDF.type, CTO.Incipit))
-                output.add((uri_or_blank, CTO.incipitOf, element_uri))
-                output.add((uri_or_blank, CTO.clef, i_clef))
-                output.add((uri_or_blank, CTO.keySignature, i_key_sig))
-                output.add((uri_or_blank, CTO.timeSignature, i_time_sig))
-                output.add((uri_or_blank, CTO.pattern, i_pattern))
+                self.store.add((uri_or_blank, RDF.type, CTO.Incipit))
+                self.store.add((uri_or_blank, CTO.incipitOf, self.element_uri))
+                self.store.add((uri_or_blank, CTO.clef, i['clef']))
+                self.store.add((uri_or_blank, CTO.keySignature, i['key_sig']))
+                self.store.add((uri_or_blank, CTO.timeSignature, i['time_sig']))
+                self.store.add((uri_or_blank, CTO.pattern, i['pattern']))
 
             # Source file
-            source_file = literalify_list(source_file, SDO.URL)
-            for i in source_file:
-                output.add((element_uri, CTO.sourceFile, i))
+            for i in self.source_file:
+                self.store.add((self.element_uri, CTO.sourceFile, i))
 
             # API LITERALS
 
             # IIIF Image API
-            iiif_image_api = literalify_list(iiif_image_api, SDO.URL)
-            for i in iiif_image_api:
-                output.add((element_uri, CTO.iiifImageAPI, i))
+            for i in self.iiif_image_api:
+                self.store.add((self.element_uri, CTO.iiifImageAPI, i))
 
             # IIIF Presentation API
-            iiif_presentation_api = literalify_list(iiif_presentation_api, SDO.URL)
-            for i in iiif_presentation_api:
-                output.add((element_uri, CTO.iiifPresentationAPI, i))
+            for i in self.iiif_presentation_api:
+                self.store.add((self.element_uri, CTO.iiifPresentationAPI, i))
 
             # DDB API
-            ddb_api = literalify_list(ddb_api, SDO.URL)
-            for i in ddb_api:
-                output.add((element_uri, CTO.ddbAPI, i))
+            for i in self.ddb_api:
+                self.store.add((self.element_uri, CTO.ddbAPI, i))
 
             # OAI-PMH API
-            oaipmh_api = literalify_list(oaipmh_api, SDO.URL)
-            for i in oaipmh_api:
-                output.add((element_uri, CTO['oai-pmhAPI'], i)) # Alternative notation due to hyphen
+            for i in self.oaipmh_api:
+                self.store.add((self.element_uri, CTO['oai-pmhAPI'], i)) # Alternative notation due to hyphen
 
             # RIGHTS URIS
 
             # Publisher
-            publisher = urify_list(publisher)
-            for i in publisher:
-                output.add((element_uri, NFDICORE.publisher, i))
+            for i in self.publisher:
+                self.store.add((self.element_uri, NFDICORE.publisher, i))
 
             # License
-            license = urify_list(license)
-            for i in license:
-                output.add((element_uri, NFDICORE.license, i))
+            for i in self.license:
+                self.store.add((self.element_uri, NFDICORE.license, i))
 
             # RELATED URIS AND FALLBACK LITERALS
 
             # Element type
-            vocab_element_type = urify_or_literalify_list(vocab_element_type)
-            no_literals = False
-            for i in vocab_element_type:
-                if isinstance(i, URIRef):
-                    no_literals = True
-                    output.add((element_uri, CTO.elementType, i))
-                    output += vocabify(i, element_uri)
-                elif no_literals == False:
-                    output.add((element_uri, CTO.elementTypeLiteral, i))
+            has_uri = None
+            for t in self.vocab_element_type:
+                for index, i in t:
+                    if isinstance(i, URIRef):
+                        has_uri = index
+                if has_uri != None:
+                    self.store.add((self.element_uri, CTO.elementType, t[has_uri]))
+                    self.store += vocabify(t[has_uri], self.element_uri)
+                else:
+                    for i in t:
+                        self.store.add((self.element_uri, CTO.elementTypeLiteral, i))
 
             # Subject concept
-            vocab_subject_concept = urify_or_literalify_list(vocab_subject_concept)
-            no_literals = False
-            for i in vocab_subject_concept:
-                if isinstance(i, URIRef):
-                    no_literals = True
-                    output.add((element_uri, CTO.subjectConcept, i))
-                    output += vocabify(i, element_uri)
-                elif no_literals == False:
-                    output.add((element_uri, CTO.subjectConceptLiteral, i))
+            has_uri = None
+            for t in self.vocab_element_type:
+                for index, i in t:
+                    if isinstance(i, URIRef):
+                        has_uri = index
+                if has_uri != None:
+                    self.store.add((self.element_uri, CTO.subjectConcept, t[has_uri]))
+                    self.store += vocabify(t[has_uri], self.element_uri)
+                else:
+                    for i in t:
+                        self.store.add((self.element_uri, CTO.subjectConceptLiteral, i))
 
             # Related location
-            vocab_related_location = urify_or_literalify_list(vocab_related_location)
-            no_literals = False
-            for i in vocab_related_location:
-                if isinstance(i, URIRef):
-                    no_literals = True
-                    output.add((element_uri, CTO.relatedLocation, i))
-                    output.add((i, RDF.type, NFDICORE.Place))
-                    output += vocabify(i, element_uri)
-                elif no_literals == False:
-                    output.add((element_uri, CTO.relatedLocationLiteral, i))
+            has_uri = None
+            for t in self.vocab_element_type:
+                for index, i in t:
+                    if isinstance(i, URIRef):
+                        has_uri = index
+                if has_uri != None:
+                    self.store.add((self.element_uri, CTO.relatedLocation, t[has_uri]))
+                    self.store.add((t[has_uri], RDF.type, NFDICORE.Place))
+                    self.store += vocabify(t[has_uri], self.element_uri)
+                    for index, i in t:
+                        if index != has_uri:
+                            self.store.add((t[has_uri], RDFS.label, i))
+                else:
+                    for i in t:
+                        self.store.add((self.element_uri, CTO.relatedLocationLiteral, i))
 
             # Related event
-            vocab_related_event = urify_or_literalify_list(vocab_related_event)
-            no_literals = False
-            for i in vocab_related_event:
-                if isinstance(i, URIRef):
-                    no_literals = True
-                    output.add((element_uri, CTO.relatedEvent, i))
-                    output.add((i, RDF.type, NFDICORE.Event))
-                    output += vocabify(i, element_uri)
-                elif no_literals == False:
-                    output.add((element_uri, CTO.relatedEventLiteral, i))
+            has_uri = None
+            for t in self.vocab_element_type:
+                for index, i in t:
+                    if isinstance(i, URIRef):
+                        has_uri = index
+                if has_uri != None:
+                    self.store.add((self.element_uri, CTO.relatedEvent, t[has_uri]))
+                    self.store.add((t[has_uri], RDF.type, NFDICORE.Event))
+                    self.store += vocabify(t[has_uri], self.element_uri)
+                    for index, i in t:
+                        if index != has_uri:
+                            self.store.add((t[has_uri], RDFS.label, i))
+                else:
+                    for i in t:
+                        self.store.add((self.element_uri, CTO.relatedEventLiteral, i))
 
             # Related organization
-            vocab_related_organization = urify_or_literalify_list(vocab_related_organization)
-            no_literals = False
-            for i in vocab_related_organization:
-                if isinstance(i, URIRef):
-                    no_literals = True
-                    output.add((element_uri, CTO.relatedOrganization, i))
-                    output.add((i, RDF.type, NFDICORE.Organization))
-                    output += vocabify(i, element_uri)
-                elif no_literals == False:
-                    output.add((element_uri, CTO.relatedOrganizationLiteral, i))
+            has_uri = None
+            for t in self.vocab_element_type:
+                for index, i in t:
+                    if isinstance(i, URIRef):
+                        has_uri = index
+                if has_uri != None:
+                    self.store.add((self.element_uri, CTO.relatedOrganization, t[has_uri]))
+                    self.store.add((t[has_uri], RDF.type, NFDICORE.Organization))
+                    self.store += vocabify(t[has_uri], self.element_uri)
+                    for index, i in t:
+                        if index != has_uri:
+                            self.store.add((t[has_uri], RDFS.label, i))
+                else:
+                    for i in t:
+                        self.store.add((self.element_uri, CTO.relatedOrganizationLiteral, i))
 
             # Related person
-            vocab_related_person = urify_or_literalify_list(vocab_related_person)
-            no_literals = False
-            for i in vocab_related_person:
-                if isinstance(i, URIRef):
-                    no_literals = True
-                    output.add((element_uri, CTO.relatedPerson, i))
-                    output.add((i, RDF.type, NFDICORE.Person))
-                    output += vocabify(i, element_uri)
-                elif no_literals == False:
-                    output.add((element_uri, CTO.relatedPersonLiteral, i))
+            has_uri = None
+            for t in self.vocab_element_type:
+                for index, i in t:
+                    if isinstance(i, URIRef):
+                        has_uri = index
+                if has_uri != None:
+                    self.store.add((self.element_uri, CTO.relatedPerson, t[has_uri]))
+                    self.store.add((t[has_uri], RDF.type, NFDICORE.Person))
+                    self.store += vocabify(t[has_uri], self.element_uri)
+                    for index, i in t:
+                        if index != has_uri:
+                            self.store.add((t[has_uri], RDFS.label, i))
+                else:
+                    for i in t:
+                        self.store.add((self.element_uri, CTO.relatedPersonLiteral, i))
 
             # Further vocabularies
-            vocab_further = urify_list(vocab_further)
-            for i in vocab_further:
-                output += vocabify(i, element_uri)
+            for i in self.vocab_further:
+                self.store += vocabify(i, self.element_uri)
 
             # Related item
-            related_item = urify_list(related_item)
-            for i in related_item:
-                output.add((element_uri, CTO.relatedItem, i))
+            for i in self.related_item:
+                self.store.add((self.element_uri, CTO.relatedItem, i))
 
             # DATES BY TYPE
 
             # For persons
-            if element_type == 'person' or element_type in sdo_person:
+            if self.element_type == 'person' or self.element_type in sdo_person:
 
                 # Birth date
-                birth_date = datify_list(birth_date)
-                for i in birth_date:
-                    output.add((element_uri, NFDICORE.birthDate, i))
+                for i in self.birth_date:
+                    self.store.add((self.element_uri, NFDICORE.birthDate, i))
 
                 # Death date
-                death_date = datify_list(death_date)
-                for i in death_date:
-                    output.add((element_uri, NFDICORE.deathDate, i))
+                for i in self.death_date:
+                    self.store.add((self.element_uri, NFDICORE.deathDate, i))
 
             # For organizations
-            elif element_type == 'organization' or element_type == 'organisation' or element_type in sdo_organization:
+            elif self.element_type == 'organization' or self.element_type == 'organisation' or self.element_type in sdo_organization:
 
                 # Foundation date
-                foundation_date = datify_list(foundation_date)
-                for i in foundation_date:
-                    output.add((element_uri, NFDICORE.foundationDate, i))
+                for i in self.foundation_date:
+                    self.store.add((self.element_uri, NFDICORE.foundationDate, i))
 
                 # Dissolution date
-                dissolution_date = datify_list(dissolution_date)
-                for i in dissolution_date:
-                    output.add((element_uri, NFDICORE.dissolutionDate, i))
+                for i in self.dissolution_date:
+                    self.store.add((self.element_uri, NFDICORE.dissolutionDate, i))
 
             # For places
-            elif element_type == 'place' or element_type == 'location' or element_type in sdo_place:
+            elif self.element_type == 'place' or self.element_type == 'location' or self.element_type in sdo_place:
                 pass
 
             # For events
-            elif element_type == 'event' or element_type == 'date' or element_type in sdo_event:
+            elif self.element_type == 'event' or self.element_type == 'date' or self.element_type in sdo_event:
 
                 # Start date
-                start_date = datify_list(start_date)
-                for i in start_date:
-                    output.add((element_uri, NFDICORE.startDate, i))
+                for i in self.start_date:
+                    self.store.add((self.element_uri, NFDICORE.startDate, i))
 
                 # End date
-                end_date = datify_list(end_date)
-                for i in end_date:
-                    output.add((element_uri, NFDICORE.endDate, i))
+                for i in self.end_date:
+                    self.store.add((self.element_uri, NFDICORE.endDate, i))
 
             # For items
             else:
 
                 # Creation date
-                creation_date = datify_list(creation_date)
-                for i in creation_date:
-                    output.add((element_uri, CTO.creationDate, i))
+                for i in self.creation_date:
+                    self.store.add((self.element_uri, CTO.creationDate, i))
 
                 # Creation period
-                creation_period = periodify_or_literalify_list(creation_period)
-                for i in creation_period:
-                    output.add((element_uri, CTO.creationPeriod, i))
+                for i in self.creation_period:
+                    self.store.add((self.element_uri, CTO.creationPeriod, i))
 
                 # Destruction date
-                destruction_date = datify_list(destruction_date)
-                for i in destruction_date:
-                    output.add((element_uri, CTO.destructionDate, i))
+                for i in self.destruction_date:
+                    self.store.add((self.element_uri, CTO.destructionDate, i))
 
                 # Approximate period
-                approximate_period = periodify_or_literalify_list(approximate_period)
-                for i in approximate_period:
-                    output.add((element_uri, CTO.approximatePeriod, i))
+                for i in self.approximate_period:
+                    self.store.add((self.element_uri, CTO.approximatePeriod, i))
 
                 # Existence period
-                existence_period = periodify_or_literalify_list(existence_period)
-                for i in existence_period:
-                    output.add((element_uri, CTO.existencePeriod, i))
+                for i in self.existence_period:
+                    self.store.add((self.element_uri, CTO.existencePeriod, i))
 
-        # Return graph
-        return output
+
+    def turtle(self, file_path:str):
+        '''
+        Serialise triples as a Turtle file
+
+            Parameters:
+                file_path (str): Path of the file to create
+        '''
+
+        # Store triples and save file
+        self.generate()
+        self.store.serialize(destination = file_path, format = 'turtle')
+
+
+    def ntriples(self, file_path:str):
+        '''
+        Serialise triples as an NTriples file
+
+            Parameters:
+                file_path (str): Path of the file to create
+        '''
+
+        # Store triples and save file
+        self.generate()
+        self.store.serialize(destination = file_path, format = 'ntriples')
+
+
+    def rdfxml(self, file_path:str):
+        '''
+        Serialise triples as an NTriples file
+
+            Parameters:
+                file_path (str): Path of the file to create
+        '''
+
+        # Store triples and save file
+        self.generate()
+        self.store.serialize(destination = file_path, format = 'xml')
+
+
+# FEED ########################################################################
+
+
+class Feed:
+    '''
+    Object designed to serialise all triples for an nfdicore/cto feed
+    '''
+
+    store = None
+
+
+    @property
+    def feed_uri(self):
+        '''
+        URI of the feed, preferably an NFDI4Culture IRI (provides single URIRef)
+        '''
+        return self._feed_uri
+
+    @feed_uri.setter
+    def feed_uri(self, value:str|Literal|URIRef|None):
+        self._feed_uri = urify(value)
+
+
+    @property
+    def feed_uri_same(self):
+        '''
+        Additional URIs identifying the same feed (provides list of URIRef)
+        '''
+        return self._feed_uri_same
+
+    @feed_uri_same.setter
+    def feed_uri_same(self, value:str|list|Literal|URIRef|None):
+        self._feed_uri_same = urify_list(value)
+
+
+    @property
+    def catalog_uri(self):
+        '''
+        URI of the catalog the feed belongs to, preferably an NFDI4Culture IRI (provides single URIRef)
+        '''
+        return self._catalog_uri
+
+    @catalog_uri.setter
+    def catalog_uri(self, value:str|Literal|URIRef|None):
+        self._catalog_uri = urify(value)
+
+
+    @property
+    def catalog_uri_same(self):
+        '''
+        Additional URIs identifying the same catalog (provides list of URIRef)
+        '''
+        return self._catalog_uri_same
+
+    @catalog_uri_same.setter
+    def catalog_uri_same(self, value:str|Literal|URIRef|None):
+        self._catalog_uri_same = urify_list(value)
+
+    @property
+    def elements(self):
+        '''
+        List of elements that are part of this feed (provides list of FeedElement)
+        '''
+        return self._elements
+
+    @elements.setter
+    def elements(self, value:list|FeedElement|None):
+        self._elements = elementify_list(value)
+
+
+    def __init__(self, data:FeedData|None = None, prepare:bool = True):
+        '''
+        Object designed to serialise all triples for an nfdicore/cto feed
+
+            Parameters:
+                data (FeedData|None): Data object to set up the feed
+                prepare (bool): Add wrappers to prepare the connection of research data to research information
+        '''
+
+        # Assign arguments
+        self.prepare = prepare
+
+        # Use data object if available
+        if data:
+            self.feed_uri = data.feed_uri
+            self.feed_uri_same = data.feed_uri_same
+            self.catalog_uri = data.catalog_uri
+            self.catalog_uri_same = data.catalog_uri_same
+            self.elements = data.elements
+
+
+    def generate(self):
+        '''
+        Generate triples and fill the store attribute
+        '''
+
+        # Check requirements
+        if self.feed_uri == None:
+            raise ValueError('The feed URI is missing.')
+        else:
+            self.store = spacify_graph()
+
+            # Feed URI
+            self.store.add((self.feed_uri, RDF.type, NFDICORE.Dataset))
+
+            # Optional date modified
+            if self.prepare:
+                today = date.today()
+                self.store.add((self.feed_uri, SDO.dateModified, Literal(today, datatype=XSD.date)))
+
+            # Same as feed URI
+            for i in self.feed_uri_same:
+                self.store.add((self.feed_uri, OWL.sameAs, i))
+
+            # Catalog URI
+            if self.catalog_uri:
+                self.store.add((self.catalog_uri, RDF.type, NFDICORE.DataPortal))
+                self.store.add((self.catalog_uri, NFDICORE.dataset, self.feed_uri))
+
+                # Same as catalog URI
+                for i in self.catalog_uri_same:
+                    self.store.add((self.catalog_uri, OWL.sameAs, i))
+
+            # Add element triples and overwrite the feed URI
+            for i in self.elements:
+                i.feed_uri = self.feed_uri
+                i.generate()
+                self.store += i.store
+
+
+    def turtle(self, file_path:str):
+        '''
+        Serialise triples as a Turtle file
+
+            Parameters:
+                file_path (str): Path of the file to create
+        '''
+
+        # Store triples and save file
+        self.generate()
+        self.store.serialize(destination = file_path, format = 'turtle')
+
+
+    def ntriples(self, file_path:str):
+        '''
+        Serialise triples as an NTriples file
+
+            Parameters:
+                file_path (str): Path of the file to create
+        '''
+
+        # Store triples and save file
+        self.generate()
+        self.store.serialize(destination = file_path, format = 'ntriples')
+
+
+    def rdfxml(self, file_path:str):
+        '''
+        Serialise triples as an NTriples file
+
+            Parameters:
+                file_path (str): Path of the file to create
+        '''
+
+        # Store triples and save file
+        self.generate()
+        self.store.serialize(destination = file_path, format = 'xml')
 
 
 # TRIPLE HELPERS ##############################################################
@@ -635,33 +1239,83 @@ def literalify_list(input:str|list|Literal|URIRef|None, data_type:URIRef = None)
     return output
 
 
-def urify_or_literalify_list(input:str|list|Literal|URIRef|None) -> list:
+def tuplify_uri_literal(input:str|tuple|Literal|URIRef) -> tuple:
     '''
-    Make sure a variable contains a list of URIRefs and Literals
+    Make sure a variable contains a tuple with a URIRef and/or Literals
 
         Parameters:
-            input (str|list|Literal|URIRef|None): Variable to check and transform
+            input (str|tuple|Literal|URIRef): Variable to check and transform
 
         Returns:
-            list: List of URI values and Literals
+            tuple: Tuple with a URI value and/or Literals
+    '''
+
+    # Turn str to tuple
+    if isinstance(input, str):
+        if input != '':
+            input = (Literal(input),)
+        else:
+            input = None
+
+    # Turn Literal to tuple
+    elif isinstance(input, Literal):
+        if str(input) != '':
+            input = (input,)
+        else:
+            input = None
+
+    # Turn URIRef to tuple
+    elif isinstance(input, URIRef):
+        if str(input) != '':
+            input = (input,)
+        else:
+            input = None
+
+    # Check tuples to contain only Literals and URIRefs
+    if isinstance(input, tuple):
+        output = []
+        for i in input:
+            if isinstance(i, URIRef):
+                output.append(i)
+            elif isinstance(i, Literal):
+                i_check = urify(str(i))
+                if i_check != None:
+                    output.append(i_check)
+                else:
+                    i_check = literalify(i)
+                    if i_check != None:
+                        output.append(i_check)
+        input = tuple(output)
+    else:
+        input = None
+
+    # Return tuple
+    return input
+
+
+def tuplify_uri_literal_list(input:str|tuple|list|Literal|URIRef|None) -> list:
+    '''
+    Make sure a variable contains a list of tuples with a URIRef and/or Literals
+
+        Parameters:
+            input (str|tuple|list|Literal|URIRef|None): Variable to check and transform
+
+        Returns:
+            list: List of tuples with a URI value and/or Literals
     '''
 
     # Catch type None
     if input == None:
         input = []
 
-    # Turn str, URIRef, and Literal to list
-    elif isinstance(input, (str, URIRef, Literal)):
+    # Turn str, tuple, URIRef, and Literal to list
+    elif isinstance(input, (str, tuple, URIRef, Literal)):
         input = [input]
 
-    # Turn each list item to URIRef or Literal
+    # Turn each list item to tuple
     output = []
     for i in input:
-        i_check = urify(i)
-        if i_check != None:
-            i = i_check
-        else:
-            i = literalify(i)
+        i = tuplify_uri_literal(i)
         if i != None:
             output.append(i)
 
@@ -892,6 +1546,39 @@ def dictify_list(input:dict|list|None, keys:list = None) -> list:
     return output
 
 
+def elementify_list(input:list|FeedElement|None) -> list:
+    '''
+    Make sure a variable contains a list of FeedElements
+
+        Parameters:
+            input (list|FeedElement|None): Variable to check and transform
+
+        Returns:
+            list: List of FeedElements
+    '''
+
+    # Catch type None
+    if input == None:
+        input = []
+
+    # Turn FeedElement to list
+    elif isinstance(input, FeedElement):
+        input = [input]
+
+    # Remove other types
+    elif not isinstance(input, list):
+        input = []
+
+    # Check list
+    output = []
+    for i in input:
+        if isinstance(i, FeedElement):
+            output.append(i)
+
+    # Return list
+    return output
+
+
 # NAMESPACE HELPERS ###########################################################
 
 
@@ -913,7 +1600,7 @@ def spacify_graph() -> Graph:
     output.bind('owl', OWL)
     output.bind('rdf', RDF)
     output.bind('rdfs', RDFS)
-    output.bind('schema', SDO)
+    output.bind('sdo', SDO)
     output.bind('xsd', XSD)
 
     # Vocabularies

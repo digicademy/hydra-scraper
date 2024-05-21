@@ -8,7 +8,7 @@
 @prefix nfdicore: <https://nfdi.fiz-karlsruhe.de/ontology/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix schema: <https://schema.org/> .
+@prefix sdo: <https://schema.org/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix wd: <http://www.wikidata.org/entity/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -35,7 +35,7 @@ gnd:123456789 a nfdicore:Person .
 gnd:987654321 a nfdicore:Organization .
 
 <https://example.org/project/id/1> a cto:DatafeedElement,
-        schema:Manuscript ;
+        sdo:Manuscript ;
     rdfs:label "Kurzer Titel"@de,
         "Short title"@en ;
     mo:lyrics [ a mo:Lyrics ;
@@ -48,8 +48,8 @@ gnd:987654321 a nfdicore:Organization .
     cto:approximatePeriod "Nullerjahre"@de,
         "Noughties"@en ;
     cto:creationDate "2004-01-01"^^xsd:date ;
-    cto:creationPeriod "2024-01-01T00:00:00/2004-01-01T23:59:59"^^schema:DateTime ;
-    cto:ddbAPI "https://example.org/project/id/1/ddb"^^schema:URL ;
+    cto:creationPeriod "2024-01-01T00:00:00/2004-01-01T23:59:59"^^sdo:DateTime ;
+    cto:ddbAPI "https://example.org/project/id/1/ddb"^^sdo:URL ;
     cto:destructionDate "2024-01-01T18:30:00"^^xsd:dateTime ;
     cto:elementOf n4c:E123 ;
     cto:elementType <http://vocab.getty.edu/aat/300026877> ;
@@ -62,9 +62,9 @@ gnd:987654321 a nfdicore:Organization .
     cto:gnd gnd:123456789,
         gnd:987654321 ;
     cto:iconclass ic:123 ;
-    cto:iiifImageAPI "https://example.org/project/id/1/iiif"^^schema:URL ;
-    cto:iiifPresentationAPI "https://example.org/project/id/1/iiifmanifest"^^schema:URL ;
-    cto:oai-pmhAPI "https://example.org/project/id/1/oaipmh"^^schema:URL ;
+    cto:iiifImageAPI "https://example.org/project/id/1/iiif"^^sdo:URL ;
+    cto:iiifPresentationAPI "https://example.org/project/id/1/iiifmanifest"^^sdo:URL ;
+    cto:oai-pmhAPI "https://example.org/project/id/1/oaipmh"^^sdo:URL ;
     cto:relatedEvent wd:Q123 ;
     cto:relatedItem <https://example.org/project/id/5>,
         <https://example.org/project/id/9> ;
@@ -73,17 +73,17 @@ gnd:987654321 a nfdicore:Organization .
     cto:relatedOrganization gnd:987654321 ;
     cto:relatedPerson gnd:123456789 ;
     cto:shelfMark "Libr. Op. E123-1" ;
-    cto:sourceFile "https://example.org/project/id/1/xml"^^schema:URL ;
+    cto:sourceFile "https://example.org/project/id/1/xml"^^sdo:URL ;
     cto:subjectConcept ic:123 ;
     cto:textIncipit "I am an example"@en ;
     cto:wikidata wd:Q123 ;
-    schema:image "https://example.org/project/id/1/img"^^schema:URL ;
-    schema:url "https://example.org/project/id/1"^^schema:URL .
+    sdo:image "https://example.org/project/id/1/img"^^sdo:URL ;
+    sdo:url "https://example.org/project/id/1"^^sdo:URL .
 
 n4c:E123 a nfdicore:Dataset ;
     owl:sameAs <https://cold-storage.org/project>,
         <https://example.org/project> ;
-    schema:dataFeedElement [ a schema:DataFeedItem ;
-            schema:item <https://example.org/project/id/1> ] ;
-    schema:dateModified "2024-05-10"^^xsd:date .
+    sdo:dataFeedElement [ a sdo:DataFeedItem ;
+            sdo:item <https://example.org/project/id/1> ] ;
+    sdo:dateModified "2024-05-18"^^xsd:date .
 
