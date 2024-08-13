@@ -12,10 +12,10 @@ from datetime import date, datetime
 from rdflib import Graph, Namespace
 from rdflib.term import BNode, Literal, URIRef
 from validators import url
-from ingest import FeedData, FeedElementData
+from sources.ingest import FeedData, FeedElementData
 
 # Define namespaces
-from rdflib.namespace import OWL, RDF, RDFS, SDO, SKOS, XSD
+from rdflib.namespace import OWL, RDF, RDFS, SKOS, XSD
 NFDICORE = Namespace('https://nfdi.fiz-karlsruhe.de/ontology/')
 CTO = Namespace('https://nfdi4culture.de/ontology#')
 MO = Namespace('http://purl.org/ontology/mo/')
@@ -29,6 +29,7 @@ VIAF = Namespace('https://viaf.org/viaf/')
 RISM = Namespace('https://rism.online/')
 FG = Namespace('https://database.factgrid.de/wiki/Item:')
 ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
+SCHEMA = Namespace('http://schema.org/')
 
 
 # FEED ELEMENT ################################################################
@@ -135,7 +136,7 @@ class FeedElement:
 
     @image.setter
     def image(self, value:str|list|Literal|URIRef|None):
-        self._image = literalify_list(value, SDO.URL)
+        self._image = literalify_list(value, SCHEMA.URL)
 
 
     @property
@@ -192,7 +193,7 @@ class FeedElement:
 
     @source_file.setter
     def source_file(self, value:str|list|Literal|URIRef|None):
-        self._source_file = literalify_list(value, SDO.URL)
+        self._source_file = literalify_list(value, SCHEMA.URL)
 
 
     @property
@@ -204,7 +205,7 @@ class FeedElement:
 
     @iiif_image_api.setter
     def iiif_image_api(self, value:str|list|Literal|URIRef|None):
-        self._iiif_image_api = literalify_list(value, SDO.URL)
+        self._iiif_image_api = literalify_list(value, SCHEMA.URL)
 
 
     @property
@@ -216,7 +217,7 @@ class FeedElement:
 
     @iiif_presentation_api.setter
     def iiif_presentation_api(self, value:str|list|Literal|URIRef|None):
-        self._iiif_presentation_api = literalify_list(value, SDO.URL)
+        self._iiif_presentation_api = literalify_list(value, SCHEMA.URL)
 
 
     @property
@@ -228,7 +229,7 @@ class FeedElement:
 
     @ddb_api.setter
     def ddb_api(self, value:str|list|Literal|URIRef|None):
-        self._ddb_api = literalify_list(value, SDO.URL)
+        self._ddb_api = literalify_list(value, SCHEMA.URL)
 
 
     @property
@@ -240,7 +241,7 @@ class FeedElement:
 
     @oaipmh_api.setter
     def oaipmh_api(self, value:str|list|Literal|URIRef|None):
-        self._oaipmh_api = literalify_list(value, SDO.URL)
+        self._oaipmh_api = literalify_list(value, SCHEMA.URL)
 
 
     @property
@@ -568,19 +569,19 @@ class FeedElement:
             self.store.add((self.element_uri, CTO.elementOf, self.feed_uri))
 
             # Element type: person
-            if self.element_type == 'person' or self.element_type in sdo_person:
+            if self.element_type == 'person' or self.element_type in schema_person:
                 self.store.add((self.element_uri, RDF.type, NFDICORE.Person))
              # Element type: organization
-            elif self.element_type == 'organization' or self.element_type == 'organisation' or self.element_type in sdo_organization:
+            elif self.element_type == 'organization' or self.element_type == 'organisation' or self.element_type in schema_organization:
                 self.store.add((self.element_uri, RDF.type, NFDICORE.Organization))
             # Element type: place
-            elif self.element_type == 'place' or self.element_type == 'location' or self.element_type in sdo_place:
+            elif self.element_type == 'place' or self.element_type == 'location' or self.element_type in schema_place:
                 self.store.add((self.element_uri, RDF.type, NFDICORE.Place))
             # Element type: event
-            elif self.element_type == 'event' or self.element_type == 'date' or self.element_type in sdo_event:
+            elif self.element_type == 'event' or self.element_type == 'date' or self.element_type in schema_event:
                 self.store.add((self.element_uri, RDF.type, NFDICORE.Event))
             # Element type: item that is a schema.org creative work
-            elif self.element_type in sdo_item:
+            elif self.element_type in schema_item:
                 self.store.add((self.element_uri, RDF.type, self.element_type))
             # Element type: generic item
             else:
@@ -593,9 +594,9 @@ class FeedElement:
             # Optional wrapper
             if self.prepare:
                 wrapper = BNode()
-                self.store.add((self.feed_uri, SDO.dataFeedElement, wrapper))
-                self.store.add((wrapper, RDF.type, SDO.DataFeedItem))
-                self.store.add((wrapper, SDO.item, self.element_uri))
+                self.store.add((self.feed_uri, SCHEMA.dataFeedElement, wrapper))
+                self.store.add((wrapper, RDF.type, SCHEMA.DataFeedItem))
+                self.store.add((wrapper, SCHEMA.item, self.element_uri))
 
             # LABEL AND REFERENCE LITERALS
 
@@ -615,11 +616,11 @@ class FeedElement:
             # MEDIA LITERALS
 
             # URL
-            self.store.add((self.element_uri, SDO.url, literalify(self.element_uri, SDO.URL)))
+            self.store.add((self.element_uri, SCHEMA.url, literalify(self.element_uri, SCHEMA.URL)))
 
             # Image
             for i in self.image:
-                self.store.add((self.element_uri, SDO.image, i))
+                self.store.add((self.element_uri, SCHEMA.image, i))
 
             # Lyrics
             for i in self.lyrics:
@@ -682,7 +683,7 @@ class FeedElement:
             # Element type
             has_uri = None
             for t in self.vocab_element_type:
-                for index, i in t:
+                for index, i in enumerate(t):
                     if isinstance(i, URIRef):
                         has_uri = index
                 if has_uri != None:
@@ -694,8 +695,8 @@ class FeedElement:
 
             # Subject concept
             has_uri = None
-            for t in self.vocab_element_type:
-                for index, i in t:
+            for t in self.vocab_subject_concept:
+                for index, i in enumerate(t):
                     if isinstance(i, URIRef):
                         has_uri = index
                 if has_uri != None:
@@ -707,15 +708,15 @@ class FeedElement:
 
             # Related location
             has_uri = None
-            for t in self.vocab_element_type:
-                for index, i in t:
+            for t in self.vocab_related_location:
+                for index, i in enumerate(t):
                     if isinstance(i, URIRef):
                         has_uri = index
                 if has_uri != None:
                     self.store.add((self.element_uri, CTO.relatedLocation, t[has_uri]))
                     self.store.add((t[has_uri], RDF.type, NFDICORE.Place))
                     self.store += vocabify(t[has_uri], self.element_uri)
-                    for index, i in t:
+                    for index, i in enumerate(t):
                         if index != has_uri:
                             self.store.add((t[has_uri], RDFS.label, i))
                 else:
@@ -724,15 +725,15 @@ class FeedElement:
 
             # Related event
             has_uri = None
-            for t in self.vocab_element_type:
-                for index, i in t:
+            for t in self.vocab_related_event:
+                for index, i in enumerate(t):
                     if isinstance(i, URIRef):
                         has_uri = index
                 if has_uri != None:
                     self.store.add((self.element_uri, CTO.relatedEvent, t[has_uri]))
                     self.store.add((t[has_uri], RDF.type, NFDICORE.Event))
                     self.store += vocabify(t[has_uri], self.element_uri)
-                    for index, i in t:
+                    for index, i in enumerate(t):
                         if index != has_uri:
                             self.store.add((t[has_uri], RDFS.label, i))
                 else:
@@ -741,15 +742,15 @@ class FeedElement:
 
             # Related organization
             has_uri = None
-            for t in self.vocab_element_type:
-                for index, i in t:
+            for t in self.vocab_related_organization:
+                for index, i in enumerate(t):
                     if isinstance(i, URIRef):
                         has_uri = index
                 if has_uri != None:
                     self.store.add((self.element_uri, CTO.relatedOrganization, t[has_uri]))
                     self.store.add((t[has_uri], RDF.type, NFDICORE.Organization))
                     self.store += vocabify(t[has_uri], self.element_uri)
-                    for index, i in t:
+                    for index, i in enumerate(t):
                         if index != has_uri:
                             self.store.add((t[has_uri], RDFS.label, i))
                 else:
@@ -758,15 +759,16 @@ class FeedElement:
 
             # Related person
             has_uri = None
-            for t in self.vocab_element_type:
-                for index, i in t:
+            for t in self.vocab_related_person:
+                print(str(self.vocab_related_person))
+                for index, i in enumerate(t):
                     if isinstance(i, URIRef):
                         has_uri = index
                 if has_uri != None:
                     self.store.add((self.element_uri, CTO.relatedPerson, t[has_uri]))
                     self.store.add((t[has_uri], RDF.type, NFDICORE.Person))
                     self.store += vocabify(t[has_uri], self.element_uri)
-                    for index, i in t:
+                    for index, i in enumerate(t):
                         if index != has_uri:
                             self.store.add((t[has_uri], RDFS.label, i))
                 else:
@@ -784,7 +786,7 @@ class FeedElement:
             # DATES BY TYPE
 
             # For persons
-            if self.element_type == 'person' or self.element_type in sdo_person:
+            if self.element_type == 'person' or self.element_type in schema_person:
 
                 # Birth date
                 for i in self.birth_date:
@@ -795,7 +797,7 @@ class FeedElement:
                     self.store.add((self.element_uri, NFDICORE.deathDate, i))
 
             # For organizations
-            elif self.element_type == 'organization' or self.element_type == 'organisation' or self.element_type in sdo_organization:
+            elif self.element_type == 'organization' or self.element_type == 'organisation' or self.element_type in schema_organization:
 
                 # Foundation date
                 for i in self.foundation_date:
@@ -806,11 +808,11 @@ class FeedElement:
                     self.store.add((self.element_uri, NFDICORE.dissolutionDate, i))
 
             # For places
-            elif self.element_type == 'place' or self.element_type == 'location' or self.element_type in sdo_place:
+            elif self.element_type == 'place' or self.element_type == 'location' or self.element_type in schema_place:
                 pass
 
             # For events
-            elif self.element_type == 'event' or self.element_type == 'date' or self.element_type in sdo_event:
+            elif self.element_type == 'event' or self.element_type == 'date' or self.element_type in schema_event:
 
                 # Start date
                 for i in self.start_date:
@@ -991,7 +993,7 @@ class Feed:
             # Optional date modified
             if self.prepare:
                 today = date.today()
-                self.store.add((self.feed_uri, SDO.dateModified, Literal(today, datatype=XSD.date)))
+                self.store.add((self.feed_uri, SCHEMA.dateModified, Literal(today, datatype=XSD.date)))
 
             # Same as feed URI
             for i in self.feed_uri_same:
@@ -1393,7 +1395,7 @@ def periodify(input:str|URIRef|Literal|None) -> Literal:
         # Construct schema:DateTime Literal if both parts are dates
         if parts_out[0] != None and parts_out[1] != None:
             input = str(parts_out[0]) + '/' + str(parts_out[1])
-            input = Literal(input, datatype = SDO.DateTime)
+            input = Literal(input, datatype = SCHEMA.DateTime)
         else:
             input = None
     else:
@@ -1600,7 +1602,7 @@ def spacify_graph() -> Graph:
     output.bind('owl', OWL)
     output.bind('rdf', RDF)
     output.bind('rdfs', RDFS)
-    output.bind('sdo', SDO)
+    output.bind('schema', SCHEMA)
     output.bind('xsd', XSD)
 
     # Vocabularies
@@ -1648,7 +1650,7 @@ def spacify_uri(input:URIRef) -> URIRef:
         OWL,
         RDF,
         RDFS,
-        SDO,
+        SCHEMA,
         XSD,
         N4C,
         GN,
@@ -1684,488 +1686,488 @@ def spacify_uri(input:URIRef) -> URIRef:
 
 
 # Lists of schema.org classes, collated on 17/4/2024, periodical update TODO
-# Some SDO items commented out as they are not in RDFLib's internal library
-sdo_feed = [
-    SDO.DataFeed,
-    SDO.Dataset
+# Some SCHEMA items commented out as they are not in RDFLib's internal library
+schema_feed = [
+    SCHEMA.DataFeed,
+    SCHEMA.Dataset
 ]
-sdo_person = [
-    SDO.Person,
-    SDO.Patient
+schema_person = [
+    SCHEMA.Person,
+    SCHEMA.Patient
 ]
-sdo_organization = [
-    SDO.Organization,
-    SDO.Airline,
-    SDO.Consortium,
-    SDO.Corporation,
-    SDO.EducationalOrganization,
-    SDO.CollegeOrUniversity,
-    SDO.ElementarySchool,
-    SDO.HighSchool,
-    SDO.MiddleSchool,
-    SDO.Preschool,
-    SDO.School,
-    SDO.FundingScheme,
-    SDO.GovernmentOrganization,
-    SDO.LibrarySystem,
-    SDO.LocalBusiness,
-    SDO.AnimalShelter,
-    SDO.ArchiveOrganization,
-    SDO.AutomotiveBusiness,
-    SDO.AutoBodyShop,
-    SDO.AutoDealer,
-    SDO.AutoPartsStore,
-    SDO.AutoRental,
-    SDO.AutoRepair,
-    SDO.AutoWash,
-    SDO.GasStation,
-    SDO.MotorcycleDealer,
-    SDO.MotorcycleRepair,
-    SDO.ChildCare,
-    SDO.Dentist,
-    SDO.DryCleaningOrLaundry,
-    SDO.EmergencyService,
-    SDO.FireStation,
-    SDO.Hospital,
-    SDO.PoliceStation,
-    SDO.EmploymentAgency,
-    SDO.EntertainmentBusiness,
-    SDO.AdultEntertainment,
-    SDO.AmusementPark,
-    SDO.ArtGallery,
-    SDO.Casino,
-    SDO.ComedyClub,
-    SDO.MovieTheater,
-    SDO.NightClub,
-    SDO.FinancialService,
-    SDO.AccountingService,
-    SDO.AutomatedTeller,
-    SDO.BankOrCreditUnion,
-    SDO.InsuranceAgency,
-    SDO.FoodEstablishment,
-    SDO.Bakery,
-    SDO.BarOrPub,
-    SDO.Brewery,
-    SDO.CafeOrCoffeeShop,
-    SDO.Distillery,
-    SDO.FastFoodRestaurant,
-    SDO.IceCreamShop,
-    SDO.Restaurant,
-    SDO.Winery,
-    SDO.GovernmentOffice,
-    SDO.PostOffice,
-    SDO.HealthAndBeautyBusiness,
-    SDO.BeautySalon,
-    SDO.DaySpa,
-    SDO.HairSalon,
-    SDO.HealthClub,
-    SDO.NailSalon,
-    SDO.TattooParlor,
-    SDO.HomeAndConstructionBusiness,
-    SDO.Electrician,
-    SDO.GeneralContractor,
-    SDO.HVACBusiness,
-    SDO.HousePainter,
-    SDO.Locksmith,
-    SDO.MovingCompany,
-    SDO.Plumber,
-    SDO.RoofingContractor,
-    SDO.InternetCafe,
-    SDO.LegalService,
-    SDO.Attorney,
-    SDO.Notary,
-    SDO.Library,
-    SDO.LodgingBusiness,
-    SDO.BedAndBreakfast,
-    SDO.Campground,
-    SDO.Hostel,
-    SDO.Hotel,
-    SDO.Motel,
-    SDO.Resort,
-    SDO.SkiResort,
-    #SDO.VacationRental,
-    SDO.MedicalBusiness,
-    SDO.Dentist,
-    SDO.MedicalClinic,
-    SDO.CovidTestingFacility,
-    SDO.Optician,
-    SDO.Pharmacy,
-    SDO.Physician,
-    #SDO.IndividualPhysician,
-    #SDO.PhysiciansOffice,
-    SDO.ProfessionalService,
-    SDO.RadioStation,
-    SDO.RealEstateAgent,
-    SDO.RecyclingCenter,
-    SDO.SelfStorage,
-    SDO.ShoppingCenter,
-    SDO.SportsActivityLocation,
-    SDO.BowlingAlley,
-    SDO.ExerciseGym,
-    SDO.GolfCourse,
-    SDO.HealthClub,
-    SDO.PublicSwimmingPool,
-    SDO.SkiResort,
-    SDO.SportsClub,
-    SDO.StadiumOrArena,
-    SDO.TennisComplex,
-    SDO.Store,
-    SDO.AutoPartsStore,
-    SDO.BikeStore,
-    SDO.BookStore,
-    SDO.ClothingStore,
-    SDO.ComputerStore,
-    SDO.ConvenienceStore,
-    SDO.DepartmentStore,
-    SDO.ElectronicsStore,
-    SDO.Florist,
-    SDO.FurnitureStore,
-    SDO.GardenStore,
-    SDO.GroceryStore,
-    SDO.HardwareStore,
-    SDO.HobbyShop,
-    SDO.HomeGoodsStore,
-    SDO.JewelryStore,
-    SDO.LiquorStore,
-    SDO.MensClothingStore,
-    SDO.MobilePhoneStore,
-    SDO.MovieRentalStore,
-    SDO.MusicStore,
-    SDO.OfficeEquipmentStore,
-    SDO.OutletStore,
-    SDO.PawnShop,
-    SDO.PetStore,
-    SDO.ShoeStore,
-    SDO.SportingGoodsStore,
-    SDO.TireShop,
-    SDO.ToyStore,
-    SDO.WholesaleStore,
-    SDO.TelevisionStation,
-    SDO.TouristInformationCenter,
-    SDO.TravelAgency,
-    SDO.MedicalOrganization,
-    SDO.Dentist,
-    SDO.DiagnosticLab,
-    SDO.Hospital,
-    SDO.MedicalClinic,
-    SDO.Pharmacy,
-    SDO.Physician,
-    SDO.VeterinaryCare,
-    SDO.NGO,
-    SDO.NewsMediaOrganization,
-    #SDO.OnlineBusiness,
-    #SDO.OnlineStore,
-    SDO.PerformingGroup,
-    SDO.DanceGroup,
-    SDO.MusicGroup,
-    SDO.TheaterGroup,
-    #SDO.PoliticalParty,
-    SDO.Project,
-    SDO.FundingAgency,
-    SDO.ResearchProject,
-    SDO.ResearchOrganization,
-    #SDO.SearchRescueOrganization,
-    SDO.SportsOrganization,
-    SDO.SportsTeam,
-    SDO.WorkersUnion
+schema_organization = [
+    SCHEMA.Organization,
+    SCHEMA.Airline,
+    SCHEMA.Consortium,
+    SCHEMA.Corporation,
+    SCHEMA.EducationalOrganization,
+    SCHEMA.CollegeOrUniversity,
+    SCHEMA.ElementarySchool,
+    SCHEMA.HighSchool,
+    SCHEMA.MiddleSchool,
+    SCHEMA.Preschool,
+    SCHEMA.School,
+    SCHEMA.FundingScheme,
+    SCHEMA.GovernmentOrganization,
+    SCHEMA.LibrarySystem,
+    SCHEMA.LocalBusiness,
+    SCHEMA.AnimalShelter,
+    SCHEMA.ArchiveOrganization,
+    SCHEMA.AutomotiveBusiness,
+    SCHEMA.AutoBodyShop,
+    SCHEMA.AutoDealer,
+    SCHEMA.AutoPartsStore,
+    SCHEMA.AutoRental,
+    SCHEMA.AutoRepair,
+    SCHEMA.AutoWash,
+    SCHEMA.GasStation,
+    SCHEMA.MotorcycleDealer,
+    SCHEMA.MotorcycleRepair,
+    SCHEMA.ChildCare,
+    SCHEMA.Dentist,
+    SCHEMA.DryCleaningOrLaundry,
+    SCHEMA.EmergencyService,
+    SCHEMA.FireStation,
+    SCHEMA.Hospital,
+    SCHEMA.PoliceStation,
+    SCHEMA.EmploymentAgency,
+    SCHEMA.EntertainmentBusiness,
+    SCHEMA.AdultEntertainment,
+    SCHEMA.AmusementPark,
+    SCHEMA.ArtGallery,
+    SCHEMA.Casino,
+    SCHEMA.ComedyClub,
+    SCHEMA.MovieTheater,
+    SCHEMA.NightClub,
+    SCHEMA.FinancialService,
+    SCHEMA.AccountingService,
+    SCHEMA.AutomatedTeller,
+    SCHEMA.BankOrCreditUnion,
+    SCHEMA.InsuranceAgency,
+    SCHEMA.FoodEstablishment,
+    SCHEMA.Bakery,
+    SCHEMA.BarOrPub,
+    SCHEMA.Brewery,
+    SCHEMA.CafeOrCoffeeShop,
+    SCHEMA.Distillery,
+    SCHEMA.FastFoodRestaurant,
+    SCHEMA.IceCreamShop,
+    SCHEMA.Restaurant,
+    SCHEMA.Winery,
+    SCHEMA.GovernmentOffice,
+    SCHEMA.PostOffice,
+    SCHEMA.HealthAndBeautyBusiness,
+    SCHEMA.BeautySalon,
+    SCHEMA.DaySpa,
+    SCHEMA.HairSalon,
+    SCHEMA.HealthClub,
+    SCHEMA.NailSalon,
+    SCHEMA.TattooParlor,
+    SCHEMA.HomeAndConstructionBusiness,
+    SCHEMA.Electrician,
+    SCHEMA.GeneralContractor,
+    SCHEMA.HVACBusiness,
+    SCHEMA.HousePainter,
+    SCHEMA.Locksmith,
+    SCHEMA.MovingCompany,
+    SCHEMA.Plumber,
+    SCHEMA.RoofingContractor,
+    SCHEMA.InternetCafe,
+    SCHEMA.LegalService,
+    SCHEMA.Attorney,
+    SCHEMA.Notary,
+    SCHEMA.Library,
+    SCHEMA.LodgingBusiness,
+    SCHEMA.BedAndBreakfast,
+    SCHEMA.Campground,
+    SCHEMA.Hostel,
+    SCHEMA.Hotel,
+    SCHEMA.Motel,
+    SCHEMA.Resort,
+    SCHEMA.SkiResort,
+    SCHEMA.VacationRental,
+    SCHEMA.MedicalBusiness,
+    SCHEMA.Dentist,
+    SCHEMA.MedicalClinic,
+    SCHEMA.CovidTestingFacility,
+    SCHEMA.Optician,
+    SCHEMA.Pharmacy,
+    SCHEMA.Physician,
+    SCHEMA.IndividualPhysician,
+    SCHEMA.PhysiciansOffice,
+    SCHEMA.ProfessionalService,
+    SCHEMA.RadioStation,
+    SCHEMA.RealEstateAgent,
+    SCHEMA.RecyclingCenter,
+    SCHEMA.SelfStorage,
+    SCHEMA.ShoppingCenter,
+    SCHEMA.SportsActivityLocation,
+    SCHEMA.BowlingAlley,
+    SCHEMA.ExerciseGym,
+    SCHEMA.GolfCourse,
+    SCHEMA.HealthClub,
+    SCHEMA.PublicSwimmingPool,
+    SCHEMA.SkiResort,
+    SCHEMA.SportsClub,
+    SCHEMA.StadiumOrArena,
+    SCHEMA.TennisComplex,
+    SCHEMA.Store,
+    SCHEMA.AutoPartsStore,
+    SCHEMA.BikeStore,
+    SCHEMA.BookStore,
+    SCHEMA.ClothingStore,
+    SCHEMA.ComputerStore,
+    SCHEMA.ConvenienceStore,
+    SCHEMA.DepartmentStore,
+    SCHEMA.ElectronicsStore,
+    SCHEMA.Florist,
+    SCHEMA.FurnitureStore,
+    SCHEMA.GardenStore,
+    SCHEMA.GroceryStore,
+    SCHEMA.HardwareStore,
+    SCHEMA.HobbyShop,
+    SCHEMA.HomeGoodsStore,
+    SCHEMA.JewelryStore,
+    SCHEMA.LiquorStore,
+    SCHEMA.MensClothingStore,
+    SCHEMA.MobilePhoneStore,
+    SCHEMA.MovieRentalStore,
+    SCHEMA.MusicStore,
+    SCHEMA.OfficeEquipmentStore,
+    SCHEMA.OutletStore,
+    SCHEMA.PawnShop,
+    SCHEMA.PetStore,
+    SCHEMA.ShoeStore,
+    SCHEMA.SportingGoodsStore,
+    SCHEMA.TireShop,
+    SCHEMA.ToyStore,
+    SCHEMA.WholesaleStore,
+    SCHEMA.TelevisionStation,
+    SCHEMA.TouristInformationCenter,
+    SCHEMA.TravelAgency,
+    SCHEMA.MedicalOrganization,
+    SCHEMA.Dentist,
+    SCHEMA.DiagnosticLab,
+    SCHEMA.Hospital,
+    SCHEMA.MedicalClinic,
+    SCHEMA.Pharmacy,
+    SCHEMA.Physician,
+    SCHEMA.VeterinaryCare,
+    SCHEMA.NGO,
+    SCHEMA.NewsMediaOrganization,
+    SCHEMA.OnlineBusiness,
+    SCHEMA.OnlineStore,
+    SCHEMA.PerformingGroup,
+    SCHEMA.DanceGroup,
+    SCHEMA.MusicGroup,
+    SCHEMA.TheaterGroup,
+    SCHEMA.PoliticalParty,
+    SCHEMA.Project,
+    SCHEMA.FundingAgency,
+    SCHEMA.ResearchProject,
+    SCHEMA.ResearchOrganization,
+    SCHEMA.SearchRescueOrganization,
+    SCHEMA.SportsOrganization,
+    SCHEMA.SportsTeam,
+    SCHEMA.WorkersUnion
 ]
-sdo_place = [
-    SDO.Place,
-    SDO.Accommodation,
-    SDO.Apartment,
-    SDO.CampingPitch,
-    SDO.House,
-    SDO.SingleFamilyResidence,
-    SDO.Room,
-    SDO.HotelRoom,
-    SDO.MeetingRoom,
-    SDO.Suite,
-    SDO.AdministrativeArea,
-    SDO.City,
-    SDO.Country,
-    SDO.SchoolDistrict,
-    SDO.State,
-    SDO.CivicStructure,
-    SDO.Airport,
-    SDO.Aquarium,
-    SDO.Beach,
-    SDO.BoatTerminal,
-    SDO.Bridge,
-    SDO.BusStation,
-    SDO.BusStop,
-    SDO.Campground,
-    SDO.Cemetery,
-    SDO.Crematorium,
-    SDO.EducationalOrganization,
-    SDO.EventVenue,
-    SDO.FireStation,
-    SDO.GovernmentBuilding,
-    SDO.CityHall,
-    SDO.Courthouse,
-    SDO.DefenceEstablishment,
-    SDO.Embassy,
-    SDO.LegislativeBuilding,
-    SDO.Hospital,
-    SDO.MovieTheater,
-    SDO.Museum,
-    SDO.MusicVenue,
-    SDO.Park,
-    SDO.ParkingFacility,
-    SDO.PerformingArtsTheater,
-    SDO.PlaceOfWorship,
-    SDO.BuddhistTemple,
-    SDO.Church,
-    SDO.CatholicChurch,
-    SDO.HinduTemple,
-    SDO.Mosque,
-    SDO.Synagogue,
-    SDO.Playground,
-    SDO.PoliceStation,
-    SDO.PublicToilet,
-    SDO.RVPark,
-    SDO.StadiumOrArena,
-    SDO.SubwayStation,
-    SDO.TaxiStand,
-    SDO.TrainStation,
-    SDO.Zoo,
-    SDO.Landform,
-    SDO.BodyOfWater,
-    SDO.Canal,
-    SDO.LakeBodyOfWater,
-    SDO.OceanBodyOfWater,
-    SDO.Pond,
-    SDO.Reservoir,
-    SDO.RiverBodyOfWater,
-    SDO.SeaBodyOfWater,
-    SDO.Waterfall,
-    SDO.Continent,
-    SDO.Mountain,
-    SDO.Volcano,
-    SDO.LandmarksOrHistoricalBuildings,
-    SDO.LocalBusiness,
-    SDO.Residence,
-    SDO.ApartmentComplex,
-    SDO.GatedResidenceCommunity,
-    SDO.TouristAttraction,
-    SDO.TouristDestination
+schema_place = [
+    SCHEMA.Place,
+    SCHEMA.Accommodation,
+    SCHEMA.Apartment,
+    SCHEMA.CampingPitch,
+    SCHEMA.House,
+    SCHEMA.SingleFamilyResidence,
+    SCHEMA.Room,
+    SCHEMA.HotelRoom,
+    SCHEMA.MeetingRoom,
+    SCHEMA.Suite,
+    SCHEMA.AdministrativeArea,
+    SCHEMA.City,
+    SCHEMA.Country,
+    SCHEMA.SchoolDistrict,
+    SCHEMA.State,
+    SCHEMA.CivicStructure,
+    SCHEMA.Airport,
+    SCHEMA.Aquarium,
+    SCHEMA.Beach,
+    SCHEMA.BoatTerminal,
+    SCHEMA.Bridge,
+    SCHEMA.BusStation,
+    SCHEMA.BusStop,
+    SCHEMA.Campground,
+    SCHEMA.Cemetery,
+    SCHEMA.Crematorium,
+    SCHEMA.EducationalOrganization,
+    SCHEMA.EventVenue,
+    SCHEMA.FireStation,
+    SCHEMA.GovernmentBuilding,
+    SCHEMA.CityHall,
+    SCHEMA.Courthouse,
+    SCHEMA.DefenceEstablishment,
+    SCHEMA.Embassy,
+    SCHEMA.LegislativeBuilding,
+    SCHEMA.Hospital,
+    SCHEMA.MovieTheater,
+    SCHEMA.Museum,
+    SCHEMA.MusicVenue,
+    SCHEMA.Park,
+    SCHEMA.ParkingFacility,
+    SCHEMA.PerformingArtsTheater,
+    SCHEMA.PlaceOfWorship,
+    SCHEMA.BuddhistTemple,
+    SCHEMA.Church,
+    SCHEMA.CatholicChurch,
+    SCHEMA.HinduTemple,
+    SCHEMA.Mosque,
+    SCHEMA.Synagogue,
+    SCHEMA.Playground,
+    SCHEMA.PoliceStation,
+    SCHEMA.PublicToilet,
+    SCHEMA.RVPark,
+    SCHEMA.StadiumOrArena,
+    SCHEMA.SubwayStation,
+    SCHEMA.TaxiStand,
+    SCHEMA.TrainStation,
+    SCHEMA.Zoo,
+    SCHEMA.Landform,
+    SCHEMA.BodyOfWater,
+    SCHEMA.Canal,
+    SCHEMA.LakeBodyOfWater,
+    SCHEMA.OceanBodyOfWater,
+    SCHEMA.Pond,
+    SCHEMA.Reservoir,
+    SCHEMA.RiverBodyOfWater,
+    SCHEMA.SeaBodyOfWater,
+    SCHEMA.Waterfall,
+    SCHEMA.Continent,
+    SCHEMA.Mountain,
+    SCHEMA.Volcano,
+    SCHEMA.LandmarksOrHistoricalBuildings,
+    SCHEMA.LocalBusiness,
+    SCHEMA.Residence,
+    SCHEMA.ApartmentComplex,
+    SCHEMA.GatedResidenceCommunity,
+    SCHEMA.TouristAttraction,
+    SCHEMA.TouristDestination
 ]
-sdo_event = [
-    SDO.Event,
-    SDO.BusinessEvent,
-    SDO.ChildrensEvent,
-    SDO.ComedyEvent,
-    SDO.CourseInstance,
-    SDO.DanceEvent,
-    SDO.DeliveryEvent,
-    SDO.EducationEvent,
-    SDO.EventSeries,
-    SDO.ExhibitionEvent,
-    SDO.Festival,
-    SDO.FoodEvent,
-    SDO.Hackathon,
-    SDO.LiteraryEvent,
-    SDO.MusicEvent,
-    SDO.PublicationEvent,
-    SDO.BroadcastEvent,
-    SDO.OnDemandEvent,
-    SDO.SaleEvent,
-    SDO.ScreeningEvent,
-    SDO.SocialEvent,
-    SDO.SportsEvent,
-    SDO.TheaterEvent,
-    SDO.UserInteraction,
-    SDO.UserBlocks,
-    SDO.UserCheckins,
-    SDO.UserComments,
-    SDO.UserDownloads,
-    SDO.UserLikes,
-    SDO.UserPageVisits,
-    SDO.UserPlays,
-    SDO.UserPlusOnes,
-    SDO.UserTweets,
-    SDO.VisualArtsEvent
+schema_event = [
+    SCHEMA.Event,
+    SCHEMA.BusinessEvent,
+    SCHEMA.ChildrensEvent,
+    SCHEMA.ComedyEvent,
+    SCHEMA.CourseInstance,
+    SCHEMA.DanceEvent,
+    SCHEMA.DeliveryEvent,
+    SCHEMA.EducationEvent,
+    SCHEMA.EventSeries,
+    SCHEMA.ExhibitionEvent,
+    SCHEMA.Festival,
+    SCHEMA.FoodEvent,
+    SCHEMA.Hackathon,
+    SCHEMA.LiteraryEvent,
+    SCHEMA.MusicEvent,
+    SCHEMA.PublicationEvent,
+    SCHEMA.BroadcastEvent,
+    SCHEMA.OnDemandEvent,
+    SCHEMA.SaleEvent,
+    SCHEMA.ScreeningEvent,
+    SCHEMA.SocialEvent,
+    SCHEMA.SportsEvent,
+    SCHEMA.TheaterEvent,
+    SCHEMA.UserInteraction,
+    SCHEMA.UserBlocks,
+    SCHEMA.UserCheckins,
+    SCHEMA.UserComments,
+    SCHEMA.UserDownloads,
+    SCHEMA.UserLikes,
+    SCHEMA.UserPageVisits,
+    SCHEMA.UserPlays,
+    SCHEMA.UserPlusOnes,
+    SCHEMA.UserTweets,
+    SCHEMA.VisualArtsEvent
 ]
-sdo_item = [
-    SDO.CreativeWork,
-    SDO.AmpStory,
-    SDO.ArchiveComponent,
-    SDO.Article,
-    SDO.AdvertiserContentArticle,
-    SDO.NewsArticle,
-    SDO.AnalysisNewsArticle,
-    SDO.AskPublicNewsArticle,
-    SDO.BackgroundNewsArticle,
-    SDO.OpinionNewsArticle,
-    SDO.ReportageNewsArticle,
-    SDO.ReviewNewsArticle,
-    SDO.Report,
-    SDO.SatiricalArticle,
-    SDO.ScholarlyArticle,
-    SDO.MedicalScholarlyArticle,
-    SDO.SocialMediaPosting,
-    SDO.BlogPosting,
-    SDO.LiveBlogPosting,
-    SDO.DiscussionForumPosting,
-    SDO.TechArticle,
-    SDO.APIReference,
-    SDO.Atlas,
-    SDO.Blog,
-    SDO.Book,
-    SDO.Audiobook,
-    #SDO.Certification,
-    SDO.Chapter,
-    SDO.Claim,
-    SDO.Clip,
-    SDO.MovieClip,
-    SDO.RadioClip,
-    SDO.TVClip,
-    SDO.VideoGameClip,
-    SDO.Code,
-    SDO.Collection,
-    SDO.ProductCollection,
-    SDO.ComicStory,
-    SDO.ComicCoverArt,
-    SDO.Comment,
-    SDO.Answer,
-    SDO.CorrectionComment,
-    SDO.Question,
-    SDO.Conversation,
-    SDO.Course,
-    SDO.CreativeWorkSeason,
-    SDO.PodcastSeason,
-    SDO.RadioSeason,
-    SDO.TVSeason,
-    SDO.CreativeWorkSeries,
-    SDO.BookSeries,
-    SDO.MovieSeries,
-    SDO.Periodical,
-    SDO.ComicSeries,
-    SDO.Newspaper,
-    SDO.PodcastSeries,
-    SDO.RadioSeries,
-    SDO.TVSeries,
-    SDO.VideoGameSeries,
-    SDO.DataCatalog,
-    SDO.Dataset,
-    SDO.DataFeed,
-    SDO.CompleteDataFeed,
-    SDO.DefinedTermSet,
-    SDO.CategoryCodeSet,
-    SDO.Diet,
-    SDO.DigitalDocument,
-    SDO.NoteDigitalDocument,
-    SDO.PresentationDigitalDocument,
-    SDO.SpreadsheetDigitalDocument,
-    SDO.TextDigitalDocument,
-    SDO.Drawing,
-    SDO.EducationalOccupationalCredential,
-    SDO.Episode,
-    SDO.PodcastEpisode,
-    SDO.RadioEpisode,
-    SDO.TVEpisode,
-    SDO.ExercisePlan,
-    SDO.Game,
-    SDO.VideoGame,
-    SDO.Guide,
-    SDO.HowTo,
-    SDO.Recipe,
-    SDO.HowToDirection,
-    SDO.HowToSection,
-    SDO.HowToStep,
-    SDO.HowToTip,
-    SDO.HyperToc,
-    SDO.HyperTocEntry,
-    SDO.LearningResource,
-    SDO.Course,
-    SDO.Quiz,
-    #SDO.Syllabus,
-    SDO.Legislation,
-    SDO.LegislationObject,
-    SDO.Manuscript,
-    SDO.Map,
-    SDO.MathSolver,
-    SDO.MediaObject,
-    #SDO['3DModel'], # Alternative notation due to number
-    SDO.AmpStory,
-    SDO.AudioObject,
-    SDO.AudioObjectSnapshot,
-    SDO.Audiobook,
-    SDO.DataDownload,
-    SDO.ImageObject,
-    SDO.Barcode,
-    SDO.ImageObjectSnapshot,
-    SDO.LegislationObject,
-    SDO.MusicVideoObject,
-    #SDO.TextObject,
-    SDO.VideoObject,
-    SDO.VideoObjectSnapshot,
-    SDO.MediaReviewItem,
-    SDO.Menu,
-    SDO.MenuSection,
-    SDO.Message,
-    SDO.EmailMessage,
-    SDO.Movie,
-    SDO.MusicComposition,
-    SDO.MusicPlaylist,
-    SDO.MusicAlbum,
-    SDO.MusicRelease,
-    SDO.MusicRecording,
-    SDO.Painting,
-    SDO.Photograph,
-    SDO.Play,
-    SDO.Poster,
-    SDO.PublicationIssue,
-    SDO.ComicIssue,
-    SDO.PublicationVolume,
-    SDO.Quotation,
-    SDO.Review,
-    SDO.ClaimReview,
-    SDO.CriticReview,
-    SDO.ReviewNewsArticle,
-    SDO.EmployerReview,
-    SDO.MediaReview,
-    SDO.Recommendation,
-    SDO.UserReview,
-    SDO.Sculpture,
-    SDO.Season,
-    SDO.SheetMusic,
-    SDO.ShortStory,
-    SDO.SoftwareApplication,
-    SDO.MobileApplication,
-    SDO.VideoGame,
-    SDO.WebApplication,
-    SDO.SoftwareSourceCode,
-    SDO.SpecialAnnouncement,
-    SDO.Statement,
-    SDO.TVSeason,
-    SDO.TVSeries,
-    SDO.Thesis,
-    SDO.VisualArtwork,
-    SDO.CoverArt,
-    SDO.ComicCoverArt,
-    SDO.WebContent,
-    SDO.HealthTopicContent,
-    SDO.WebPage,
-    SDO.AboutPage,
-    SDO.CheckoutPage,
-    SDO.CollectionPage,
-    SDO.MediaGallery,
-    SDO.ImageGallery,
-    SDO.VideoGallery,
-    SDO.ContactPage,
-    SDO.FAQPage,
-    SDO.ItemPage,
-    SDO.MedicalWebPage,
-    SDO.ProfilePage,
-    SDO.QAPage,
-    SDO.RealEstateListing,
-    SDO.SearchResultsPage,
-    SDO.WebPageElement,
-    SDO.SiteNavigationElement,
-    SDO.Table,
-    SDO.WPAdBlock,
-    SDO.WPFooter,
-    SDO.WPHeader,
-    SDO.WPSideBar,
-    SDO.WebSite
+schema_item = [
+    SCHEMA.CreativeWork,
+    SCHEMA.AmpStory,
+    SCHEMA.ArchiveComponent,
+    SCHEMA.Article,
+    SCHEMA.AdvertiserContentArticle,
+    SCHEMA.NewsArticle,
+    SCHEMA.AnalysisNewsArticle,
+    SCHEMA.AskPublicNewsArticle,
+    SCHEMA.BackgroundNewsArticle,
+    SCHEMA.OpinionNewsArticle,
+    SCHEMA.ReportageNewsArticle,
+    SCHEMA.ReviewNewsArticle,
+    SCHEMA.Report,
+    SCHEMA.SatiricalArticle,
+    SCHEMA.ScholarlyArticle,
+    SCHEMA.MedicalScholarlyArticle,
+    SCHEMA.SocialMediaPosting,
+    SCHEMA.BlogPosting,
+    SCHEMA.LiveBlogPosting,
+    SCHEMA.DiscussionForumPosting,
+    SCHEMA.TechArticle,
+    SCHEMA.APIReference,
+    SCHEMA.Atlas,
+    SCHEMA.Blog,
+    SCHEMA.Book,
+    SCHEMA.Audiobook,
+    SCHEMA.Certification,
+    SCHEMA.Chapter,
+    SCHEMA.Claim,
+    SCHEMA.Clip,
+    SCHEMA.MovieClip,
+    SCHEMA.RadioClip,
+    SCHEMA.TVClip,
+    SCHEMA.VideoGameClip,
+    SCHEMA.Code,
+    SCHEMA.Collection,
+    SCHEMA.ProductCollection,
+    SCHEMA.ComicStory,
+    SCHEMA.ComicCoverArt,
+    SCHEMA.Comment,
+    SCHEMA.Answer,
+    SCHEMA.CorrectionComment,
+    SCHEMA.Question,
+    SCHEMA.Conversation,
+    SCHEMA.Course,
+    SCHEMA.CreativeWorkSeason,
+    SCHEMA.PodcastSeason,
+    SCHEMA.RadioSeason,
+    SCHEMA.TVSeason,
+    SCHEMA.CreativeWorkSeries,
+    SCHEMA.BookSeries,
+    SCHEMA.MovieSeries,
+    SCHEMA.Periodical,
+    SCHEMA.ComicSeries,
+    SCHEMA.Newspaper,
+    SCHEMA.PodcastSeries,
+    SCHEMA.RadioSeries,
+    SCHEMA.TVSeries,
+    SCHEMA.VideoGameSeries,
+    SCHEMA.DataCatalog,
+    SCHEMA.Dataset,
+    SCHEMA.DataFeed,
+    SCHEMA.CompleteDataFeed,
+    SCHEMA.DefinedTermSet,
+    SCHEMA.CategoryCodeSet,
+    SCHEMA.Diet,
+    SCHEMA.DigitalDocument,
+    SCHEMA.NoteDigitalDocument,
+    SCHEMA.PresentationDigitalDocument,
+    SCHEMA.SpreadsheetDigitalDocument,
+    SCHEMA.TextDigitalDocument,
+    SCHEMA.Drawing,
+    SCHEMA.EducationalOccupationalCredential,
+    SCHEMA.Episode,
+    SCHEMA.PodcastEpisode,
+    SCHEMA.RadioEpisode,
+    SCHEMA.TVEpisode,
+    SCHEMA.ExercisePlan,
+    SCHEMA.Game,
+    SCHEMA.VideoGame,
+    SCHEMA.Guide,
+    SCHEMA.HowTo,
+    SCHEMA.Recipe,
+    SCHEMA.HowToDirection,
+    SCHEMA.HowToSection,
+    SCHEMA.HowToStep,
+    SCHEMA.HowToTip,
+    SCHEMA.HyperToc,
+    SCHEMA.HyperTocEntry,
+    SCHEMA.LearningResource,
+    SCHEMA.Course,
+    SCHEMA.Quiz,
+    SCHEMA.Syllabus,
+    SCHEMA.Legislation,
+    SCHEMA.LegislationObject,
+    SCHEMA.Manuscript,
+    SCHEMA.Map,
+    SCHEMA.MathSolver,
+    SCHEMA.MediaObject,
+    SCHEMA['3DModel'], # Alternative notation due to number
+    SCHEMA.AmpStory,
+    SCHEMA.AudioObject,
+    SCHEMA.AudioObjectSnapshot,
+    SCHEMA.Audiobook,
+    SCHEMA.DataDownload,
+    SCHEMA.ImageObject,
+    SCHEMA.Barcode,
+    SCHEMA.ImageObjectSnapshot,
+    SCHEMA.LegislationObject,
+    SCHEMA.MusicVideoObject,
+    SCHEMA.TextObject,
+    SCHEMA.VideoObject,
+    SCHEMA.VideoObjectSnapshot,
+    SCHEMA.MediaReviewItem,
+    SCHEMA.Menu,
+    SCHEMA.MenuSection,
+    SCHEMA.Message,
+    SCHEMA.EmailMessage,
+    SCHEMA.Movie,
+    SCHEMA.MusicComposition,
+    SCHEMA.MusicPlaylist,
+    SCHEMA.MusicAlbum,
+    SCHEMA.MusicRelease,
+    SCHEMA.MusicRecording,
+    SCHEMA.Painting,
+    SCHEMA.Photograph,
+    SCHEMA.Play,
+    SCHEMA.Poster,
+    SCHEMA.PublicationIssue,
+    SCHEMA.ComicIssue,
+    SCHEMA.PublicationVolume,
+    SCHEMA.Quotation,
+    SCHEMA.Review,
+    SCHEMA.ClaimReview,
+    SCHEMA.CriticReview,
+    SCHEMA.ReviewNewsArticle,
+    SCHEMA.EmployerReview,
+    SCHEMA.MediaReview,
+    SCHEMA.Recommendation,
+    SCHEMA.UserReview,
+    SCHEMA.Sculpture,
+    SCHEMA.Season,
+    SCHEMA.SheetMusic,
+    SCHEMA.ShortStory,
+    SCHEMA.SoftwareApplication,
+    SCHEMA.MobileApplication,
+    SCHEMA.VideoGame,
+    SCHEMA.WebApplication,
+    SCHEMA.SoftwareSourceCode,
+    SCHEMA.SpecialAnnouncement,
+    SCHEMA.Statement,
+    SCHEMA.TVSeason,
+    SCHEMA.TVSeries,
+    SCHEMA.Thesis,
+    SCHEMA.VisualArtwork,
+    SCHEMA.CoverArt,
+    SCHEMA.ComicCoverArt,
+    SCHEMA.WebContent,
+    SCHEMA.HealthTopicContent,
+    SCHEMA.WebPage,
+    SCHEMA.AboutPage,
+    SCHEMA.CheckoutPage,
+    SCHEMA.CollectionPage,
+    SCHEMA.MediaGallery,
+    SCHEMA.ImageGallery,
+    SCHEMA.VideoGallery,
+    SCHEMA.ContactPage,
+    SCHEMA.FAQPage,
+    SCHEMA.ItemPage,
+    SCHEMA.MedicalWebPage,
+    SCHEMA.ProfilePage,
+    SCHEMA.QAPage,
+    SCHEMA.RealEstateListing,
+    SCHEMA.SearchResultsPage,
+    SCHEMA.WebPageElement,
+    SCHEMA.SiteNavigationElement,
+    SCHEMA.Table,
+    SCHEMA.WPAdBlock,
+    SCHEMA.WPFooter,
+    SCHEMA.WPHeader,
+    SCHEMA.WPSideBar,
+    SCHEMA.WebSite
 ]

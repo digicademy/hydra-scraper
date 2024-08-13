@@ -22,6 +22,7 @@ from classes.base import HyBase
 # Define namespaces
 from rdflib.namespace import SDO
 HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
+SCHEMA = Namespace('http://schema.org/')
 
 
 class HyRetrieve(HyBase):
@@ -64,6 +65,10 @@ class HyRetrieve(HyBase):
             'success': False,
             'reason': 'No resource URLs to list in Beacon file.'
         }
+
+        # Indicate progress
+        progress_message = 'Saving Beacon file'
+        self.echo_progress(progress_message, 0, 100)
         
         # Check if there is data to save
         if self.feed != []:
@@ -76,6 +81,7 @@ class HyRetrieve(HyBase):
             self.__save_file(content, file_path)
 
         # Update status
+        self.echo_progress(progress_message, 100, 100)
         self.status.append(status)
 
 
@@ -90,6 +96,10 @@ class HyRetrieve(HyBase):
             'reason': ''
         }
 
+        # Indicate progress
+        progress_message = 'Removing intermediate files'
+        self.echo_progress(progress_message, 0, 100)
+
         # Remove file download folder
         try:
             rmtree(self.folder_files)
@@ -99,27 +109,8 @@ class HyRetrieve(HyBase):
             status['reason'] = 'Intermediate files could not be removed.'
 
         # Update status
+        self.echo_progress(progress_message, 100, 100)
         self.status.append(status)
-
-
-    def __read_folder(self, folder_path:str) -> list:
-        '''
-        Read a local folder and return a list of resources
-
-            Parameters:
-                folder_path (str): Path to the folder to read
-        '''
-
-        # Prepare folder path
-        folder_path += '/**/*'
-        entries = []
-
-        # Add each file to list
-        for entry in glob(folder_path, recursive = True):
-            entries.append(entry)
-
-        # Return entries
-        return entries
 
 
     def download_feed(self, delay:float, dialect:str = None, clean:list = None):
@@ -162,11 +153,12 @@ class HyRetrieve(HyBase):
                     else:
                         file_name = str(number)
 
-                        # Save file
-                        file_path = self.folder_files + '/' + file_name + '.' + file_data['file_extension']
-                        self.__save_file(file_data['content'], file_path)
-                        status['success'] = True
-                        status['reason'] = 'All files downloaded successfully.'
+                    # Save file
+                    file_path = self.folder_files + '/' + file_name + '.' + file_data['file_extension']
+                    self.__save_file(file_data['content'], file_path)
+                    self.file_type = file_data['file_type']
+                    status['success'] = True
+                    status['reason'] = 'All files downloaded successfully.'
 
                 # Report if download failed
                 else:
@@ -192,6 +184,26 @@ class HyRetrieve(HyBase):
         # Update status
         self.echo_progress(progress_message, 100, 100)
         self.status.append(status)
+
+
+    def __read_folder(self, folder_path:str) -> list:
+        '''
+        Read a local folder and return a list of resources
+
+            Parameters:
+                folder_path (str): Path to the folder to read
+        '''
+
+        # Prepare folder path
+        folder_path += '/**/*'
+        entries = []
+
+        # Add each file to list
+        for entry in glob(folder_path, recursive = True):
+            entries.append(entry)
+
+        # Return entries
+        return entries
 
 
 class HyRetrieveApi(HyRetrieve):
@@ -250,6 +262,7 @@ class HyRetrieveApi(HyRetrieve):
                 if markup == 'feed':
                     file_path = self.folder_files + '/' + str(number) + '.' + list_data['file_extension']
                     self.__save_file(list_data['content'], file_path)
+                    self.file_type = list_data['file_type']
                     status['success'] = True
                     status['reason'] = 'Feed downloaded successfully.'
                 
@@ -269,7 +282,6 @@ class HyRetrieveApi(HyRetrieve):
                 try:
                     store = Graph()
                     store.parse(data=list_data['content'], format=list_data['file_type'])
-                    self.file_type = list_data['file_type']
 
                 # End loop if RDF cannot be parsed
                 except:
@@ -281,6 +293,8 @@ class HyRetrieveApi(HyRetrieve):
                 for o in store.objects(None, HYDRA.member, True):
                     self.feed.append(str(o))
                 for o in store.objects(None, SDO.item, True):
+                    self.feed.append(str(o))
+                for o in store.objects(None, SCHEMA.item, True):
                     self.feed.append(str(o))
 
                 # Remove duplicates
@@ -450,4 +464,4 @@ class HyRetrieveSingle(HyRetrieve):
         super().__init__(location, folder, folder_files, quiet)
 
         # TODO Implement CSV functionality
-        raise NotImplementedError('CSV functionality is not available in Hydra Scraper yet.')
+        raise NotImplementedError('CSV retrieval functionality is not available in Hydra Scraper yet.')

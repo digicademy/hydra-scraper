@@ -200,6 +200,6 @@ Use GitHub to make the release. Use semantic versioning.
 **Further options**
 
 - Possibly switch LIDO support to `epoz/lidolator` and nfdicore/cto support to `epoz/nfdi4culture_python_package` after contributing features
-- Possibly use the system's download folder to actually distribute the package
+- Possibly use the system's download folder to be able to distribute the package
 - Possibly release the package on PyPI
 - Find a lightweight way to periodically update the schema.org class lists in the `cto` library

@@ -12,16 +12,15 @@ from rdflib import Namespace
 from rdflib.term import Literal
 
 # Define namespaces
-from rdflib.namespace import SDO
+SCHEMA = Namespace('http://schema.org/')
 N4C = Namespace('https://nfdi4culture.de/id/')
 
 # Set up at least one feed element
 element = cto.FeedElement(prepare = True)
 element.feed_uri         = N4C.E123             # URI as str, Literal, or URIRef; overwritten when a FeedElement is part of a Feed
-element.element_type     = SDO.Manuscript       # URI as str, Literal, or URIRef or generic string like 'person'
+element.element_type     = SCHEMA.Manuscript       # URI as str, Literal, or URIRef or generic string like 'person'
 element.element_uri      = 'https://example.org/project/id/1' # URI as str, Literal, or URIRef
 element.element_uri_same = 'https://cold-storage.org/project/id/1' # URI as str, Literal, URIRef, or list thereof
-element.connect          = True                 # False leaves out schema.org wrappers for ARK IDs
 element.label            = [                    # String as str, Literal, URIRef, or list thereof
     Literal('Short title', lang='en'),
     Literal('Kurzer Titel', lang='de')
@@ -50,13 +49,13 @@ element.publisher        = N4C.E456             # URI as str, Literal, URIRef, o
 element.license          = 'https://creativecommons.org/licenses/by/4.0/' # URI as str, Literal, URIRef, or list thereof
 element.vocab_element_type = 'http://vocab.getty.edu/aat/300026877' # Getty AAT URI as str, Literal, URIRef, or list thereof
 element.vocab_subject_concept = 'https://iconclass.org/123' # URI as str, Literal, URIRef, or list thereof
-element.vocab_related_location = [              # URI as str, Literal, URIRef, or list thereof
+element.vocab_related_location = [              # Tuple of URI and Literal, or URI as str, Literal, URIRef, or list thereof
     'http://sws.geonames.org/1234567',
     'https://www.geonames.org/7654321'          # Some wrong URIs are auto-corrected
 ]
-element.vocab_related_event = 'http://www.wikidata.org/entity/Q123' # URI as str, Literal, URIRef, or list thereof
-element.vocab_related_organization = 'http://d-nb.info/gnd/987654321' # URI as str, Literal, URIRef, or list thereof
-element.vocab_related_person = ('http://d-nb.info/gnd/123456789', Literal('Max Muster', lang = 'de')) # URI as str, Literal, URIRef, or list thereof
+element.vocab_related_event = 'http://www.wikidata.org/entity/Q123' # Tuple of URI and Literal, or URI as str, Literal, URIRef, or list thereof
+element.vocab_related_organization = 'http://d-nb.info/gnd/987654321' # Tuple of URI and Literal, or URI as str, Literal, URIRef, or list thereof
+element.vocab_related_person = ('http://d-nb.info/gnd/123456789', 'Max Muster') # Tuple of URI and Literal, or URI as str, Literal, URIRef, or list thereof
 element.vocab_further    = 'https://database.factgrid.de/wiki/Item:4321' # URI as str, Literal, URIRef, or list thereof
 element.related_item     = [                    # URI as str, Literal, URIRef, or list thereof
     'https://example.org/project/id/5',
