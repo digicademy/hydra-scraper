@@ -2,19 +2,20 @@
 
 # Hydra Scraper
 
-**Comprehensive scraper for paginated APIs, Beacon files, and RDF file dumps**
+**Comprehensive scraper for paginated APIs, RDF, XML, file dumps, and Beacon files**
 
 This scraper provides a command-line toolset to pull data from various sources,
-such as Hydra paginated APIs, Beacon files, or local file dumps. The tool
-differentiates between feeds and their members in RDF-compatible formats such
+such as Hydra paginated schema.org APIs, Beacon files, or file dumps. The tool
+differentiates between feeds and their elements in RDF-compatible formats such
 as JSON-LD or Turtle, but it can also handle XML files using, for example, the
 LIDO schema. Command-line calls can be combined and adapted to build
 fully-fledged scraping mechanisms, including the ability to output a set of
 triples. The script was originally developed as an API testing tool for of the
 Corpus Vitrearum Germany (CVMA) at the Academy of Sciences and Literature
-Mainz. It was later expanded to add functionality around the
-[Culture Graph Interchange Format](https://docs.nfdi4culture.de/ta5-cgif-specification)
-(CGIF) and the `nfdicore` ontology with the `cto` module.
+Mainz. It was later expanded for use in the Culture Knowledge Graph at
+[NFDI4Culture](https://nfdi4culture.de/) around the
+[Culture Graph Interchange Format (CGIF)](https://docs.nfdi4culture.de/ta5-cgif-specification)
+and the NFDIcore ontology with the CTO module.
 
 ## Licence
 
@@ -28,158 +29,157 @@ This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 
 ## Installation
 
-To use this script, make sure your system has a working `python` as well as
-the packages `validators`, `rdflib`, and `lxml`. Then clone this repository (e.g. `git
-clone https://github.com/digicademy/hydra-scraper.git` or the SSH equivalent).
-Open a terminal in the resulting folder to run the script as described below.
+To use this script, make sure your Python environment has the packages listed
+in `requirements.txt`. Then clone this repository (e.g.
+`git clone https://github.com/digicademy/hydra-scraper.git` or the SSH
+equivalent). Open a terminal in the resulting folder to run the script as
+described in the "Examples" section below.
 
 ## Usage
 
-This scraper is a command-line tool. Use these main configuration options to
+The scraper is a command-line tool. Use these main configuration options to
 indicate what kind of scraping run you desire.
 
-- `-s` or `--start <value>`: type of starting point for the scraping run:
-  - `rdf-feed`: an RDF-based, optionally Hydra-paginated feed API or embedded metadata
-  - `xml-feed`: a local or remote XML file listing individual files (CMIF)
-  - `beacon-feed`: a local or remote text file listing one URL per line (Beacon)
-  - `dump-folder`: a local folder of individual files
-  - `dump-file`: a local file containing all information to process
-- `-l` or `--location <url or folder or file>`: source URL, folder, or file path (depending on the start parameter)
-- `-m` or `--markup <value>`: markup to query during the scraping run:
-  - `feed`: use RDF triples contained in the RDF or XML feed
-  - `rdf`: use RDF triples contained in individual files
+- `-l` or `--location <url or folder or file>`: source URI, folder, or file path
+- `-f` or `--feed <value>`: type of feed or starting point for the scraping run:
+  - `beacon`: a local or remote text file listing one URI per line (Beacon)
+  - `folder`: a local folder of individual feed element files
+  - `schema`: an RDF-based, optionally Hydra-paginated schema.org API or embedded metadata (CGIF)
+  - `schema-list`: same as above, but using the triples in individual schema.org files
+  - `zipped`: a ZIP-compressed folder of individual files
+- `-e` or `--elements <value>`: element markup to extract data from during the scraping run (leave out to not extract data):
   - `lido`: use LIDO files
-  - `tei`: use TEI files
-  - `mei`: use MEI files
-  - `csv`: use a CSV file
+  - `schema`: use RDF triples in a schema.org format (CGIF)
 - `-o` or `--output <value> <value>`: outputs to produce in the scraping run:
-  - `beacon`: a text file listing one URL per line
   - `files`: the original files
-  - `triples`: available triples
-  - `triples-nfdi`: NFDI-style triples
+  - `triples`: the original triples
+  - `beacon`: a text file listing one URI per line
   - `csv`: a CSV table of data
+  - `cto`: NFDI4Culture-style triples
 
 In addition, and depending on the main config, you can specify these
 additional options:
 
 - `-n` or `--name <string>`: name of the subfolder to download data to
 - `-d` or `--dialect <string>`: content type to use for requests
-- `-f` or `--filter <string>`: string to use as a filter for member/file URLs
-- `-r` or `--replace <string>`: string to replace in member/file URLs
+- `-i` or `--include <string>`: filter for feed element URIs to include
+- `-r` or `--replace <string>`: string to replace in feed element URIs
 - `-rw` or `--replace_with <string>`: string to replace the previous one with
-- `-a` or `--add <string>`: addition to the end of each member/file URL
+- `-a` or `--append <string>`: addition to the end of each feed element URI
 - `-af` or `-add_feed <uri>`: URI of a data feed to bind members to
 - `-ac` or `-add_catalog <uri>`: URI of a data catalog the data feed belongs to
 - `-ap` or `-add_publisher <uri>`: URI of the data publisher
-- `-c` or `--clean <string> <string>`: strings to remove from member/file URLs to build their file names
-- `-t` or `--table <uri> <uri>`: property URIs to compile in a table
-- `-p` or `--prepare`: prepare NFDI-style triples for ingest into a knowledge graph
-- `-q` or `--quiet`: avoid intermediate progress reporting
-
-The possible combinations of `--start`, `--markup`, and `-output` commands may
-be intricate as they are based on format limitations. The following figure
-shows both the allowed combinations and the classes doing the heavy lifting.
-
-![Table of possible command combinations](assets/commands.png)
+- `-c` or `--clean <string> <string>`: strings to remove from feed element URIs to build their file names
+- `-p` or `--prepare <string>`: prepare cto output for this NFDI4Culture feed ID
+- `-q` or `--quiet`: do not display status messages
 
 ## Examples
 
 The commands listed below illustrate possible command-line arguments. They
-refer to specific projects that use this script, but the commands should work
-with any Hydra-paginated API in an RDF-comptabile format. Depending on your
-operating system, you may need to use `python3` instead of `python`.
+refer to specific projects that use this scraper, but the commands should work
+with any other page using the indicated formats. Depending on your operating
+system, you may need to use `python3` instead of `python`.
 
 ### NFDI4Culture
 
-Grab all **portal data** as triples:
+Original triples from the **Culture Information Portal**:
 
 ```bash
-python go.py -s 'rdf-feed -l https://nfdi4culture.de/resource.ttl -m rdf-members -o triples -n n4c-portal
+python go.py -l https://nfdi4culture.de/resource.ttl -f schema-list -o triples -n n4c-portal
 ```
 
-Get **NFDI-style data** from an API entry point:
+NFDIcore/CTO triples from a local or remote **CGIF/schema.org feed (embedded)**:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -m rdf-feed -o triples-nfdi -n sample-nfdi -p
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o cto -n n4c-cgif -p E5308
 ```
 
-Get **NFDI-style data from a local Beacon** file:
+NFDIcore/CTO triples from a local or remote **CGIF/schema.org feed (API)**:
 
 ```bash
-python go.py -s beacon-feed -l downloads/sample-nfdi/beacon.txt -m rdf-members -o triples-nfdi -n sample-nfdi -p
+python go.py -l https://gn.biblhertz.it/fotothek/seo -f schema -e schema -o cto -n n4c-cgif-api -p E4244
 ```
 
-Get **NFDI-style data from a Beacon** file that lists LIDO files:
+NFDIcore/CTO triples from a local or remote **Beacon-like feed of CGIF/schema.org files**:
 
 ```bash
-python go.py -s beacon-feed -l downloads/sample-nfdi/beacon.txt -m lido -o triples-nfdi -n sample-nfdi -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -ac https://corpusvitrearum.de -ap https://nfdi4culture.de/id/E1834 -p
+python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e schema -o cto -n n4c-cgif-beacon -a /about.cgif -p E5308
 ```
 
-Get **NFDI-style data from a file dump**:
+NFDIcore/CTO triples from a local or remote **Beacon-like feed of LIDO files** (feed URI added because it is not in the data):
 
 ```bash
+python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+```
+
+---
+
+TODO
+NFDIcore/CTO triples from a local or remote **ZIP file containing CGIF/schema.org files**:
+NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files**:
+NFDIcore/CTO triples from a local **folder containing CGIF/schema.org files**:
+NFDIcore/CTO triples from a local **folder containing LIDO files**:
+
+```bash
+TODO
 python go.py -s dump-folder -l downloads/sample-nfdi/files -m rdf-members -o triples-nfdi -n sample-nfdi -d application/ld+json -p
 ```
 
+---
+
 ### Corpus Vitrearum Germany
 
-All available **JSON-LD** data:
+Files and triples from **JSON-LD** data:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/id/about.json -m rdf-members -o beacon files triples -n cvma-jsonld -f https://corpusvitrearum.de/id/F -c https://corpusvitrearum.de/id/ /about.json
+python go.py -l https://corpusvitrearum.de/id/about.json -f schema-list -o files triples -n cvma-jsonld -i https://corpusvitrearum.de/id/F -c https://corpusvitrearum.de/id/ /about.json
 ```
 
-All available **RDF/XML** data:
+Files and triples from **RDF/XML** data:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/id/about.rdf -m rdf-members -o beacon files triples -n cvma-rdfxml -f https://corpusvitrearum.de/id/F -c https://corpusvitrearum.de/id/ /about.rdf
+python go.py -l https://corpusvitrearum.de/id/about.rdf -f schema-list -o files triples -n cvma-rdfxml -i https://corpusvitrearum.de/id/F -c https://corpusvitrearum.de/id/ /about.rdf
 ```
 
-All available **Turtle** data:
+Files and triples from **Turtle** data:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/id/about.ttl -m rdf-members -o beacon files triples -n cvma-turtle -f https://corpusvitrearum.de/id/F -c https://corpusvitrearum.de/id/ /about.ttl
+python go.py -l https://corpusvitrearum.de/id/about.ttl -f schema-list -o files triples -n cvma-turtle -i https://corpusvitrearum.de/id/F -c https://corpusvitrearum.de/id/ /about.ttl
 ```
 
-All available **CGIF (JSON-LD)** data:
+Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (embedded)** data:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/id/about.cgif -m rdf-members -o beacon files triples triples-nfdi -n cvma-nfdi -f https://corpusvitrearum.de/id/F -a /about.cgif -c https://corpusvitrearum.de/id/ /about.cgif
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o beacon csv cto files triples -n cvma-cgif -p E5308 -c https://corpusvitrearum.de/id/
 ```
 
-All available **LIDO** data:
+Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (API)** data:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -m lido -o beacon files -n cvma-lido -a /about.lido -c https://corpusvitrearum.de/id/ /about.lido
+python go.py -l https://corpusvitrearum.de/id/about.cgif -f schema -e schema -o beacon csv cto files triples -n cvma-cgif-api -p E5308
 ```
 
-All available **embedded metadata**:
+Beacon, CSV table, NFDIcore/CTO, and files from **LIDO** data:
 
 ```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -m rdf-feed -o beacon files triples triples-nfdi -n cvma-embedded -c https://corpusvitrearum.de/id/
-```
-
-**Table** of specific metadata:
-
-```bash
-python go.py -s rdf-feed -l https://corpusvitrearum.de/id/about.json -m rdf-members -o csv -n cvma-jsonld -f https://corpusvitrearum.de/id/F -t http://purl.org/dc/elements/1.1/Title http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState http://iptc.org/std/Iptc4xmpExt/2008-02-29/City http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId http://ns.adobe.com/exif/1.0/GPSLatitude http://ns.adobe.com/exif/1.0/GPSLongitude https://lod.academy/cvma/ns/xmp/AgeDeterminationStart https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd https://lod.academy/cvma/ns/xmp/IconclassNotation
-```
-
-Table of specific metadata **from an existing dump**:
-
-```bash
-python go.py -s dump-folder -l downloads/cvma-jsonld/files -m rdf-members -o csv -n cvma-jsonld -d application/ld+json -t http://purl.org/dc/elements/1.1/Title http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProvinceState http://iptc.org/std/Iptc4xmpExt/2008-02-29/City http://iptc.org/std/Iptc4xmpExt/2008-02-29/Sublocation http://iptc.org/std/Iptc4xmpExt/2008-02-29/LocationId http://ns.adobe.com/exif/1.0/GPSLatitude http://ns.adobe.com/exif/1.0/GPSLongitude https://lod.academy/cvma/ns/xmp/AgeDeterminationStart https://lod.academy/cvma/ns/xmp/AgeDeterminationEnd https://lod.academy/cvma/ns/xmp/IconclassNotation
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema-list -e lido -o beacon csv cto files -n cvma-lido -a /about.lido -c https://corpusvitrearum.de/id/ /about.lido
 ```
 
 ## Contributing
 
-The file `go.py` provides the basic logic of a scraping run. It instantiates three types of objects:
+The file `go.py` executes a regular scraping run via several `base` modules that can also be used independently:
 
-1. A `HyOrganise` object collects and cleans configuration info. It also provides methods to report the current or final status of a scraping run.
-2. A `HyRetrieve` object is used to download and store markup, based on the `--start` parameter: `HyRetrieveApi` queries an endpoint, `HyRetrieveFiles` produces dumps of individual files, whereas `HyRetrieveSingle` processes single-file content.
-3. A `HyMorph` object is called to produce the required output based on what markup is to be used: `HyMorphRdf` handles RDF feeds and resources, `HyMorphXml` deals with XML-based schemas, and `HyMorphTabular` handles data tables. These classes differ in what output they are able to produce due to the input formats they serve.
+1. `organise` provides the `Organise` object to collect and clean configuration info. It also creates the required folders and sets up logging.
+2. `job` provides the `Job` object to orchestrate a single scraping run. It contains the feed pagination and data collation logic.
+3. `file` provides the `File` object to retrieve a remote or local file. It also contains logic to identify file types and parse RDF or XML.
+4. `data` provides the data storage objects `Uri`, `UriList`, `Label`, `LabelList`, `UriLabel`, `UriLabelList`, `Date`, `DateList`, and `Incipit`. They include data serialisation logic and namespace normalization.
+5. `extract` is a special module to provide `ExtractFeedInterface` and `ExtractFeedElementInterface`. These include generic functions to extract XML or RDF data.
+6. `map` is another special module to provide `MapFeedInterface` and `MapFeedElementInterface`. These include generic functions to generate text content or RDF triples.
+7. `types` provides a set of type lists and look-up functions. These can be used to identify whether a URI from an authority file refers to a person, an organisation, a location, or an event.
 
-If you change the code, please remember to document each function and walk other users or maintainers through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
+Two additional sets of classes use the `extract` and `map` interfaces to provide extraction and mapping routines for particular formats. These routines provide a `Feed` and/or a `FeedElement` object depending on what the format provides. These format-specific objects are called from the `Job` object listed above.
+
+If you change the code, please remember to document each object/function and walk other users or maintainers through significant steps. This package is governed by the [Contributor Covenant](https://www.contributor-covenant.org/de/version/1/4/code-of-conduct/) code of conduct. Please keep this in mind in all interactions.
 
 ## Releasing
 
@@ -189,17 +189,31 @@ Before you make a new release, make sure the following files are up to date:
 - `CITATION.cff`: version number, authors, and release date
 - `requirements.txt`: list of required libraries
 - `setup.py`: version number and authors
+- `base/organise.py`: version number
 
 Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Add CMIF, TEI, and MEI support
-- Add `HyRetrieveSingle` and `HyMorphTabular` to support CSV data
+- Try to rewrite delay to be time-based, not just a sleep timer
+- Respect `robots.txt` for feed and feed element URIs
+- Expand `types` to become a look-up module plus a local storage file to speed up consecutive harvests
+- Allow for remote/local ZIP and local folder ingests (and alter this readme)
+- Update `assets` folder and release
 
-**Further options**
+**Likely after 0.9.0**
 
-- Possibly switch LIDO support to `epoz/lidolator` and nfdicore/cto support to `epoz/nfdi4culture_python_package` after contributing features
-- Possibly use the system's download folder to be able to distribute the package
-- Possibly release the package on PyPI
-- Find a lightweight way to periodically update the schema.org class lists in the `cto` library
+- Implement job presets/collections
+- Convert `test.py` to something more sophisticated
+- Optional OCI container
+- Add [CMIF](https://gregorovius-edition.dhi-roma.it/api/cmif) and TEI ingest support
+- Add [OAI-PMH](https://pro.deutsche-digitale-bibliothek.de/daten-nutzen/schnittstellen) ingest support
+- Add MEI ingest support
+- Add DCAT serialisation
+- Add support for ingesting CSV/JSON data?
+
+**Further ideas**
+
+- Use the system's download folder to be able to distribute the package
+- Fix setup file and release the package on PyPI
+- Find a lightweight way to periodically update the RDF class lists

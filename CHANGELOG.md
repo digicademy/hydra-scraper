@@ -2,12 +2,22 @@
 
 ## 0.9.0
 
-- Refactor and rewrite the scraper using classes and class inheritance to avoid intransparent helper libraries
-- Central library to produce triples for the nfdicore/cto ontology
-- Switch CGIF and LIDO routines to produce nfdicore/cto
-- Reshuffle command-line interface and argument parsing to improve extensibility
-- Add a `-quiet` option to stop reporting intermiedate progress
-- Set up further ingest formats
+- Full rewrite with a modular architecture
+- Any combination of Feed and FeedElement
+- Support for RDF (schema.org), XML (LIDO), Beacon, ZIP ingest
+- Tolerant to missing feed elements
+- Less memory hoarding with large datasets
+- Look-up routine for authority files
+- Single template to generate `nfdicore/cto` triples
+- Template adapted to current `nfdicore/cto` version
+- Automatically create ARK IDs for `nfdicore/cto`
+- Prep work for further serialisations such as DCAT
+- New command-line interface and argument parsing
+- A `-quiet` option prevents reporting intermiedate progress
+- Observe rules layed out in `robots.txt` files
+- Recognise `http` and `https` namespaces in schema.org sources
+- Provide log files for scraping runs
+- Switch to `httpx`
 
 ## 0.8.4
 

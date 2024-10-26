@@ -1,0 +1,17 @@
+# Standard packages
+datetime
+urllib
+logging
+os
+glob
+shutil
+time
+argparse
+
+# Non-standard packages
+validators
+hashlib
+rdflib >= 7.0.0
+httpx >= 0.24.0
+pyoxigraph >= 0.4.0
+lxml >= 5.0.0
