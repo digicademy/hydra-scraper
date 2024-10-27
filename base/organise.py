@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 # Set up user agent
 harvest_identifier = 'Hydra Scraper/0.9.0-beta'
+harvest_robots = 'HydraScraper'
 
 
 class Organise:
@@ -324,14 +325,14 @@ class Organise:
             robots.read()
 
             # Delay
-            delay = robots.crawl_delay('HydraScraper')
+            delay = robots.crawl_delay(harvest_robots)
             if not delay:
                 delay = robots.crawl_delay('*')
             if delay:
                 output = int(delay * 1000)
 
             # Rate
-            rate = robots.request_rate('HydraScraper')
+            rate = robots.request_rate(harvest_robots)
             if not rate:
                 rate = robots.request_rate('*')
             if rate:
