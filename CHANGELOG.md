@@ -4,7 +4,7 @@
 
 - Full rewrite with a modular architecture
 - Any combination of Feed and FeedElement
-- Support for RDF (schema.org), XML (LIDO), Beacon, ZIP ingest
+- Support for RDF (schema.org), XML (CMIF, LIDO), Beacon, ZIP ingest
 - Tolerant to missing feed elements
 - Less memory hoarding with large datasets
 - Look-up routine for authority files

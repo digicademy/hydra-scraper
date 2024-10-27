@@ -442,8 +442,11 @@ class ExtractInterface:
         element = self.file.xml.find(element_path)
 
         # Return result
-        if attribute in element.attrib:
-            return element.attrib[attribute]
+        if element != None:
+            if attribute in element.attrib:
+                return element.attrib[attribute]
+            else:
+                return None
         else:
             return None
 
@@ -573,6 +576,7 @@ class ExtractInterface:
         # Replace namespace placeholders
         element_paths = [e.replace('{L}', '{http://www.lido-schema.org}') for e in element_paths]
         element_paths = [e.replace('{S}', '{http://www.w3.org/2004/02/skos/core#}') for e in element_paths]
+        element_paths = [e.replace('{T}', '{http://www.tei-c.org/ns/1.0}') for e in element_paths]
 
         # Return result(s)
         if return_list:

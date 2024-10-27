@@ -11,6 +11,7 @@ import logging
 
 # Import script modules
 import extract.beacon as beacon
+import extract.cmif as cmif
 import extract.lido as lido
 import extract.schema as schema
 from base.data import Uri
@@ -24,13 +25,14 @@ logging.basicConfig(filename = 'downloads/test.log', level = logging.INFO)
 
 # List of tests to run
 tests = [
-    #'beacon-feed-a',
-    #'beacon-feed-b',
-    #'lido-element-a',
-    #'lido-element-b',
+    'beacon-feed-a',
+    'beacon-feed-b',
+    'cmif-feed-a',
+    'lido-element-a',
+    'lido-element-b',
     'schema-feed-a',
-    #'schema-feed-b',
-    #'schema-element-a'
+    'schema-feed-b',
+    'schema-element-a'
 ]
 
 # Beacon feed A
@@ -38,18 +40,27 @@ if 'beacon-feed-a' in tests:
     file = File('https://kba.karl-barth.ch/api/actors?format=beacon')
     extract = beacon.Feed(file)
     #print(extract)
-    extract.map_and_save('beacon', 'downloads/test-beacon-feed-a.txt')
-    extract.map_and_save('csv', 'downloads/test-beacon-feed-a.csv')
-    extract.map_and_turtle('cto', 'downloads/test-beacon-feed-a.ttl')
+    extract.map_and_save('beacon', 'downloads/test-beacon-feed-a')
+    extract.map_and_save('csv', 'downloads/test-beacon-feed-a')
+    extract.map_and_turtle('cto', 'downloads/test-beacon-feed-a')
 
 # Beacon feed B
 if 'beacon-feed-b' in tests:
     file = File('http://www.bib-bvb.de/OpenData/beacon_bvb01.txt')
     extract = beacon.Feed(file)
     #print(extract)
-    extract.map_and_save('beacon', 'downloads/test-beacon-feed-b.txt')
-    extract.map_and_save('csv', 'downloads/test-beacon-feed-b.csv')
-    extract.map_and_turtle('cto', 'downloads/test-beacon-feed-b.ttl')
+    extract.map_and_save('beacon', 'downloads/test-beacon-feed-b')
+    extract.map_and_save('csv', 'downloads/test-beacon-feed-b')
+    extract.map_and_turtle('cto', 'downloads/test-beacon-feed-b')
+
+# CMIF feed A
+if 'cmif-feed-a' in tests:
+    file = File('https://gregorovius-edition.dhi-roma.it/api/cmif')
+    extract = cmif.Feed(file)
+    #print(extract)
+    extract.map_and_save('beacon', 'downloads/test-cmif-feed-a')
+    extract.map_and_save('csv', 'downloads/test-cmif-feed-a')
+    extract.map_and_turtle('cto', 'downloads/test-cmif-feed-a')
 
 # LIDO feed element A
 if 'lido-element-a' in tests:
@@ -57,7 +68,7 @@ if 'lido-element-a' in tests:
     extract = lido.FeedElement(file)
     #print(extract)
     extract.feed_uri = Uri('https://corpusvitrearum.de/cvma-digital/bildarchiv.html')
-    extract.map_and_turtle('cto', 'downloads/test-lido-element-a.ttl')
+    extract.map_and_turtle('cto', 'downloads/test-lido-element-a')
 
 # LIDO feed element B
 if 'lido-element-b' in tests:
@@ -65,29 +76,29 @@ if 'lido-element-b' in tests:
     extract = lido.FeedElement(file)
     #print(extract)
     extract.feed_uri = Uri('https://www.graphikportal.org/lido-examples')
-    extract.map_and_turtle('cto', 'downloads/test-lido-element-b.ttl')
+    extract.map_and_turtle('cto', 'downloads/test-lido-element-b')
 
 # Schema.org feed and elements A
 if 'schema-feed-a' in tests:
     file = File('https://corpusvitrearum.de/id/about.cgif?tx_vocabulary_about[page]=40')
     extract = schema.Feed(file, True)
     #print(extract)
-    extract.map_and_save('beacon', 'downloads/test-schema-feed-a.txt')
-    extract.map_and_save('csv', 'downloads/test-schema-feed-a.csv')
-    extract.map_and_turtle('cto', 'downloads/test-schema-feed-a.ttl', prepare = 'E1234')
+    extract.map_and_save('beacon', 'downloads/test-schema-feed-a')
+    extract.map_and_save('csv', 'downloads/test-schema-feed-a')
+    extract.map_and_turtle('cto', 'downloads/test-schema-feed-a', prepare = 'E1234')
 
 # Schema.org feed and elements B
 if 'schema-feed-b' in tests:
     file = File('https://gn.biblhertz.it/fotothek/seo')
     extract = schema.Feed(file, True)
     #print(extract)
-    extract.map_and_save('beacon', 'downloads/test-schema-feed-b.txt')
-    extract.map_and_save('csv', 'downloads/test-schema-feed-b.csv')
-    extract.map_and_turtle('cto', 'downloads/test-schema-feed-b.ttl')
+    extract.map_and_save('beacon', 'downloads/test-schema-feed-b')
+    extract.map_and_save('csv', 'downloads/test-schema-feed-b')
+    extract.map_and_turtle('cto', 'downloads/test-schema-feed-b')
 
 # Schema.org element A
 if 'schema-element-a' in tests:
     file = File('https://corpusvitrearum.de/cvma-digital/bildarchiv.html?tx_cvma_archive[image]=13494&tx_cvma_archive[action]=show&tx_cvma_archive[controller]=Gallery&cHash=0c57f24f32400787b3ae9b00daed634e')
     extract = schema.FeedElement(file)
     #print(extract)
-    extract.map_and_turtle('cto', 'downloads/test-schema-element-a.ttl')
+    extract.map_and_turtle('cto', 'downloads/test-schema-element-a')

@@ -77,7 +77,7 @@ class Organise:
             '-f', '--feed',
             choices = [
                 'beacon',
-                #'cmif',
+                'cmif',
                 #'csv',
                 #'folder',
                 #'oaipmh',

@@ -16,6 +16,7 @@ from time import sleep
 
 # Import script modules
 import extract.beacon as beacon
+import extract.cmif as cmif
 #import extract.folder as folder
 import extract.lido as lido
 import extract.schema as schema
@@ -65,6 +66,8 @@ class Job:
             # Extract feed data
             if self.organise.feed == 'beacon':
                 feed_data = beacon.Feed(feed_file)
+            if self.organise.feed == 'cmif':
+                feed_data = cmif.Feed(feed_file)
             #elif self.organise.feed == 'folder':
             #    feed_data = folder.Feed(feed_file)
             #elif self.organise.feed == 'zipped':

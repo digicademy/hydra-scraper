@@ -43,6 +43,7 @@ indicate what kind of scraping run you desire.
 - `-l` or `--location <url or folder or file>`: source URI, folder, or file path
 - `-f` or `--feed <value>`: type of feed or starting point for the scraping run:
   - `beacon`: a local or remote text file listing one URI per line (Beacon)
+  - `cmif`: a local or remote CMIF file
   - `folder`: a local folder of individual feed element files
   - `schema`: an RDF-based, optionally Hydra-paginated schema.org API or embedded metadata (CGIF)
   - `schema-list`: same as above, but using the triples in individual schema.org files
@@ -206,7 +207,7 @@ Use GitHub to make the release. Use semantic versioning.
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
 - Optional OCI container
-- Add [CMIF](https://gregorovius-edition.dhi-roma.it/api/cmif) and TEI ingest support
+- Add TEI ingest support
 - Add [OAI-PMH](https://pro.deutsche-digitale-bibliothek.de/daten-nutzen/schnittstellen) ingest support
 - Add MEI ingest support
 - Add DCAT serialisation
