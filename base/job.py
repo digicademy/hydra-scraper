@@ -8,6 +8,7 @@
 
 # Import libraries
 import logging
+from datetime import datetime, timedelta
 from glob import glob
 from pyoxigraph import DefaultGraph, RdfFormat, Store
 from rdflib import Graph, Namespace
@@ -47,6 +48,7 @@ class Job:
         self.success:bool = True
         self.status:list = []
         self.organise:Organise = organise
+        self.last_request:datetime|None = None
 
         # Set up log report
         self.log_start()
@@ -59,14 +61,19 @@ class Job:
         while feed_index < self.organise.max_pagination:
             feed_index += 1
 
+            # Delay if necessary
+            if self.last_request:
+                self.delay_request(self.last_request, self.organise.delay)
+
             # Get feed
             self.log_progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data')
             feed_file = File(feed_uri)
+            self.last_request = feed_file.request_time
 
             # Extract feed data
             if self.organise.feed == 'beacon':
                 feed_data = beacon.Feed(feed_file)
-            if self.organise.feed == 'cmif':
+            elif self.organise.feed == 'cmif':
                 feed_data = cmif.Feed(feed_file)
             #elif self.organise.feed == 'folder':
             #    feed_data = folder.Feed(feed_file)
@@ -142,7 +149,10 @@ class Job:
                     # Loop through elements
                     for element_index_minus, element_uri in enumerate(feed_data.element_uris.uris):
                         element_index = element_index_minus + 1
-                        sleep(self.organise.delay)
+
+                        # Delay if necessary
+                        if self.last_request:
+                            self.delay_request(self.last_request, self.organise.delay)
 
                         # Get feed element
                         if not self.organise.elements:
@@ -150,6 +160,7 @@ class Job:
                         else:
                             self.log_progress('Retrieving feed elements and extracting data', element_index, len(feed_data.element_uris.uris))
                         element_file = File(element_uri.uri, self.organise.dialect)
+                        self.last_request = element_file.request_time
 
                         # Generate element file name
                         if self.organise.clean:
@@ -206,7 +217,6 @@ class Job:
                 # Set up next feed page to harvest, if available
                 if feed_data.feed_uri_next:
                     feed_uri = feed_data.feed_uri_next.uri
-                    sleep(self.organise.delay)
                 else:
                     break
 
@@ -233,6 +243,27 @@ class Job:
         self.status.append(status_feed)
         self.status.append(status_elements)
         self.log_report()
+
+
+    def delay_request(self, last_time:datetime, delay:int):
+        '''
+        Dynamically delay the next quest by a given time
+
+            Parameters:
+                note (str): Note to show the user
+                current (int): Current number used to calculate a percentage
+                max (int): Total number used to calculate a percentage
+        '''
+
+        # Sleep if next allowed request time is not now
+        now = datetime.now()
+        then = last_time + timedelta(milliseconds = delay)
+        if now < then:
+            wait = then - now
+            sleep(wait.total_seconds())
+
+            # Log info
+            logger.info('Waited ' + str(wait.total_seconds()) + ' before making the next request')
 
 
     def combine_text(self, folder:str, file_path:str, file_extension:str, ignore:str):

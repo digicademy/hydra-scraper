@@ -8,6 +8,7 @@
 
 # Import libraries
 import logging
+from datetime import datetime
 from httpx import Client
 from lxml import etree
 from os import linesep
@@ -49,7 +50,7 @@ class File:
         self.file_extension:str|None = None
         self.rdf:Graph|None = None
         self.xml:any = None
-        self.local:bool = False
+        self.request_time:datetime|None = None
 
         # Assign arguments to object
         self.location = location
@@ -74,6 +75,9 @@ class File:
         '''
         Retrieve remote file and store content
         '''
+
+        # Set request time to allow for delays
+        self.request_time = datetime.now()
 
         # Compose request headers
         headers = {
@@ -113,9 +117,6 @@ class File:
         Retrieve local file and store content
         '''
 
-        # Indicate local file (useful to avoid delays between requests)
-        self.local = True
-
         # Retrieve file content
         try:
             with open(self.location) as f:
@@ -125,6 +126,7 @@ class File:
                 # Get file extension
                 i = self.location.rindex('.')
                 if i:
+                    i += 1
                     self.file_extension = self.location[i:]
 
                 # Store content
@@ -142,7 +144,7 @@ class File:
         '''
 
         # Routine for remote files
-        if self.content_type and not self.local:
+        if self.content_type:
 
             # RDF file types and extensions, list mostly based on
             # https://github.com/RDFLib/rdflib/blob/main/rdflib/parser.py#L561

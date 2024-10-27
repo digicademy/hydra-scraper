@@ -196,7 +196,6 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Try to rewrite delay to be time-based, not just a sleep timer
 - Respect `robots.txt` for feed and feed element URIs
 - Expand `types` to become a look-up module plus a local storage file to speed up consecutive harvests
 - Allow for remote/local ZIP and local folder ingests (and alter this readme)
@@ -207,7 +206,7 @@ Use GitHub to make the release. Use semantic versioning.
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
 - Optional OCI container
-- Add TEI ingest support
+- Add TEI ingest support based on [Gregorovius](https://gregorovius-edition.dhi-roma.it/api/cmif)
 - Add [OAI-PMH](https://pro.deutsche-digitale-bibliothek.de/daten-nutzen/schnittstellen) ingest support
 - Add MEI ingest support
 - Add DCAT serialisation

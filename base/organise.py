@@ -33,7 +33,7 @@ class Organise:
         '''
 
         # Const
-        self.delay:float = 0.05
+        self.delay:int = 500 # millisenconds, i.e., two requests per second
         self.folder:str = 'downloads'
         self.max_pagination:int = 1000
 
