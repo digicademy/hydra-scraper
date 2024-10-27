@@ -124,7 +124,7 @@ class File:
                 logger.info('Fetched local file ' + self.location)
 
                 # Get file extension
-                i = self.location.rindex('.')
+                i = self.location.rfind('.')
                 if i:
                     i += 1
                     self.file_extension = self.location[i:]

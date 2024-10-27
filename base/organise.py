@@ -12,6 +12,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from os import makedirs
 from os.path import isdir, isfile
+from urllib.robotparser import RobotFileParser
 from validators import url
 
 # Set up logging
@@ -232,7 +233,12 @@ class Organise:
             if uri != None and not url(uri):
                 raise ValueError('Hydra Scraper called with a malformed URI to add.')
 
-        # Set up log file
+        # Get delay based on robots.txt
+        robots_delay = self.robots_delay(self.location)
+        if robots_delay:
+            self.delay = robots_delay
+
+        # Create base folder
         self.folder += '/' + self.name
         self.create_folder(self.folder)
 
@@ -289,3 +295,47 @@ class Organise:
             makedirs(folder_name, exist_ok = True)
         except OSError:
             pass
+
+
+    def robots_delay(self, location:str) -> int|None:
+        '''
+        Find whether there is a delay recommendation for a URI
+
+            Parameters:
+                location (str): URI to identify the delay for
+        '''
+
+        # Set up output
+        output = None
+
+        # URL
+        if url(location):
+            index = location.find('/')
+            if index:
+                index = location.find('/', index + 2)
+            if index:
+                domain = location[:index]
+            else:
+                domain = location
+
+            # Robots
+            robots = RobotFileParser()
+            robots.set_url(domain + '/robots.txt')
+            robots.read()
+
+            # Delay
+            delay = robots.crawl_delay('HydraScraper')
+            if not delay:
+                delay = robots.crawl_delay('*')
+            if delay:
+                output = int(delay * 1000)
+
+            # Rate
+            rate = robots.request_rate('HydraScraper')
+            if not rate:
+                rate = robots.request_rate('*')
+            if rate:
+                output = int((rate.seconds / rate.requests) * 1000)
+
+        # Return
+        return output

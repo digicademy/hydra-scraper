@@ -196,7 +196,6 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Respect `robots.txt` for feed and feed element URIs
 - Expand `types` to become a look-up module plus a local storage file to speed up consecutive harvests
 - Allow for remote/local ZIP and local folder ingests (and alter this readme)
 - Update `assets` folder and release
