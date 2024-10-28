@@ -7,18 +7,21 @@
 
 
 # Import libraries
-from rdflib import Namespace
+from rdflib import URIRef, Namespace
 
 # Import script modules
 from base.file import File
 
 # Define namespaces
 from rdflib.namespace import SDO
-#AAT = Namespace('http://vocab.getty.edu/aat/')
+AAT = Namespace('http://vocab.getty.edu/aat/')
 FG = Namespace('https://database.factgrid.de/entity/')
 FG_API = Namespace('https://database.factgrid.de/prop/direct/')
+GN = Namespace('http://sws.geonames.org/')
 GND = Namespace('https://d-nb.info/gnd/')
 HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
+IC = Namespace('https://iconclass.org/')
+ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
 RISM_API = Namespace('https://rism.online/api/v1#')
 SCHEMA = Namespace('http://schema.org/')
 WD = Namespace('http://www.wikidata.org/entity/')
@@ -65,98 +68,28 @@ class Lookup:
 
 
 
-# - GN are location
-# - IC are subject_concept
-# - ISIL are organization
-# - GND uses its own set of classes -> text/turtle
-# - VIAF uses schema.org classes -> application/rdf+xml
-# - RISM uses three own classes -> text/turtle, application/n-triples, application/ld+json
+
+# - GND -> text/turtle
+# - VIAF -> application/rdf+xml
+# - RISM -> text/turtle, application/n-triples, application/ld+json
 
 # USE SPARQL?
 # - FG uses its own types and classes, FG_API.P2 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
 # - WD uses its own types and classes, WD_API.P31 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
 
-# Lists of GND classes collated on 17/10/2024
 # TODO: WD, AAT
-authority_location = [ # Plus all GN and schema_location
-    GND.AdministrativeUnit,
-    GND.BuildingOrMemorial,
-    GND.Country,
-    GND.ExtraterrestrialTerritory,
-    GND.FictivePlace,
-    GND.MemberState,
-    GND.NameOfSmallGeographicUnitLyingWithinAnotherGeographicUnit,
-    GND.NaturalGeographicUnit,
-    GND.PlaceOrGeographicName,
-    GND.ReligiousTerritory,
-    GND.TerritorialCorporateBodyOrAdministrativeUnit,
-    GND.WayBorderOrLine,
-    FG.Q8,
-    WD.Q486972,
-]
-authority_event = [ # Plus schema_event
-    GND.ConferenceOrEvent,
-    GND.HistoricSingleEventOrEra,
-    GND.SeriesOfConferenceOrEvent,
-    FG.Q9,
-    WD.Q1190554,
-]
-authority_organization = [ # Plus all ISIL and schema_organization
-    GND.Company,
-    GND.CorporateBody,
-    GND.FictiveCorporateBody,
-    GND.MusicalCorporateBody,
-    GND.OrganOfCorporateBody,
-    GND.ProjectOrProgram,
-    GND.ReligiousAdministrativeUnit,
-    GND.ReligiousCorporateBody,
-    RISM_API.Institution,
-    FG.Q12,
-    WD.Q43229,
-]
-authority_person = [ # Plus schema_person
-    GND.CollectivePseudonym,
-    GND.DifferentiatedPerson,
-    GND.Gods,
-    GND.LiteraryOrLegendaryCharacter,
-    GND.Person,
-    GND.Pseudonym,
-    GND.RoyalOrMemberOfARoyalHouse,
-    GND.Spirits,
-    GND.UndifferentiatedPerson,
-    RISM_API.Person,
-    FG.Q7,
-    WD.Q5,
-]
-authority_subject_concept = [ # Plus all IC and all other FG
-    GND.AuthorityResource,
-    GND.CharactersOrMorphemes,
-    GND.Collection,
-    GND.CollectiveManuscript,
-    GND.EthnographicName,
-    GND.Expression,
-    GND.Family,
-    GND.FictiveTerm,
-    GND.GroupOfPersons,
-    GND.Language,
-    GND.Manuscript,
-    GND.MeansOfTransportWithIndividualName,
-    GND.MusicalWork,
-    GND.NomenclatureInBiologyOrChemistry,
-    GND.ProductNameOrBrandName,
-    GND.ProvenanceCharacteristic,
-    GND.SoftwareProduct,
-    GND.SubjectHeading,
-    GND.SubjectHeadingSensuStricto,
-    GND.VersionOfAMusicalWork,
-    GND.Work,
-    RISM_API.Source,
-]
-authority_element_type = [ # Plus parts of AAT???
-]
 
 
-# Lists of schema.org classes collated on 17/4/2024
+
+
+# TYPE LISTS AND CHECKS
+# Schema.org collated on 17/4/2024
+# GND, RISM, FG collated on 17/10/2024
+# GN is location, IC is subject_concept, ISIL is organization
+# VIAF uses schema.org classes
+
+# Feed (only schema.org needed right now, including variants)
+
 schema_feed = [
     SCHEMA.DataFeed,
     SCHEMA.Dataset,
@@ -164,302 +97,9 @@ schema_feed = [
     SDO.Dataset,
     HYDRA.Collection
 ]
-schema_person = [
-    SCHEMA.Person,
-    SCHEMA.Patient
-]
-schema_organization = [
-    SCHEMA.Organization,
-    SCHEMA.Airline,
-    SCHEMA.Consortium,
-    SCHEMA.Corporation,
-    SCHEMA.EducationalOrganization,
-    SCHEMA.CollegeOrUniversity,
-    SCHEMA.ElementarySchool,
-    SCHEMA.HighSchool,
-    SCHEMA.MiddleSchool,
-    SCHEMA.Preschool,
-    SCHEMA.School,
-    SCHEMA.FundingScheme,
-    SCHEMA.GovernmentOrganization,
-    SCHEMA.LibrarySystem,
-    SCHEMA.LocalBusiness,
-    SCHEMA.AnimalShelter,
-    SCHEMA.ArchiveOrganization,
-    SCHEMA.AutomotiveBusiness,
-    SCHEMA.AutoBodyShop,
-    SCHEMA.AutoDealer,
-    SCHEMA.AutoPartsStore,
-    SCHEMA.AutoRental,
-    SCHEMA.AutoRepair,
-    SCHEMA.AutoWash,
-    SCHEMA.GasStation,
-    SCHEMA.MotorcycleDealer,
-    SCHEMA.MotorcycleRepair,
-    SCHEMA.ChildCare,
-    SCHEMA.Dentist,
-    SCHEMA.DryCleaningOrLaundry,
-    SCHEMA.EmergencyService,
-    SCHEMA.FireStation,
-    SCHEMA.Hospital,
-    SCHEMA.PoliceStation,
-    SCHEMA.EmploymentAgency,
-    SCHEMA.EntertainmentBusiness,
-    SCHEMA.AdultEntertainment,
-    SCHEMA.AmusementPark,
-    SCHEMA.ArtGallery,
-    SCHEMA.Casino,
-    SCHEMA.ComedyClub,
-    SCHEMA.MovieTheater,
-    SCHEMA.NightClub,
-    SCHEMA.FinancialService,
-    SCHEMA.AccountingService,
-    SCHEMA.AutomatedTeller,
-    SCHEMA.BankOrCreditUnion,
-    SCHEMA.InsuranceAgency,
-    SCHEMA.FoodEstablishment,
-    SCHEMA.Bakery,
-    SCHEMA.BarOrPub,
-    SCHEMA.Brewery,
-    SCHEMA.CafeOrCoffeeShop,
-    SCHEMA.Distillery,
-    SCHEMA.FastFoodRestaurant,
-    SCHEMA.IceCreamShop,
-    SCHEMA.Restaurant,
-    SCHEMA.Winery,
-    SCHEMA.GovernmentOffice,
-    SCHEMA.PostOffice,
-    SCHEMA.HealthAndBeautyBusiness,
-    SCHEMA.BeautySalon,
-    SCHEMA.DaySpa,
-    SCHEMA.HairSalon,
-    SCHEMA.HealthClub,
-    SCHEMA.NailSalon,
-    SCHEMA.TattooParlor,
-    SCHEMA.HomeAndConstructionBusiness,
-    SCHEMA.Electrician,
-    SCHEMA.GeneralContractor,
-    SCHEMA.HVACBusiness,
-    SCHEMA.HousePainter,
-    SCHEMA.Locksmith,
-    SCHEMA.MovingCompany,
-    SCHEMA.Plumber,
-    SCHEMA.RoofingContractor,
-    SCHEMA.InternetCafe,
-    SCHEMA.LegalService,
-    SCHEMA.Attorney,
-    SCHEMA.Notary,
-    SCHEMA.Library,
-    SCHEMA.LodgingBusiness,
-    SCHEMA.BedAndBreakfast,
-    SCHEMA.Campground,
-    SCHEMA.Hostel,
-    SCHEMA.Hotel,
-    SCHEMA.Motel,
-    SCHEMA.Resort,
-    SCHEMA.SkiResort,
-    SCHEMA.VacationRental,
-    SCHEMA.MedicalBusiness,
-    SCHEMA.Dentist,
-    SCHEMA.MedicalClinic,
-    SCHEMA.CovidTestingFacility,
-    SCHEMA.Optician,
-    SCHEMA.Pharmacy,
-    SCHEMA.Physician,
-    SCHEMA.IndividualPhysician,
-    SCHEMA.PhysiciansOffice,
-    SCHEMA.ProfessionalService,
-    SCHEMA.RadioStation,
-    SCHEMA.RealEstateAgent,
-    SCHEMA.RecyclingCenter,
-    SCHEMA.SelfStorage,
-    SCHEMA.ShoppingCenter,
-    SCHEMA.SportsActivityLocation,
-    SCHEMA.BowlingAlley,
-    SCHEMA.ExerciseGym,
-    SCHEMA.GolfCourse,
-    SCHEMA.HealthClub,
-    SCHEMA.PublicSwimmingPool,
-    SCHEMA.SkiResort,
-    SCHEMA.SportsClub,
-    SCHEMA.StadiumOrArena,
-    SCHEMA.TennisComplex,
-    SCHEMA.Store,
-    SCHEMA.AutoPartsStore,
-    SCHEMA.BikeStore,
-    SCHEMA.BookStore,
-    SCHEMA.ClothingStore,
-    SCHEMA.ComputerStore,
-    SCHEMA.ConvenienceStore,
-    SCHEMA.DepartmentStore,
-    SCHEMA.ElectronicsStore,
-    SCHEMA.Florist,
-    SCHEMA.FurnitureStore,
-    SCHEMA.GardenStore,
-    SCHEMA.GroceryStore,
-    SCHEMA.HardwareStore,
-    SCHEMA.HobbyShop,
-    SCHEMA.HomeGoodsStore,
-    SCHEMA.JewelryStore,
-    SCHEMA.LiquorStore,
-    SCHEMA.MensClothingStore,
-    SCHEMA.MobilePhoneStore,
-    SCHEMA.MovieRentalStore,
-    SCHEMA.MusicStore,
-    SCHEMA.OfficeEquipmentStore,
-    SCHEMA.OutletStore,
-    SCHEMA.PawnShop,
-    SCHEMA.PetStore,
-    SCHEMA.ShoeStore,
-    SCHEMA.SportingGoodsStore,
-    SCHEMA.TireShop,
-    SCHEMA.ToyStore,
-    SCHEMA.WholesaleStore,
-    SCHEMA.TelevisionStation,
-    SCHEMA.TouristInformationCenter,
-    SCHEMA.TravelAgency,
-    SCHEMA.MedicalOrganization,
-    SCHEMA.Dentist,
-    SCHEMA.DiagnosticLab,
-    SCHEMA.Hospital,
-    SCHEMA.MedicalClinic,
-    SCHEMA.Pharmacy,
-    SCHEMA.Physician,
-    SCHEMA.VeterinaryCare,
-    SCHEMA.NGO,
-    SCHEMA.NewsMediaOrganization,
-    SCHEMA.OnlineBusiness,
-    SCHEMA.OnlineStore,
-    SCHEMA.PerformingGroup,
-    SCHEMA.DanceGroup,
-    SCHEMA.MusicGroup,
-    SCHEMA.TheaterGroup,
-    SCHEMA.PoliticalParty,
-    SCHEMA.Project,
-    SCHEMA.FundingAgency,
-    SCHEMA.ResearchProject,
-    SCHEMA.ResearchOrganization,
-    SCHEMA.SearchRescueOrganization,
-    SCHEMA.SportsOrganization,
-    SCHEMA.SportsTeam,
-    SCHEMA.WorkersUnion
-]
-schema_location = [
-    SCHEMA.Place,
-    SCHEMA.Accommodation,
-    SCHEMA.Apartment,
-    SCHEMA.CampingPitch,
-    SCHEMA.House,
-    SCHEMA.SingleFamilyResidence,
-    SCHEMA.Room,
-    SCHEMA.HotelRoom,
-    SCHEMA.MeetingRoom,
-    SCHEMA.Suite,
-    SCHEMA.AdministrativeArea,
-    SCHEMA.City,
-    SCHEMA.Country,
-    SCHEMA.SchoolDistrict,
-    SCHEMA.State,
-    SCHEMA.CivicStructure,
-    SCHEMA.Airport,
-    SCHEMA.Aquarium,
-    SCHEMA.Beach,
-    SCHEMA.BoatTerminal,
-    SCHEMA.Bridge,
-    SCHEMA.BusStation,
-    SCHEMA.BusStop,
-    SCHEMA.Campground,
-    SCHEMA.Cemetery,
-    SCHEMA.Crematorium,
-    SCHEMA.EducationalOrganization,
-    SCHEMA.EventVenue,
-    SCHEMA.FireStation,
-    SCHEMA.GovernmentBuilding,
-    SCHEMA.CityHall,
-    SCHEMA.Courthouse,
-    SCHEMA.DefenceEstablishment,
-    SCHEMA.Embassy,
-    SCHEMA.LegislativeBuilding,
-    SCHEMA.Hospital,
-    SCHEMA.MovieTheater,
-    SCHEMA.Museum,
-    SCHEMA.MusicVenue,
-    SCHEMA.Park,
-    SCHEMA.ParkingFacility,
-    SCHEMA.PerformingArtsTheater,
-    SCHEMA.PlaceOfWorship,
-    SCHEMA.BuddhistTemple,
-    SCHEMA.Church,
-    SCHEMA.CatholicChurch,
-    SCHEMA.HinduTemple,
-    SCHEMA.Mosque,
-    SCHEMA.Synagogue,
-    SCHEMA.Playground,
-    SCHEMA.PoliceStation,
-    SCHEMA.PublicToilet,
-    SCHEMA.RVPark,
-    SCHEMA.StadiumOrArena,
-    SCHEMA.SubwayStation,
-    SCHEMA.TaxiStand,
-    SCHEMA.TrainStation,
-    SCHEMA.Zoo,
-    SCHEMA.Landform,
-    SCHEMA.BodyOfWater,
-    SCHEMA.Canal,
-    SCHEMA.LakeBodyOfWater,
-    SCHEMA.OceanBodyOfWater,
-    SCHEMA.Pond,
-    SCHEMA.Reservoir,
-    SCHEMA.RiverBodyOfWater,
-    SCHEMA.SeaBodyOfWater,
-    SCHEMA.Waterfall,
-    SCHEMA.Continent,
-    SCHEMA.Mountain,
-    SCHEMA.Volcano,
-    SCHEMA.LandmarksOrHistoricalBuildings,
-    SCHEMA.LocalBusiness,
-    SCHEMA.Residence,
-    SCHEMA.ApartmentComplex,
-    SCHEMA.GatedResidenceCommunity,
-    SCHEMA.TouristAttraction,
-    SCHEMA.TouristDestination
-]
-schema_event = [
-    SCHEMA.Event,
-    SCHEMA.BusinessEvent,
-    SCHEMA.ChildrensEvent,
-    SCHEMA.ComedyEvent,
-    SCHEMA.CourseInstance,
-    SCHEMA.DanceEvent,
-    SCHEMA.DeliveryEvent,
-    SCHEMA.EducationEvent,
-    SCHEMA.EventSeries,
-    SCHEMA.ExhibitionEvent,
-    SCHEMA.Festival,
-    SCHEMA.FoodEvent,
-    SCHEMA.Hackathon,
-    SCHEMA.LiteraryEvent,
-    SCHEMA.MusicEvent,
-    SCHEMA.PublicationEvent,
-    SCHEMA.BroadcastEvent,
-    SCHEMA.OnDemandEvent,
-    SCHEMA.SaleEvent,
-    SCHEMA.ScreeningEvent,
-    SCHEMA.SocialEvent,
-    SCHEMA.SportsEvent,
-    SCHEMA.TheaterEvent,
-    SCHEMA.UserInteraction,
-    SCHEMA.UserBlocks,
-    SCHEMA.UserCheckins,
-    SCHEMA.UserComments,
-    SCHEMA.UserDownloads,
-    SCHEMA.UserLikes,
-    SCHEMA.UserPageVisits,
-    SCHEMA.UserPlays,
-    SCHEMA.UserPlusOnes,
-    SCHEMA.UserTweets,
-    SCHEMA.VisualArtsEvent
-]
+
+# Item (only schema.org needed right now)
+
 schema_item = [
     SCHEMA.CreativeWork,
     SCHEMA.AmpStory,
@@ -643,4 +283,538 @@ schema_item = [
     SCHEMA.WPHeader,
     SCHEMA.WPSideBar,
     SCHEMA.WebSite
+]
+
+# Element type (only Getty AAT needed right now)
+
+def is_element_type(self, type:str) -> bool:
+    '''
+    Check a type URI from an authority file to see if it is an element type
+
+        Parameters:
+            type (str): URI of the type to check
+    '''
+
+    # Perform check
+    if URIRef(type) in AAT: # TODO Narrow this down to just parts of AAT
+        return True
+    else:
+        return False
+
+# Subject concept
+
+def is_subject_concept(self, type:str) -> bool:
+    '''
+    Check a type URI from an authority file to see if it is a subject concept
+
+        Parameters:
+            type (str): URI of the type to check
+    '''
+
+    # Compile list
+    types = gnd_subject_concept + rism_subject_concept
+
+    # Perform check
+    if type in types:
+        return True
+    elif URIRef(type) in IC:
+        return True
+    elif URIRef(type) in FG:
+        if type not in fg_person + fg_organization + fg_location + fg_event:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+gnd_subject_concept = [
+    GND.AuthorityResource,
+    GND.CharactersOrMorphemes,
+    GND.Collection,
+    GND.CollectiveManuscript,
+    GND.EthnographicName,
+    GND.Expression,
+    GND.Family,
+    GND.FictiveTerm,
+    GND.GroupOfPersons,
+    GND.Language,
+    GND.Manuscript,
+    GND.MeansOfTransportWithIndividualName,
+    GND.MusicalWork,
+    GND.NomenclatureInBiologyOrChemistry,
+    GND.ProductNameOrBrandName,
+    GND.ProvenanceCharacteristic,
+    GND.SoftwareProduct,
+    GND.SubjectHeading,
+    GND.SubjectHeadingSensuStricto,
+    GND.VersionOfAMusicalWork,
+    GND.Work,
+]
+
+rism_subject_concept = [
+    RISM_API.Source,
+]
+
+# Person
+
+def is_person(self, type:str) -> bool:
+    '''
+    Check a type URI from an authority file to see if it is a person
+
+        Parameters:
+            type (str): URI of the type to check
+    '''
+
+    # Compile list
+    types = gnd_person + rism_person + fg_person + wd_person + schema_person
+
+    # Perform check
+    if type in types:
+        return True
+    else:
+        return False
+
+gnd_person = [
+    GND.CollectivePseudonym,
+    GND.DifferentiatedPerson,
+    GND.Gods,
+    GND.LiteraryOrLegendaryCharacter,
+    GND.Person,
+    GND.Pseudonym,
+    GND.RoyalOrMemberOfARoyalHouse,
+    GND.Spirits,
+    GND.UndifferentiatedPerson,
+]
+
+rism_person = [
+    RISM_API.Person,
+]
+
+fg_person = [
+    FG.Q7,
+]
+
+wd_person = [
+    WD.Q5,
+]
+
+schema_person = [
+    SCHEMA.Person,
+    SCHEMA.Patient
+]
+
+# Organization
+
+def is_organization(self, type:str) -> bool:
+    '''
+    Check a type URI from an authority file to see if it is an organization
+
+        Parameters:
+            type (str): URI of the type to check
+    '''
+
+    # Compile list
+    types = gnd_organization + rism_organization + fg_organization + wd_organization + schema_organization
+
+    # Perform check
+    if type in types:
+        return True
+    elif URIRef(type) in ISIL:
+        return True
+    else:
+        return False
+
+gnd_organization = [
+    GND.Company,
+    GND.CorporateBody,
+    GND.FictiveCorporateBody,
+    GND.MusicalCorporateBody,
+    GND.OrganOfCorporateBody,
+    GND.ProjectOrProgram,
+    GND.ReligiousAdministrativeUnit,
+    GND.ReligiousCorporateBody,
+]
+
+rism_organization = [
+    RISM_API.Institution,
+]
+
+fg_organization = [
+    FG.Q12,
+]
+
+wd_organization = [
+    WD.Q43229,
+]
+
+schema_organization = [
+    SCHEMA.Organization,
+    SCHEMA.Airline,
+    SCHEMA.Consortium,
+    SCHEMA.Corporation,
+    SCHEMA.EducationalOrganization,
+    SCHEMA.CollegeOrUniversity,
+    SCHEMA.ElementarySchool,
+    SCHEMA.HighSchool,
+    SCHEMA.MiddleSchool,
+    SCHEMA.Preschool,
+    SCHEMA.School,
+    SCHEMA.FundingScheme,
+    SCHEMA.GovernmentOrganization,
+    SCHEMA.LibrarySystem,
+    SCHEMA.LocalBusiness,
+    SCHEMA.AnimalShelter,
+    SCHEMA.ArchiveOrganization,
+    SCHEMA.AutomotiveBusiness,
+    SCHEMA.AutoBodyShop,
+    SCHEMA.AutoDealer,
+    SCHEMA.AutoPartsStore,
+    SCHEMA.AutoRental,
+    SCHEMA.AutoRepair,
+    SCHEMA.AutoWash,
+    SCHEMA.GasStation,
+    SCHEMA.MotorcycleDealer,
+    SCHEMA.MotorcycleRepair,
+    SCHEMA.ChildCare,
+    SCHEMA.Dentist,
+    SCHEMA.DryCleaningOrLaundry,
+    SCHEMA.EmergencyService,
+    SCHEMA.FireStation,
+    SCHEMA.Hospital,
+    SCHEMA.PoliceStation,
+    SCHEMA.EmploymentAgency,
+    SCHEMA.EntertainmentBusiness,
+    SCHEMA.AdultEntertainment,
+    SCHEMA.AmusementPark,
+    SCHEMA.ArtGallery,
+    SCHEMA.Casino,
+    SCHEMA.ComedyClub,
+    SCHEMA.MovieTheater,
+    SCHEMA.NightClub,
+    SCHEMA.FinancialService,
+    SCHEMA.AccountingService,
+    SCHEMA.AutomatedTeller,
+    SCHEMA.BankOrCreditUnion,
+    SCHEMA.InsuranceAgency,
+    SCHEMA.FoodEstablishment,
+    SCHEMA.Bakery,
+    SCHEMA.BarOrPub,
+    SCHEMA.Brewery,
+    SCHEMA.CafeOrCoffeeShop,
+    SCHEMA.Distillery,
+    SCHEMA.FastFoodRestaurant,
+    SCHEMA.IceCreamShop,
+    SCHEMA.Restaurant,
+    SCHEMA.Winery,
+    SCHEMA.GovernmentOffice,
+    SCHEMA.PostOffice,
+    SCHEMA.HealthAndBeautyBusiness,
+    SCHEMA.BeautySalon,
+    SCHEMA.DaySpa,
+    SCHEMA.HairSalon,
+    SCHEMA.HealthClub,
+    SCHEMA.NailSalon,
+    SCHEMA.TattooParlor,
+    SCHEMA.HomeAndConstructionBusiness,
+    SCHEMA.Electrician,
+    SCHEMA.GeneralContractor,
+    SCHEMA.HVACBusiness,
+    SCHEMA.HousePainter,
+    SCHEMA.Locksmith,
+    SCHEMA.MovingCompany,
+    SCHEMA.Plumber,
+    SCHEMA.RoofingContractor,
+    SCHEMA.InternetCafe,
+    SCHEMA.LegalService,
+    SCHEMA.Attorney,
+    SCHEMA.Notary,
+    SCHEMA.Library,
+    SCHEMA.LodgingBusiness,
+    SCHEMA.BedAndBreakfast,
+    SCHEMA.Campground,
+    SCHEMA.Hostel,
+    SCHEMA.Hotel,
+    SCHEMA.Motel,
+    SCHEMA.Resort,
+    SCHEMA.SkiResort,
+    SCHEMA.VacationRental,
+    SCHEMA.MedicalBusiness,
+    SCHEMA.Dentist,
+    SCHEMA.MedicalClinic,
+    SCHEMA.CovidTestingFacility,
+    SCHEMA.Optician,
+    SCHEMA.Pharmacy,
+    SCHEMA.Physician,
+    SCHEMA.IndividualPhysician,
+    SCHEMA.PhysiciansOffice,
+    SCHEMA.ProfessionalService,
+    SCHEMA.RadioStation,
+    SCHEMA.RealEstateAgent,
+    SCHEMA.RecyclingCenter,
+    SCHEMA.SelfStorage,
+    SCHEMA.ShoppingCenter,
+    SCHEMA.SportsActivityLocation,
+    SCHEMA.BowlingAlley,
+    SCHEMA.ExerciseGym,
+    SCHEMA.GolfCourse,
+    SCHEMA.HealthClub,
+    SCHEMA.PublicSwimmingPool,
+    SCHEMA.SkiResort,
+    SCHEMA.SportsClub,
+    SCHEMA.StadiumOrArena,
+    SCHEMA.TennisComplex,
+    SCHEMA.Store,
+    SCHEMA.AutoPartsStore,
+    SCHEMA.BikeStore,
+    SCHEMA.BookStore,
+    SCHEMA.ClothingStore,
+    SCHEMA.ComputerStore,
+    SCHEMA.ConvenienceStore,
+    SCHEMA.DepartmentStore,
+    SCHEMA.ElectronicsStore,
+    SCHEMA.Florist,
+    SCHEMA.FurnitureStore,
+    SCHEMA.GardenStore,
+    SCHEMA.GroceryStore,
+    SCHEMA.HardwareStore,
+    SCHEMA.HobbyShop,
+    SCHEMA.HomeGoodsStore,
+    SCHEMA.JewelryStore,
+    SCHEMA.LiquorStore,
+    SCHEMA.MensClothingStore,
+    SCHEMA.MobilePhoneStore,
+    SCHEMA.MovieRentalStore,
+    SCHEMA.MusicStore,
+    SCHEMA.OfficeEquipmentStore,
+    SCHEMA.OutletStore,
+    SCHEMA.PawnShop,
+    SCHEMA.PetStore,
+    SCHEMA.ShoeStore,
+    SCHEMA.SportingGoodsStore,
+    SCHEMA.TireShop,
+    SCHEMA.ToyStore,
+    SCHEMA.WholesaleStore,
+    SCHEMA.TelevisionStation,
+    SCHEMA.TouristInformationCenter,
+    SCHEMA.TravelAgency,
+    SCHEMA.MedicalOrganization,
+    SCHEMA.Dentist,
+    SCHEMA.DiagnosticLab,
+    SCHEMA.Hospital,
+    SCHEMA.MedicalClinic,
+    SCHEMA.Pharmacy,
+    SCHEMA.Physician,
+    SCHEMA.VeterinaryCare,
+    SCHEMA.NGO,
+    SCHEMA.NewsMediaOrganization,
+    SCHEMA.OnlineBusiness,
+    SCHEMA.OnlineStore,
+    SCHEMA.PerformingGroup,
+    SCHEMA.DanceGroup,
+    SCHEMA.MusicGroup,
+    SCHEMA.TheaterGroup,
+    SCHEMA.PoliticalParty,
+    SCHEMA.Project,
+    SCHEMA.FundingAgency,
+    SCHEMA.ResearchProject,
+    SCHEMA.ResearchOrganization,
+    SCHEMA.SearchRescueOrganization,
+    SCHEMA.SportsOrganization,
+    SCHEMA.SportsTeam,
+    SCHEMA.WorkersUnion
+]
+
+# Location
+
+def is_location(self, type:str) -> bool:
+    '''
+    Check a type URI from an authority file to see if it is a location
+
+        Parameters:
+            type (str): URI of the type to check
+    '''
+
+    # Compile list
+    types = gnd_location + fg_location + wd_location + schema_location
+
+    # Perform check
+    if type in types:
+        return True
+    elif URIRef(type) in GN:
+        return True
+    else:
+        return False
+
+gnd_location = [
+    GND.AdministrativeUnit,
+    GND.BuildingOrMemorial,
+    GND.Country,
+    GND.ExtraterrestrialTerritory,
+    GND.FictivePlace,
+    GND.MemberState,
+    GND.NameOfSmallGeographicUnitLyingWithinAnotherGeographicUnit,
+    GND.NaturalGeographicUnit,
+    GND.PlaceOrGeographicName,
+    GND.ReligiousTerritory,
+    GND.TerritorialCorporateBodyOrAdministrativeUnit,
+    GND.WayBorderOrLine,
+]
+
+fg_location = [
+    FG.Q8,
+]
+
+wd_location = [
+    WD.Q486972,
+]
+
+schema_location = [
+    SCHEMA.Place,
+    SCHEMA.Accommodation,
+    SCHEMA.Apartment,
+    SCHEMA.CampingPitch,
+    SCHEMA.House,
+    SCHEMA.SingleFamilyResidence,
+    SCHEMA.Room,
+    SCHEMA.HotelRoom,
+    SCHEMA.MeetingRoom,
+    SCHEMA.Suite,
+    SCHEMA.AdministrativeArea,
+    SCHEMA.City,
+    SCHEMA.Country,
+    SCHEMA.SchoolDistrict,
+    SCHEMA.State,
+    SCHEMA.CivicStructure,
+    SCHEMA.Airport,
+    SCHEMA.Aquarium,
+    SCHEMA.Beach,
+    SCHEMA.BoatTerminal,
+    SCHEMA.Bridge,
+    SCHEMA.BusStation,
+    SCHEMA.BusStop,
+    SCHEMA.Campground,
+    SCHEMA.Cemetery,
+    SCHEMA.Crematorium,
+    SCHEMA.EducationalOrganization,
+    SCHEMA.EventVenue,
+    SCHEMA.FireStation,
+    SCHEMA.GovernmentBuilding,
+    SCHEMA.CityHall,
+    SCHEMA.Courthouse,
+    SCHEMA.DefenceEstablishment,
+    SCHEMA.Embassy,
+    SCHEMA.LegislativeBuilding,
+    SCHEMA.Hospital,
+    SCHEMA.MovieTheater,
+    SCHEMA.Museum,
+    SCHEMA.MusicVenue,
+    SCHEMA.Park,
+    SCHEMA.ParkingFacility,
+    SCHEMA.PerformingArtsTheater,
+    SCHEMA.PlaceOfWorship,
+    SCHEMA.BuddhistTemple,
+    SCHEMA.Church,
+    SCHEMA.CatholicChurch,
+    SCHEMA.HinduTemple,
+    SCHEMA.Mosque,
+    SCHEMA.Synagogue,
+    SCHEMA.Playground,
+    SCHEMA.PoliceStation,
+    SCHEMA.PublicToilet,
+    SCHEMA.RVPark,
+    SCHEMA.StadiumOrArena,
+    SCHEMA.SubwayStation,
+    SCHEMA.TaxiStand,
+    SCHEMA.TrainStation,
+    SCHEMA.Zoo,
+    SCHEMA.Landform,
+    SCHEMA.BodyOfWater,
+    SCHEMA.Canal,
+    SCHEMA.LakeBodyOfWater,
+    SCHEMA.OceanBodyOfWater,
+    SCHEMA.Pond,
+    SCHEMA.Reservoir,
+    SCHEMA.RiverBodyOfWater,
+    SCHEMA.SeaBodyOfWater,
+    SCHEMA.Waterfall,
+    SCHEMA.Continent,
+    SCHEMA.Mountain,
+    SCHEMA.Volcano,
+    SCHEMA.LandmarksOrHistoricalBuildings,
+    SCHEMA.LocalBusiness,
+    SCHEMA.Residence,
+    SCHEMA.ApartmentComplex,
+    SCHEMA.GatedResidenceCommunity,
+    SCHEMA.TouristAttraction,
+    SCHEMA.TouristDestination
+]
+
+# Event
+
+def is_event(self, type:str) -> bool:
+    '''
+    Check a type URI from an authority file to see if it is an event
+
+        Parameters:
+            type (str): URI of the type to check
+    '''
+
+    # Compile list
+    types = gnd_event + fg_event + wd_event + schema_event
+
+    # Perform check
+    if type in types:
+        return True
+    else:
+        return False
+
+gnd_event = [
+    GND.ConferenceOrEvent,
+    GND.HistoricSingleEventOrEra,
+    GND.SeriesOfConferenceOrEvent,
+]
+
+fg_event = [
+    FG.Q9,
+]
+
+wd_event = [
+    WD.Q1190554,
+]
+
+schema_event = [
+    SCHEMA.Event,
+    SCHEMA.BusinessEvent,
+    SCHEMA.ChildrensEvent,
+    SCHEMA.ComedyEvent,
+    SCHEMA.CourseInstance,
+    SCHEMA.DanceEvent,
+    SCHEMA.DeliveryEvent,
+    SCHEMA.EducationEvent,
+    SCHEMA.EventSeries,
+    SCHEMA.ExhibitionEvent,
+    SCHEMA.Festival,
+    SCHEMA.FoodEvent,
+    SCHEMA.Hackathon,
+    SCHEMA.LiteraryEvent,
+    SCHEMA.MusicEvent,
+    SCHEMA.PublicationEvent,
+    SCHEMA.BroadcastEvent,
+    SCHEMA.OnDemandEvent,
+    SCHEMA.SaleEvent,
+    SCHEMA.ScreeningEvent,
+    SCHEMA.SocialEvent,
+    SCHEMA.SportsEvent,
+    SCHEMA.TheaterEvent,
+    SCHEMA.UserInteraction,
+    SCHEMA.UserBlocks,
+    SCHEMA.UserCheckins,
+    SCHEMA.UserComments,
+    SCHEMA.UserDownloads,
+    SCHEMA.UserLikes,
+    SCHEMA.UserPageVisits,
+    SCHEMA.UserPlays,
+    SCHEMA.UserPlusOnes,
+    SCHEMA.UserTweets,
+    SCHEMA.VisualArtsEvent
 ]
