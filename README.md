@@ -176,7 +176,7 @@ The file `go.py` executes a regular scraping run via several `base` modules that
 4. `data` provides the data storage objects `Uri`, `UriList`, `Label`, `LabelList`, `UriLabel`, `UriLabelList`, `Date`, `DateList`, and `Incipit`. They include data serialisation logic and namespace normalization.
 5. `extract` is a special module to provide `ExtractFeedInterface` and `ExtractFeedElementInterface`. These include generic functions to extract XML or RDF data.
 6. `map` is another special module to provide `MapFeedInterface` and `MapFeedElementInterface`. These include generic functions to generate text content or RDF triples.
-7. `types` provides a set of type lists and look-up functions. These can be used to identify whether a URI from an authority file refers to a person, an organisation, a location, or an event.
+7. `lookup` provides a `Lookup` object as well as type lists for authority files. These can be used to identify whether a URI refers to a person, an organisation, a location, an event, or something else.
 
 Two additional sets of classes use the `extract` and `map` interfaces to provide extraction and mapping routines for particular formats. These routines provide a `Feed` and/or a `FeedElement` object depending on what the format provides. These format-specific objects are called from the `Job` object listed above.
 
@@ -196,7 +196,7 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Expand `types` to become a look-up module plus a local storage file to speed up consecutive harvests
+- Expand `lookup` to become a look-up module plus a local storage file to speed up consecutive harvests
 - Allow for remote/local ZIP and local folder ingests (and alter this readme)
 - Update `assets` folder and release
 

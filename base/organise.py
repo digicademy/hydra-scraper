@@ -235,6 +235,7 @@ class Organise:
                 raise ValueError('Hydra Scraper called with a malformed URI to add.')
 
         # Get delay based on robots.txt
+        # Currently only checks the feed, not the feed element URI
         robots_delay = self.robots_delay(self.location)
         if robots_delay:
             self.delay = robots_delay

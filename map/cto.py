@@ -15,7 +15,7 @@ from rdflib.term import BNode, Literal, URIRef
 
 # Import script modules
 from base.map import MapFeedInterface, MapFeedElementInterface
-from base.types import schema_person, schema_organization, schema_location, schema_event, schema_item
+from base.lookup import schema_person, schema_organization, schema_location, schema_event, schema_item
 
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, SDO, SKOS, XSD

@@ -1,4 +1,4 @@
-# Retrieve and extract data from schema.org triples
+# Look up types in authority files or local storage
 #
 # This file is part of the Hydra Scraper package.
 #
@@ -9,17 +9,60 @@
 # Import libraries
 from rdflib import Namespace
 
+# Import script modules
+from base.file import File
+
 # Define namespaces
 from rdflib.namespace import SDO
 #AAT = Namespace('http://vocab.getty.edu/aat/')
 FG = Namespace('https://database.factgrid.de/entity/')
-FG_ONT = Namespace('https://database.factgrid.de/prop/direct/')
+FG_API = Namespace('https://database.factgrid.de/prop/direct/')
 GND = Namespace('https://d-nb.info/gnd/')
 HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
-RISM_ONT = Namespace('https://rism.online/api/v1#')
+RISM_API = Namespace('https://rism.online/api/v1#')
 SCHEMA = Namespace('http://schema.org/')
 WD = Namespace('http://www.wikidata.org/entity/')
-WD_ONT = Namespace('http://www.wikidata.org/prop/direct/')
+WD_API = Namespace('http://www.wikidata.org/prop/direct/')
+
+
+class Lookup:
+
+
+    def __init__(self, file:File|None = None):
+        '''
+        Look up types in authority files or local storage
+
+            Parameters:
+                file (File): Local file object to retrieve content from and save data to
+        '''
+
+        # Vars
+        self.file:File|None = None
+
+        # Include file
+        if file:
+            self.file = file
+
+        # TODO Read local file if available, or start a new one
+        # TODO Remember to save file after use
+
+
+    def local(self):
+        pass
+
+
+    def remote(self):
+        pass
+
+
+    def sparql(self):
+        pass
+
+
+    def check_authority(self):
+        pass
+        # TODO Use local first, then sparql or request per authority file
+
 
 
 # - GN are location
@@ -30,8 +73,8 @@ WD_ONT = Namespace('http://www.wikidata.org/prop/direct/')
 # - RISM uses three own classes -> text/turtle, application/n-triples, application/ld+json
 
 # USE SPARQL?
-# - FG uses its own types and classes, FG_ONT.P2 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
-# - WD uses its own types and classes, WD_ONT.P31 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
+# - FG uses its own types and classes, FG_API.P2 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
+# - WD uses its own types and classes, WD_API.P31 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
 
 # Lists of GND classes collated on 17/10/2024
 # TODO: WD, AAT
@@ -67,7 +110,7 @@ authority_organization = [ # Plus all ISIL and schema_organization
     GND.ProjectOrProgram,
     GND.ReligiousAdministrativeUnit,
     GND.ReligiousCorporateBody,
-    RISM_ONT.Institution,
+    RISM_API.Institution,
     FG.Q12,
     WD.Q43229,
 ]
@@ -81,7 +124,7 @@ authority_person = [ # Plus schema_person
     GND.RoyalOrMemberOfARoyalHouse,
     GND.Spirits,
     GND.UndifferentiatedPerson,
-    RISM_ONT.Person,
+    RISM_API.Person,
     FG.Q7,
     WD.Q5,
 ]
@@ -107,7 +150,7 @@ authority_subject_concept = [ # Plus all IC and all other FG
     GND.SubjectHeadingSensuStricto,
     GND.VersionOfAMusicalWork,
     GND.Work,
-    RISM_ONT.Source,
+    RISM_API.Source,
 ]
 authority_element_type = [ # Plus parts of AAT???
 ]

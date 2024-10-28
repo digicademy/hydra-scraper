@@ -12,7 +12,7 @@ from rdflib import Namespace
 # Import script modules
 from base.data import Uri, UriList, LabelList, UriLabelList, Date, DateList
 from base.extract import ExtractFeedInterface, ExtractFeedElementInterface
-from base.types import schema_feed
+from base.lookup import schema_feed
 
 # Define namespaces
 from rdflib.namespace import RDF, SDO, SKOS
