@@ -18,21 +18,21 @@ from base.map import MapFeedInterface, MapFeedElementInterface
 from base.lookup import schema_person, schema_organization, schema_location, schema_event, schema_item
 
 # Define namespaces
-from rdflib.namespace import OWL, RDF, RDFS, SDO, SKOS, XSD
-NFDICORE = Namespace('https://nfdi.fiz-karlsruhe.de/ontology/')
+from rdflib.namespace import OWL, RDF, RDFS, SKOS, XSD
+AAT = Namespace('http://vocab.getty.edu/aat/')
 CTO = Namespace('https://nfdi4culture.de/ontology#')
+FG = Namespace('https://database.factgrid.de/entity/')
+GN = Namespace('http://sws.geonames.org/')
+GND = Namespace('https://d-nb.info/gnd/')
+IC = Namespace('https://iconclass.org/')
+ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
 MO = Namespace('http://purl.org/ontology/mo/')
 N4C = Namespace('https://nfdi4culture.de/id/')
-GN = Namespace('http://sws.geonames.org/')
-IC = Namespace('https://iconclass.org/')
-AAT = Namespace('http://vocab.getty.edu/aat/')
-GND = Namespace('https://d-nb.info/gnd/')
-WD = Namespace('http://www.wikidata.org/entity/')
-VIAF = Namespace('https://viaf.org/viaf/')
+NFDICORE = Namespace('https://nfdi.fiz-karlsruhe.de/ontology/')
 RISM = Namespace('https://rism.online/')
-FG = Namespace('https://database.factgrid.de/entity/')
-ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
 SCHEMA = Namespace('http://schema.org/')
+VIAF = Namespace('https://viaf.org/viaf/')
+WD = Namespace('http://www.wikidata.org/entity/')
 
 # Set up logging
 logger = logging.getLogger(__name__)

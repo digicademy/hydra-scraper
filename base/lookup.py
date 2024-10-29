@@ -7,13 +7,15 @@
 
 
 # Import libraries
+from httpx import Client
 from rdflib import URIRef, Namespace
 
 # Import script modules
 from base.file import File
+from base.organise import harvest_identifier
 
 # Define namespaces
-from rdflib.namespace import SDO
+from rdflib.namespace import RDF, SDO
 AAT = Namespace('http://vocab.getty.edu/aat/')
 FG = Namespace('https://database.factgrid.de/entity/')
 FG_API = Namespace('https://database.factgrid.de/prop/direct/')
@@ -22,8 +24,10 @@ GND = Namespace('https://d-nb.info/gnd/')
 HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
 IC = Namespace('https://iconclass.org/')
 ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
+RISM = Namespace('https://rism.online/')
 RISM_API = Namespace('https://rism.online/api/v1#')
 SCHEMA = Namespace('http://schema.org/')
+VIAF = Namespace('https://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
 WD_API = Namespace('http://www.wikidata.org/prop/direct/')
 
@@ -54,39 +58,164 @@ class Lookup:
         pass
 
 
-    def remote(self):
-        pass
+    def sparql(self, endpoint:str, query_type:str, query:str) -> bool|None:
+        '''
+        Check whether a boolean SPARQL query returns true or false
+
+            Parameters:
+                endpoint (str): SPARQL endpoint to query
+                query_type (str): Type of SPARQL query to check
+                query (str): SPARQL query to send
+
+            Returns:
+                bool|None: Whether the query was successful
+        '''
+
+        # Prepare headers
+        headers = {
+            'User-Agent': harvest_identifier,
+            'Accept': 'application/sparql-results+json',
+        }
+
+        # Prepare params
+        params = {
+            'query': query,
+        }
+
+        # Make request
+        try:
+            with Client(headers = headers, params = params, timeout = 30.0, follow_redirects = True) as client:
+                r = client.get(endpoint)
+
+                # Check response
+                if r.status_code == 200:
+                    check = r.json()
+
+                    # Boolean
+                    if query_type == 'bool':
+                        if check['results']['bindings'][0]['bool']['value'] == 'true':
+                            return True
+                        else:
+                            return False
+                else:
+                    return None
+
+        # If request fails
+        except:
+            return None
 
 
-    def sparql(self):
-        pass
+    def check_authority(self, uri:URIRef) -> str|None:
+        '''
+        Check an authority file URI to see which of six categories it belongs to
 
+            Parameters:
+                uri (URIRef): Authority file URI to check
 
-    def check_authority(self):
-        pass
+            Returns:
+                str|None: Shorthand of the category the URI belong to
+        '''
+
+        # TODO Finish authority files
         # TODO Use local first, then sparql or request per authority file
+        # TODO Add labels???
 
+        # CLEAR CASES
 
+        # GeoNames
+        if uri in GN:
+            return 'location'
 
+        # Iconclass
+        elif uri in IC:
+            return 'subject_concept'
 
-# - GND -> text/turtle
-# - VIAF -> application/rdf+xml
-# - RISM -> text/turtle, application/n-triples, application/ld+json
+        # ISIL
+        elif uri in ISIL:
+            return 'organization'
 
-# USE SPARQL?
-# - FG uses its own types and classes, FG_API.P2 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
-# - WD uses its own types and classes, WD_API.P31 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
+        # ANALYSE URI
 
-# TODO: WD, AAT
+        # RISM
+        elif uri in RISM:
+            output = None
+            if '/sources/' in str(uri):
+                output = 'subject_concept'
+            elif '/people/' in str(uri):
+                output = 'person'
+            elif '/institutions/' in str(uri):
+                output = 'organization'
+            return output
 
+        # USE RESOLVABLE URI
 
+        # GND
+        elif uri in GND:
+            output = None
+            remote = File(str(uri), 'text/turtle')
+            if remote.success:
+                for type in remote.rdf.objects(uri.replace('http://', 'https://'), RDF.type):
+                    if type in gnd_subject_concept:
+                        output = 'subject_concept'
+                    elif type in gnd_person:
+                        output = 'person'
+                    elif type in gnd_organization:
+                        output = 'organization'
+                    elif type in gnd_location:
+                        output = 'location'
+                    elif type in gnd_event:
+                        output = 'event'
+            return output
+
+        # VIAF
+        elif uri in VIAF:
+            output = None
+            remote = File(str(uri), 'application/rdf+xml')
+            if remote.success:
+                for type in remote.rdf.objects(uri, RDF.type): # TODO Check if this works
+                    if type in schema_person:
+                        output = 'person'
+                    elif type in schema_organization:
+                        output = 'organization'
+                    elif type in schema_location:
+                        output = 'location'
+                    elif type in schema_event:
+                        output = 'event'
+            return output
+
+        # USE SPARQL ENDPOINT
+
+        # Getty AAT
+        elif uri in AAT:
+            query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://vocab.getty.edu/ontology#broaderExtended> <http://vocab.getty.edu/aat/300264092>} AS ?bool) . }'
+            is_object_facet = self.sparql('https://vocab.getty.edu/sparql', 'bool', query)
+            if is_object_facet == True:
+                return 'element_type'
+            elif is_object_facet == False:
+                return 'subject_concept'
+            else:
+                return None
+
+        # FactGrid
+        # TODO FG uses its own types and classes, FG_API.P2 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
+        # TODO subject_concept if type not in fg_person + fg_organization + fg_location + fg_event:
+        elif uri in FG:
+            return None
+
+        # Wikidata
+        # TODO WD uses its own types and classes, WD_API.P31 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
+        # TODO WD organizations, location, event -> alles andere subject concept? SPARQL feature to look up hierarchy?
+        elif uri in WD:
+            return None
+
+        # Others
+        else:
+            return None
 
 
 # TYPE LISTS AND CHECKS
-# Schema.org collated on 17/4/2024
+# Schema.org collated on 17/4/2024 
 # GND, RISM, FG collated on 17/10/2024
-# GN is location, IC is subject_concept, ISIL is organization
-# VIAF uses schema.org classes
 
 # Feed (only schema.org needed right now, including variants)
 
@@ -287,20 +416,6 @@ schema_item = [
 
 # Element type (only Getty AAT needed right now)
 
-def is_element_type(self, type:str) -> bool:
-    '''
-    Check a type URI from an authority file to see if it is an element type
-
-        Parameters:
-            type (str): URI of the type to check
-    '''
-
-    # Perform check
-    if URIRef(type) in AAT: # TODO Narrow this down to just parts of AAT
-        return True
-    else:
-        return False
-
 # Subject concept
 
 def is_subject_concept(self, type:str) -> bool:
@@ -310,22 +425,6 @@ def is_subject_concept(self, type:str) -> bool:
         Parameters:
             type (str): URI of the type to check
     '''
-
-    # Compile list
-    types = gnd_subject_concept + rism_subject_concept
-
-    # Perform check
-    if type in types:
-        return True
-    elif URIRef(type) in IC:
-        return True
-    elif URIRef(type) in FG:
-        if type not in fg_person + fg_organization + fg_location + fg_event:
-            return True
-        else:
-            return False
-    else:
-        return False
 
 gnd_subject_concept = [
     GND.AuthorityResource,
@@ -346,7 +445,7 @@ gnd_subject_concept = [
     GND.ProvenanceCharacteristic,
     GND.SoftwareProduct,
     GND.SubjectHeading,
-    GND.SubjectHeadingSensuStricto,
+    GND.SubjectHeadingSensoStricto,
     GND.VersionOfAMusicalWork,
     GND.Work,
 ]
@@ -356,23 +455,6 @@ rism_subject_concept = [
 ]
 
 # Person
-
-def is_person(self, type:str) -> bool:
-    '''
-    Check a type URI from an authority file to see if it is a person
-
-        Parameters:
-            type (str): URI of the type to check
-    '''
-
-    # Compile list
-    types = gnd_person + rism_person + fg_person + wd_person + schema_person
-
-    # Perform check
-    if type in types:
-        return True
-    else:
-        return False
 
 gnd_person = [
     GND.CollectivePseudonym,
@@ -404,25 +486,6 @@ schema_person = [
 ]
 
 # Organization
-
-def is_organization(self, type:str) -> bool:
-    '''
-    Check a type URI from an authority file to see if it is an organization
-
-        Parameters:
-            type (str): URI of the type to check
-    '''
-
-    # Compile list
-    types = gnd_organization + rism_organization + fg_organization + wd_organization + schema_organization
-
-    # Perform check
-    if type in types:
-        return True
-    elif URIRef(type) in ISIL:
-        return True
-    else:
-        return False
 
 gnd_organization = [
     GND.Company,
@@ -626,25 +689,6 @@ schema_organization = [
 
 # Location
 
-def is_location(self, type:str) -> bool:
-    '''
-    Check a type URI from an authority file to see if it is a location
-
-        Parameters:
-            type (str): URI of the type to check
-    '''
-
-    # Compile list
-    types = gnd_location + fg_location + wd_location + schema_location
-
-    # Perform check
-    if type in types:
-        return True
-    elif URIRef(type) in GN:
-        return True
-    else:
-        return False
-
 gnd_location = [
     GND.AdministrativeUnit,
     GND.BuildingOrMemorial,
@@ -750,23 +794,6 @@ schema_location = [
 ]
 
 # Event
-
-def is_event(self, type:str) -> bool:
-    '''
-    Check a type URI from an authority file to see if it is an event
-
-        Parameters:
-            type (str): URI of the type to check
-    '''
-
-    # Compile list
-    types = gnd_event + fg_event + wd_event + schema_event
-
-    # Perform check
-    if type in types:
-        return True
-    else:
-        return False
 
 gnd_event = [
     GND.ConferenceOrEvent,
