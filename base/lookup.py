@@ -21,15 +21,15 @@ FG = Namespace('https://database.factgrid.de/entity/')
 FG_API = Namespace('https://database.factgrid.de/prop/direct/')
 GN = Namespace('http://sws.geonames.org/')
 GND = Namespace('https://d-nb.info/gnd/')
+GND_API = Namespace('https://d-nb.info/standards/elementset/gnd#')
 HYDRA = Namespace('http://www.w3.org/ns/hydra/core#')
 IC = Namespace('https://iconclass.org/')
 ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
 RISM = Namespace('https://rism.online/')
 RISM_API = Namespace('https://rism.online/api/v1#')
 SCHEMA = Namespace('http://schema.org/')
-VIAF = Namespace('https://viaf.org/viaf/')
+VIAF = Namespace('http://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
-WD_API = Namespace('http://www.wikidata.org/prop/direct/')
 
 
 class Lookup:
@@ -154,7 +154,7 @@ class Lookup:
             output = None
             remote = File(str(uri), 'text/turtle')
             if remote.success:
-                for type in remote.rdf.objects(uri.replace('http://', 'https://'), RDF.type):
+                for type in remote.rdf.objects(uri, RDF.type):
                     if type in gnd_subject_concept:
                         output = 'subject_concept'
                     elif type in gnd_person:
@@ -172,7 +172,7 @@ class Lookup:
             output = None
             remote = File(str(uri), 'application/rdf+xml')
             if remote.success:
-                for type in remote.rdf.objects(uri, RDF.type): # TODO Check if this works
+                for type in remote.rdf.objects(uri, RDF.type):
                     if type in schema_person:
                         output = 'person'
                     elif type in schema_organization:
@@ -187,8 +187,8 @@ class Lookup:
 
         # Getty AAT
         elif uri in AAT:
-            query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://vocab.getty.edu/ontology#broaderExtended> <http://vocab.getty.edu/aat/300264092>} AS ?bool) . }'
-            is_object_facet = self.sparql('https://vocab.getty.edu/sparql', 'bool', query)
+            object_facet = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
+            is_object_facet = self.sparql('https://vocab.getty.edu/sparql', 'bool', object_facet)
             if is_object_facet == True:
                 return 'element_type'
             elif is_object_facet == False:
@@ -203,10 +203,17 @@ class Lookup:
             return None
 
         # Wikidata
-        # TODO WD uses its own types and classes, WD_API.P31 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
         # TODO WD organizations, location, event -> alles andere subject concept? SPARQL feature to look up hierarchy?
+        # TODO Optionally remove lists?
         elif uri in WD:
-            return None
+            person = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://www.wikidata.org/prop/direct/P31> <' + str(WD) + 'Q5>} AS ?bool) . }'
+            is_person = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'bool', person)
+            if is_person == True:
+                return 'element_type'
+            elif is_person == False:
+                return 'subject_concept'
+            else:
+                return None
 
         # Others
         else:
@@ -427,27 +434,27 @@ def is_subject_concept(self, type:str) -> bool:
     '''
 
 gnd_subject_concept = [
-    GND.AuthorityResource,
-    GND.CharactersOrMorphemes,
-    GND.Collection,
-    GND.CollectiveManuscript,
-    GND.EthnographicName,
-    GND.Expression,
-    GND.Family,
-    GND.FictiveTerm,
-    GND.GroupOfPersons,
-    GND.Language,
-    GND.Manuscript,
-    GND.MeansOfTransportWithIndividualName,
-    GND.MusicalWork,
-    GND.NomenclatureInBiologyOrChemistry,
-    GND.ProductNameOrBrandName,
-    GND.ProvenanceCharacteristic,
-    GND.SoftwareProduct,
-    GND.SubjectHeading,
-    GND.SubjectHeadingSensoStricto,
-    GND.VersionOfAMusicalWork,
-    GND.Work,
+    GND_API.AuthorityResource,
+    GND_API.CharactersOrMorphemes,
+    GND_API.Collection,
+    GND_API.CollectiveManuscript,
+    GND_API.EthnographicName,
+    GND_API.Expression,
+    GND_API.Family,
+    GND_API.FictiveTerm,
+    GND_API.GroupOfPersons,
+    GND_API.Language,
+    GND_API.Manuscript,
+    GND_API.MeansOfTransportWithIndividualName,
+    GND_API.MusicalWork,
+    GND_API.NomenclatureInBiologyOrChemistry,
+    GND_API.ProductNameOrBrandName,
+    GND_API.ProvenanceCharacteristic,
+    GND_API.SoftwareProduct,
+    GND_API.SubjectHeading,
+    GND_API.SubjectHeadingSensoStricto,
+    GND_API.VersionOfAMusicalWork,
+    GND_API.Work,
 ]
 
 rism_subject_concept = [
@@ -457,15 +464,15 @@ rism_subject_concept = [
 # Person
 
 gnd_person = [
-    GND.CollectivePseudonym,
-    GND.DifferentiatedPerson,
-    GND.Gods,
-    GND.LiteraryOrLegendaryCharacter,
-    GND.Person,
-    GND.Pseudonym,
-    GND.RoyalOrMemberOfARoyalHouse,
-    GND.Spirits,
-    GND.UndifferentiatedPerson,
+    GND_API.CollectivePseudonym,
+    GND_API.DifferentiatedPerson,
+    GND_API.Gods,
+    GND_API.LiteraryOrLegendaryCharacter,
+    GND_API.Person,
+    GND_API.Pseudonym,
+    GND_API.RoyalOrMemberOfARoyalHouse,
+    GND_API.Spirits,
+    GND_API.UndifferentiatedPerson,
 ]
 
 rism_person = [
@@ -488,14 +495,14 @@ schema_person = [
 # Organization
 
 gnd_organization = [
-    GND.Company,
-    GND.CorporateBody,
-    GND.FictiveCorporateBody,
-    GND.MusicalCorporateBody,
-    GND.OrganOfCorporateBody,
-    GND.ProjectOrProgram,
-    GND.ReligiousAdministrativeUnit,
-    GND.ReligiousCorporateBody,
+    GND_API.Company,
+    GND_API.CorporateBody,
+    GND_API.FictiveCorporateBody,
+    GND_API.MusicalCorporateBody,
+    GND_API.OrganOfCorporateBody,
+    GND_API.ProjectOrProgram,
+    GND_API.ReligiousAdministrativeUnit,
+    GND_API.ReligiousCorporateBody,
 ]
 
 rism_organization = [
@@ -690,18 +697,18 @@ schema_organization = [
 # Location
 
 gnd_location = [
-    GND.AdministrativeUnit,
-    GND.BuildingOrMemorial,
-    GND.Country,
-    GND.ExtraterrestrialTerritory,
-    GND.FictivePlace,
-    GND.MemberState,
-    GND.NameOfSmallGeographicUnitLyingWithinAnotherGeographicUnit,
-    GND.NaturalGeographicUnit,
-    GND.PlaceOrGeographicName,
-    GND.ReligiousTerritory,
-    GND.TerritorialCorporateBodyOrAdministrativeUnit,
-    GND.WayBorderOrLine,
+    GND_API.AdministrativeUnit,
+    GND_API.BuildingOrMemorial,
+    GND_API.Country,
+    GND_API.ExtraterrestrialTerritory,
+    GND_API.FictivePlace,
+    GND_API.MemberState,
+    GND_API.NameOfSmallGeographicUnitLyingWithinAnotherGeographicUnit,
+    GND_API.NaturalGeographicUnit,
+    GND_API.PlaceOrGeographicName,
+    GND_API.ReligiousTerritory,
+    GND_API.TerritorialCorporateBodyOrAdministrativeUnit,
+    GND_API.WayBorderOrLine,
 ]
 
 fg_location = [
@@ -796,9 +803,9 @@ schema_location = [
 # Event
 
 gnd_event = [
-    GND.ConferenceOrEvent,
-    GND.HistoricSingleEventOrEra,
-    GND.SeriesOfConferenceOrEvent,
+    GND_API.ConferenceOrEvent,
+    GND_API.HistoricSingleEventOrEra,
+    GND_API.SeriesOfConferenceOrEvent,
 ]
 
 fg_event = [

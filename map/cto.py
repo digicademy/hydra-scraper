@@ -31,7 +31,7 @@ N4C = Namespace('https://nfdi4culture.de/id/')
 NFDICORE = Namespace('https://nfdi.fiz-karlsruhe.de/ontology/')
 RISM = Namespace('https://rism.online/')
 SCHEMA = Namespace('http://schema.org/')
-VIAF = Namespace('https://viaf.org/viaf/')
+VIAF = Namespace('http://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
 
 # Set up logging
