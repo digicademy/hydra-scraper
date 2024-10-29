@@ -207,15 +207,25 @@ class Lookup:
                 return None
 
         # FactGrid
-        # TODO FG uses its own types and classes, FG_API.P2 instead of RDF.type -> text/turtle, application/n-triples, application/ld+json, application/rdf+xml
-        # TODO subject_concept if type not in fg_person + fg_organization + fg_location + fg_event:
         elif uri in FG:
-            return None
+            output = 'subject_concept'
+            query = 'SELECT ?obj WHERE { <' + str(uri) + '> <https://database.factgrid.de/prop/P2>/<https://database.factgrid.de/prop/statement/P2>/<https://database.factgrid.de/prop/direct/P3>* ?obj . }'
+            types = self.sparql('https://database.factgrid.de/sparql', 'obj', query)
+            for type in types:
+                if URIRef(type) in fg_person:
+                    output = 'person'
+                elif URIRef(type) in fg_organization:
+                    output = 'organization'
+                elif URIRef(type) in fg_location:
+                    output = 'location'
+                elif URIRef(type) in fg_event:
+                    output = 'event'
+            return output
 
         # Wikidata
         elif uri in WD:
             output = 'subject_concept'
-            query = 'SELECT ?obj WHERE { <' + str(uri) + '> p:P31/ps:P31/wdt:P279* ?obj . }'
+            query = 'SELECT ?obj WHERE { <' + str(uri) + '> <http://www.wikidata.org/prop/P31>/<http://www.wikidata.org/prop/statement/P31>/<http://www.wikidata.org/prop/direct/P279>* ?obj . }'
             types = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
             for type in types:
                 if URIRef(type) in wd_person:
@@ -710,7 +720,8 @@ wd_organization = [
 # Location
 
 fg_location = [
-    FG.Q8,
+    FG.Q8, # Locality
+    FG.Q160381 # Architectural structure
 ]
 
 gnd_location = [
