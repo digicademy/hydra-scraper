@@ -58,7 +58,7 @@ class Lookup:
         pass
 
 
-    def sparql(self, endpoint:str, query_type:str, query:str) -> bool|None:
+    def sparql(self, endpoint:str, query_type:str, query:str) -> bool|list|None:
         '''
         Check whether a boolean SPARQL query returns true or false
 
@@ -68,7 +68,7 @@ class Lookup:
                 query (str): SPARQL query to send
 
             Returns:
-                bool|None: Whether the query was successful
+                bool|list|None: Boolean or list result of the query
         '''
 
         # Prepare headers
@@ -89,14 +89,24 @@ class Lookup:
 
                 # Check response
                 if r.status_code == 200:
-                    check = r.json()
+                    checks = r.json()
 
                     # Boolean
                     if query_type == 'bool':
-                        if check['results']['bindings'][0]['bool']['value'] == 'true':
+                        if checks['results']['bindings'][0]['bool']['value'] == 'true':
                             return True
                         else:
                             return False
+
+                    # Boolean
+                    if query_type == 'obj':
+                        output = []
+                        checks = checks['results']['bindings']
+                        for check in checks:
+                            output.append(check['obj']['value'])
+                        return output
+                    
+                # If something weird happens
                 else:
                     return None
 
@@ -203,17 +213,20 @@ class Lookup:
             return None
 
         # Wikidata
-        # TODO WD organizations, location, event -> alles andere subject concept? SPARQL feature to look up hierarchy?
-        # TODO Optionally remove lists?
         elif uri in WD:
-            person = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://www.wikidata.org/prop/direct/P31> <' + str(WD) + 'Q5>} AS ?bool) . }'
-            is_person = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'bool', person)
-            if is_person == True:
-                return 'element_type'
-            elif is_person == False:
-                return 'subject_concept'
-            else:
-                return None
+            output = 'subject_concept'
+            query = 'SELECT ?obj WHERE { <' + str(uri) + '> p:P31/ps:P31/wdt:P279* ?obj . }'
+            types = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
+            for type in types:
+                if URIRef(type) in wd_person:
+                    output = 'person'
+                elif URIRef(type) in wd_organization:
+                    output = 'organization'
+                elif URIRef(type) in wd_location:
+                    output = 'location'
+                elif URIRef(type) in wd_event:
+                    output = 'event'
+            return output
 
         # Others
         else:
@@ -463,6 +476,10 @@ rism_subject_concept = [
 
 # Person
 
+fg_person = [
+    FG.Q7,
+]
+
 gnd_person = [
     GND_API.CollectivePseudonym,
     GND_API.DifferentiatedPerson,
@@ -479,20 +496,20 @@ rism_person = [
     RISM_API.Person,
 ]
 
-fg_person = [
-    FG.Q7,
-]
-
-wd_person = [
-    WD.Q5,
-]
-
 schema_person = [
     SCHEMA.Person,
     SCHEMA.Patient
 ]
 
+wd_person = [
+    WD.Q5
+]
+
 # Organization
+
+fg_organization = [
+    FG.Q12,
+]
 
 gnd_organization = [
     GND_API.Company,
@@ -507,14 +524,6 @@ gnd_organization = [
 
 rism_organization = [
     RISM_API.Institution,
-]
-
-fg_organization = [
-    FG.Q12,
-]
-
-wd_organization = [
-    WD.Q43229,
 ]
 
 schema_organization = [
@@ -694,7 +703,15 @@ schema_organization = [
     SCHEMA.WorkersUnion
 ]
 
+wd_organization = [
+    WD.Q43229
+]
+
 # Location
+
+fg_location = [
+    FG.Q8,
+]
 
 gnd_location = [
     GND_API.AdministrativeUnit,
@@ -709,14 +726,6 @@ gnd_location = [
     GND_API.ReligiousTerritory,
     GND_API.TerritorialCorporateBodyOrAdministrativeUnit,
     GND_API.WayBorderOrLine,
-]
-
-fg_location = [
-    FG.Q8,
-]
-
-wd_location = [
-    WD.Q486972,
 ]
 
 schema_location = [
@@ -800,20 +809,21 @@ schema_location = [
     SCHEMA.TouristDestination
 ]
 
-# Event
-
-gnd_event = [
-    GND_API.ConferenceOrEvent,
-    GND_API.HistoricSingleEventOrEra,
-    GND_API.SeriesOfConferenceOrEvent,
+wd_location = [
+    WD.Q618123, # geographical feature
+    WD.Q811979 # architectural structure
 ]
+
+# Event
 
 fg_event = [
     FG.Q9,
 ]
 
-wd_event = [
-    WD.Q1190554,
+gnd_event = [
+    GND_API.ConferenceOrEvent,
+    GND_API.HistoricSingleEventOrEra,
+    GND_API.SeriesOfConferenceOrEvent,
 ]
 
 schema_event = [
@@ -851,4 +861,8 @@ schema_event = [
     SCHEMA.UserPlusOnes,
     SCHEMA.UserTweets,
     SCHEMA.VisualArtsEvent
+]
+
+wd_event = [
+    WD.Q67518978
 ]
