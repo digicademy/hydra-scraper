@@ -24,6 +24,7 @@ import extract.schema as schema
 #import extract.zipped as zipped
 from base.data import Uri, UriList
 from base.file import File
+from base.lookup import Lookup
 from base.organise import Organise
 
 # Define namespaces
@@ -48,6 +49,7 @@ class Job:
         self.success:bool = True
         self.status:list = []
         self.organise:Organise = organise
+        self.lookup:Lookup = Lookup(self.organise.folder + '/lookup')
         self.last_request:datetime|None = None
 
         # Set up log report
@@ -238,6 +240,10 @@ class Job:
             self.combine_triples(self.organise.folder_triples, self.organise.folder + '/triples')
             self.remove_folder(self.organise.folder_triples)
         logger.info('Cleaned up working folder')
+
+        # Save look-up file
+        self.log_progress('Saving look-up file')
+        self.lookup.save()
 
         # Show log report
         self.status.append(status_feed)

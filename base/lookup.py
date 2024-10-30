@@ -7,7 +7,10 @@
 
 
 # Import libraries
+import json
+import logging
 from httpx import Client
+from os.path import isfile
 from rdflib import URIRef, Namespace
 
 # Import script modules
@@ -31,31 +34,50 @@ SCHEMA = Namespace('http://schema.org/')
 VIAF = Namespace('http://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
 
 class Lookup:
 
 
-    def __init__(self, file:File|None = None):
+    def __init__(self, file_path:str|None = None):
         '''
-        Look up types in authority files or local storage
+        Look up types in a cached key-value store or authority filess
 
             Parameters:
-                file (File): Local file object to retrieve content from and save data to
+                file_path (File): Local key-value store to read and use or create
         '''
 
         # Vars
-        self.file:File|None = None
+        self.file_path:str|None = None
+        self.keyvalue:dict = {}
 
-        # Include file
-        if file:
-            self.file = file
+        # Read and parse existing key-value store
+        if file_path:
+            self.file_path = file_path + '.json'
+            if isfile(self.file_path):
+                with open(self.file_path, 'r') as f:
+                    self.keyvalue = json.loads(f.read())
+                    logger.info('Look-up store read from file ' + self.file_path)
 
-        # TODO Read local file if available, or start a new one
-        # TODO Remember to save file after use
+            # Log missing store file
+            else:
+                logger.warning('No look-up store found at ' + self.file_path)
 
 
-    def local(self):
-        pass
+    def save(self):
+        '''
+        Save content of key-value store to local file
+        '''
+
+        # Save content
+        if self.file_path:
+            with open(self.file_path, 'w') as f:
+                f.write(json.dumps(self.keyvalue, indent = 4, sort_keys = True))
+                logger.info('Look-up store saved to file ' + self.file_path)
+        else:
+            raise ValueError('No file name indicated to save the look-up file to.')
 
 
     def sparql(self, endpoint:str, query_type:str, query:str) -> bool|list|None:
@@ -90,6 +112,7 @@ class Lookup:
                 # Check response
                 if r.status_code == 200:
                     checks = r.json()
+                    logger.info('Look-up store saved to file ' + self.lookup.file_path)
 
                     # Boolean
                     if query_type == 'bool':
@@ -108,10 +131,12 @@ class Lookup:
                     
                 # If something weird happens
                 else:
+                    logger.error('SPARQL query not successful at ' + endpoint)
                     return None
 
         # If request fails
         except:
+            logger.error('Could not SPARQL authority data at ' + endpoint)
             return None
 
 
@@ -126,42 +151,40 @@ class Lookup:
                 str|None: Shorthand of the category the URI belong to
         '''
 
-        # TODO Finish authority files
-        # TODO Use local first, then sparql or request per authority file
-        # TODO Add labels???
+        # Check local key-value store as a shortcut
+        output = None
+        if str(uri) in self.keyvalue:
+            output = self.keyvalue[str(uri)]
 
         # CLEAR CASES
 
         # GeoNames
-        if uri in GN:
-            return 'location'
+        elif uri in GN:
+            output = 'location'
 
         # Iconclass
         elif uri in IC:
-            return 'subject_concept'
+            output = 'subject_concept'
 
         # ISIL
         elif uri in ISIL:
-            return 'organization'
+            output = 'organization'
 
         # ANALYSE URI
 
         # RISM
         elif uri in RISM:
-            output = None
             if '/sources/' in str(uri):
                 output = 'subject_concept'
             elif '/people/' in str(uri):
                 output = 'person'
             elif '/institutions/' in str(uri):
                 output = 'organization'
-            return output
 
         # USE RESOLVABLE URI
 
         # GND
         elif uri in GND:
-            output = None
             remote = File(str(uri), 'text/turtle')
             if remote.success:
                 for type in remote.rdf.objects(uri, RDF.type):
@@ -175,11 +198,9 @@ class Lookup:
                         output = 'location'
                     elif type in gnd_event:
                         output = 'event'
-            return output
 
         # VIAF
         elif uri in VIAF:
-            output = None
             remote = File(str(uri), 'application/rdf+xml')
             if remote.success:
                 for type in remote.rdf.objects(uri, RDF.type):
@@ -191,61 +212,59 @@ class Lookup:
                         output = 'location'
                     elif type in schema_event:
                         output = 'event'
-            return output
 
         # USE SPARQL ENDPOINT
 
         # Getty AAT
         elif uri in AAT:
-            object_facet = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
-            is_object_facet = self.sparql('https://vocab.getty.edu/sparql', 'bool', object_facet)
-            if is_object_facet == True:
-                return 'element_type'
-            elif is_object_facet == False:
-                return 'subject_concept'
-            else:
-                return None
+            output = 'subject_concept'
+            query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
+            check = self.sparql('https://vocab.getty.edu/sparql', 'bool', query)
+            if check:
+                output = 'element_type'
 
         # FactGrid
         elif uri in FG:
             output = 'subject_concept'
             query = 'SELECT ?obj WHERE { <' + str(uri) + '> <https://database.factgrid.de/prop/P2>/<https://database.factgrid.de/prop/statement/P2>/<https://database.factgrid.de/prop/direct/P3>* ?obj . }'
-            types = self.sparql('https://database.factgrid.de/sparql', 'obj', query)
-            for type in types:
-                if URIRef(type) in fg_person:
-                    output = 'person'
-                elif URIRef(type) in fg_organization:
-                    output = 'organization'
-                elif URIRef(type) in fg_location:
-                    output = 'location'
-                elif URIRef(type) in fg_event:
-                    output = 'event'
-            return output
+            checks = self.sparql('https://database.factgrid.de/sparql', 'obj', query)
+            if checks:
+                for check in checks:
+                    if URIRef(check) in fg_person:
+                        output = 'person'
+                    elif URIRef(check) in fg_organization:
+                        output = 'organization'
+                    elif URIRef(check) in fg_location:
+                        output = 'location'
+                    elif URIRef(check) in fg_event:
+                        output = 'event'
 
         # Wikidata
         elif uri in WD:
             output = 'subject_concept'
             query = 'SELECT ?obj WHERE { <' + str(uri) + '> <http://www.wikidata.org/prop/P31>/<http://www.wikidata.org/prop/statement/P31>/<http://www.wikidata.org/prop/direct/P279>* ?obj . }'
-            types = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
-            for type in types:
-                if URIRef(type) in wd_person:
-                    output = 'person'
-                elif URIRef(type) in wd_organization:
-                    output = 'organization'
-                elif URIRef(type) in wd_location:
-                    output = 'location'
-                elif URIRef(type) in wd_event:
-                    output = 'event'
-            return output
+            checks = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
+            if checks:
+                for check in checks:
+                    if URIRef(check) in wd_person:
+                        output = 'person'
+                    elif URIRef(check) in wd_organization:
+                        output = 'organization'
+                    elif URIRef(check) in wd_location:
+                        output = 'location'
+                    elif URIRef(check) in wd_event:
+                        output = 'event'
 
-        # Others
-        else:
-            return None
+        # Return result
+        if output:
+            self.keyvalue[str(uri)] = output
+        return output
 
 
 # TYPE LISTS AND CHECKS
 # Schema.org collated on 17/4/2024 
-# GND, RISM, FG collated on 17/10/2024
+# GND and RISM collated on 17/10/2024
+# WD and FG collated on 28/10/2024
 
 # Feed (only schema.org needed right now, including variants)
 

@@ -1,17 +1,18 @@
 # Standard packages
+argparse
 datetime
-urllib
+glob
+json
 logging
 os
-glob
 shutil
 time
-argparse
+urllib
 
 # Non-standard packages
-validators
 hashlib
-rdflib >= 7.0.0
 httpx >= 0.24.0
-pyoxigraph >= 0.4.0
 lxml >= 5.0.0
+pyoxigraph >= 0.4.0
+rdflib >= 7.0.0
+validators
