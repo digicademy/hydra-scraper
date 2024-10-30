@@ -112,7 +112,7 @@ class Lookup:
                 # Check response
                 if r.status_code == 200:
                     checks = r.json()
-                    logger.info('Look-up store saved to file ' + self.lookup.file_path)
+                    logger.info('Look-up store saved to file ' + self.file_path)
 
                     # Boolean
                     if query_type == 'bool':
@@ -128,7 +128,7 @@ class Lookup:
                         for check in checks:
                             output.append(check['obj']['value'])
                         return output
-                    
+
                 # If something weird happens
                 else:
                     logger.error('SPARQL query not successful at ' + endpoint)
