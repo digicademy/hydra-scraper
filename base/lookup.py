@@ -140,12 +140,12 @@ class Lookup:
             return None
 
 
-    def check_authority(self, uri:URIRef) -> str|None:
+    def check(self, uri:str) -> str|None:
         '''
         Check an authority file URI to see which of six categories it belongs to
 
             Parameters:
-                uri (URIRef): Authority file URI to check
+                uri (str): Authority file URI to check
 
             Returns:
                 str|None: Shorthand of the category the URI belong to
@@ -153,41 +153,41 @@ class Lookup:
 
         # Check local key-value store as a shortcut
         output = None
-        if str(uri) in self.keyvalue:
-            output = self.keyvalue[str(uri)]
+        if uri in self.keyvalue:
+            output = self.keyvalue[uri]
 
         # CLEAR CASES
 
         # GeoNames
-        elif uri in GN:
+        elif URIRef(uri) in GN:
             output = 'location'
 
         # Iconclass
-        elif uri in IC:
+        elif URIRef(uri) in IC:
             output = 'subject_concept'
 
         # ISIL
-        elif uri in ISIL:
+        elif URIRef(uri) in ISIL:
             output = 'organization'
 
         # ANALYSE URI
 
         # RISM
-        elif uri in RISM:
-            if '/sources/' in str(uri):
+        elif URIRef(uri) in RISM:
+            if '/sources/' in uri:
                 output = 'subject_concept'
-            elif '/people/' in str(uri):
+            elif '/people/' in uri:
                 output = 'person'
-            elif '/institutions/' in str(uri):
+            elif '/institutions/' in uri:
                 output = 'organization'
 
         # USE RESOLVABLE URI
 
         # GND
-        elif uri in GND:
-            remote = File(str(uri), 'text/turtle')
+        elif URIRef(uri) in GND:
+            remote = File(uri, 'text/turtle')
             if remote.success:
-                for type in remote.rdf.objects(uri, RDF.type):
+                for type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if type in gnd_subject_concept:
                         output = 'subject_concept'
                     elif type in gnd_person:
@@ -200,10 +200,10 @@ class Lookup:
                         output = 'event'
 
         # VIAF
-        elif uri in VIAF:
-            remote = File(str(uri), 'application/rdf+xml')
+        elif URIRef(uri) in VIAF:
+            remote = File(uri, 'application/rdf+xml')
             if remote.success:
-                for type in remote.rdf.objects(uri, RDF.type):
+                for type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if type in schema_person:
                         output = 'person'
                     elif type in schema_organization:
@@ -216,17 +216,17 @@ class Lookup:
         # USE SPARQL ENDPOINT
 
         # Getty AAT
-        elif uri in AAT:
+        elif URIRef(uri) in AAT:
             output = 'subject_concept'
-            query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + str(uri) + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
+            query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + uri + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
             check = self.sparql('https://vocab.getty.edu/sparql', 'bool', query)
             if check:
                 output = 'element_type'
 
         # FactGrid
-        elif uri in FG:
+        elif URIRef(uri) in FG:
             output = 'subject_concept'
-            query = 'SELECT ?obj WHERE { <' + str(uri) + '> <https://database.factgrid.de/prop/P2>/<https://database.factgrid.de/prop/statement/P2>/<https://database.factgrid.de/prop/direct/P3>* ?obj . }'
+            query = 'SELECT ?obj WHERE { <' + uri + '> <https://database.factgrid.de/prop/P2>/<https://database.factgrid.de/prop/statement/P2>/<https://database.factgrid.de/prop/direct/P3>* ?obj . }'
             checks = self.sparql('https://database.factgrid.de/sparql', 'obj', query)
             if checks:
                 for check in checks:
@@ -240,9 +240,9 @@ class Lookup:
                         output = 'event'
 
         # Wikidata
-        elif uri in WD:
+        elif URIRef(uri) in WD:
             output = 'subject_concept'
-            query = 'SELECT ?obj WHERE { <' + str(uri) + '> <http://www.wikidata.org/prop/P31>/<http://www.wikidata.org/prop/statement/P31>/<http://www.wikidata.org/prop/direct/P279>* ?obj . }'
+            query = 'SELECT ?obj WHERE { <' + uri + '> <http://www.wikidata.org/prop/P31>/<http://www.wikidata.org/prop/statement/P31>/<http://www.wikidata.org/prop/direct/P279>* ?obj . }'
             checks = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
             if checks:
                 for check in checks:
@@ -257,7 +257,7 @@ class Lookup:
 
         # Return result
         if output:
-            self.keyvalue[str(uri)] = output
+            self.keyvalue[uri] = output
         return output
 
 
