@@ -37,10 +37,6 @@ tests = [
     'lookup'
 ]
 
-lookup = Lookup('downloads/test-lookup')
-print(lookup.check('http://www.wikidata.org/entity/Q254'))
-lookup.save()
-
 # Beacon feed A
 if 'beacon-feed-a' in tests:
     file = File('https://kba.karl-barth.ch/api/actors?format=beacon')
