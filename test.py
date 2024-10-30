@@ -16,6 +16,7 @@ import extract.lido as lido
 import extract.schema as schema
 from base.data import Uri
 from base.file import File
+from base.lookup import Lookup
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -32,8 +33,13 @@ tests = [
     'lido-element-b',
     'schema-feed-a',
     'schema-feed-b',
-    'schema-element-a'
+    'schema-element-a',
+    'lookup'
 ]
+
+lookup = Lookup('downloads/test-lookup')
+print(lookup.check('http://www.wikidata.org/entity/Q254'))
+lookup.save()
 
 # Beacon feed A
 if 'beacon-feed-a' in tests:
@@ -102,3 +108,9 @@ if 'schema-element-a' in tests:
     extract = schema.FeedElement(file)
     #print(extract)
     extract.map_and_turtle('cto', 'downloads/test-schema-element-a')
+
+# Lookup
+if 'lookup' in tests:
+    lookup = Lookup('downloads/test-lookup')
+    print(lookup.check('http://www.wikidata.org/entity/Q254'))
+    lookup.save()
