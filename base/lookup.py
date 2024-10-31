@@ -102,7 +102,7 @@ class Lookup:
 
         # Make request
         try:
-            with Client(headers = headers, params = params, timeout = 30.0, follow_redirects = True) as client:
+            with Client(headers = headers, params = params, timeout = 1800.0, follow_redirects = True) as client:
                 r = client.get(endpoint)
 
                 # Check response
@@ -181,7 +181,7 @@ class Lookup:
 
         # GND
         elif URIRef(uri) in GND:
-            remote = File(uri + '/about/lds.ttl', 'text/turtle') # Avoid standard GND redirect
+            remote = File(uri, 'text/turtle')
             if remote.success:
                 for type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if type in gnd_subject_concept:

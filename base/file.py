@@ -88,7 +88,7 @@ class File:
 
         # Request response from URL
         try:
-            with Client(headers = headers, timeout = 30.0, follow_redirects = True) as client:
+            with Client(headers = headers, timeout = 1800.0, follow_redirects = True) as client:
                 r = client.get(self.location)
 
                 # Check if response is valid
