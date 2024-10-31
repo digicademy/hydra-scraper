@@ -256,7 +256,8 @@ class FeedElement(MapFeedElementInterface):
                 if i[0]:
                     self.rdf.add((self.element_uri.rdflib(), CTO.elementType, i[0]))
                     if i[1]:
-                        self.rdf.add((i[0], RDFS.label, i[1]))
+                        for e in i[1]:
+                            self.rdf.add((i[0], RDFS.label, e))
                 else:
                     self.rdf.add((self.element_uri.rdflib(), CTO.elementTypeLiteral, i[1]))
 
@@ -265,7 +266,8 @@ class FeedElement(MapFeedElementInterface):
                 if i[0]:
                     self.rdf.add((self.element_uri.rdflib(), CTO.subjectConcept, i[0]))
                     if i[1]:
-                        self.rdf.add((i[0], RDFS.label, i[1]))
+                        for e in i[1]:
+                            self.rdf.add((i[0], RDFS.label, e))
                 else:
                     self.rdf.add((self.element_uri.rdflib(), CTO.subjectConceptLiteral, i[1]))
 
@@ -287,7 +289,8 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), CTO.relatedEvent, i[0]))
                     self.rdf.add((i[0], RDF.type, NFDICORE.Event))
                     if i[1]:
-                        self.rdf.add((i[0], RDFS.label, i[1]))
+                        for e in i[1]:
+                            self.rdf.add((i[0], RDFS.label, e))
                 else:
                     self.rdf.add((self.element_uri.rdflib(), CTO.relatedEventLiteral, i[1]))
 
@@ -297,7 +300,8 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), CTO.relatedOrganization, i[0]))
                     self.rdf.add((i[0], RDF.type, NFDICORE.Organization))
                     if i[1]:
-                        self.rdf.add((i[0], RDFS.label, i[1]))
+                        for e in i[1]:
+                            self.rdf.add((i[0], RDFS.label, e))
                 else:
                     self.rdf.add((self.element_uri.rdflib(), CTO.relatedOrganizationLiteral, i[1]))
 
@@ -307,14 +311,10 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), CTO.relatedPerson, i[0]))
                     self.rdf.add((i[0], RDF.type, NFDICORE.Person))
                     if i[1]:
-                        self.rdf.add((i[0], RDFS.label, i[1]))
+                        for e in i[1]:
+                            self.rdf.add((i[0], RDFS.label, e))
                 else:
                     self.rdf.add((self.element_uri.rdflib(), CTO.relatedPersonLiteral, i[1]))
-
-            # Further vocabularies
-            for i in self.vocab_further.rdflib():
-                if i[0]:
-                    pass # TODO Remove this and look up their types instead
 
             # Related item
             for i in self.related_item.rdflib():

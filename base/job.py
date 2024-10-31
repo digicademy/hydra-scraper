@@ -53,7 +53,7 @@ class Job:
         self.last_request:datetime|None = None
 
         # Set up log report
-        self.log_start()
+        self.status_start()
         status_feed = 'Entire feed processed.'
         status_elements = 'All feed elements processed.'
 
@@ -68,7 +68,7 @@ class Job:
                 self.delay_request(self.last_request, self.organise.delay)
 
             # Get feed
-            self.log_progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data')
+            self.status_progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data')
             feed_file = File(feed_uri)
             self.last_request = feed_file.request_time
 
@@ -119,21 +119,54 @@ class Job:
 
                     # Save original data
                     if 'files' in self.organise.output:
-                        self.log_progress('Saving original feed file')
+                        self.status_progress('Saving original feed file')
                         feed_file.save(self.organise.folder_files + '/' + feed_name)
                     if 'triples' in self.organise.output:
-                        self.log_progress('Saving temporary triples')
+                        self.status_progress('Saving temporary triples')
                         feed_file.turtle(self.organise.folder_triples + '/' + feed_name)
+
+                    # Reconcile data
+                    if 'csv' in self.organise.output or 'cto' in self.organise.output:
+                        for element_index_minus, element_data in enumerate(feed_data.feed_elements):
+                            element_index = element_index_minus + 1
+                            self.status_progress('Reconciling authority URIs', element_index, len(feed_data.feed_elements))
+
+                            # Check each vocab_further URI
+                            vocab_further = []
+                            for uri_label in element_data.vocab_further.uri_labels:
+                                if uri_label.uri.uri:
+                                    check = self.lookup.check(uri_label.uri.uri)
+                                else:
+                                    check = None
+
+                                # Add it to the right list
+                                if check == 'person':
+                                    element_data.vocab_related_person.uri_labels.append(uri_label)
+                                elif check == 'organization':
+                                    element_data.vocab_related_organization.uri_labels.append(uri_label)
+                                elif check == 'location':
+                                    element_data.vocab_related_location.uri_labels.append(uri_label)
+                                elif check == 'event':
+                                    element_data.vocab_related_event.uri_labels.append(uri_label)
+                                elif check == 'subject_concept':
+                                    element_data.vocab_subject_concept.uri_labels.append(uri_label)
+                                elif check == 'element_type':
+                                    element_data.vocab_element_type.uri_labels.append(uri_label)
+
+                                # Recompile vocab_further with everything else
+                                else:
+                                    vocab_further.append(uri_label)
+                            element_data.vocab_further.uri_labels = vocab_further
 
                     # Transform data
                     if 'beacon' in self.organise.output:
-                        self.log_progress('Saving temporary Beacon-like list')
+                        self.status_progress('Saving temporary Beacon-like list')
                         feed_data.map_and_save('beacon', self.organise.folder_beacon + '/' + feed_name, prepare = self.organise.prepare)
                     if 'csv' in self.organise.output:
-                        self.log_progress('Saving temporary CSV table')
+                        self.status_progress('Saving temporary CSV table')
                         feed_data.map_and_save('csv', self.organise.folder_csv + '/' + feed_name, prepare = self.organise.prepare)
                     if 'cto' in self.organise.output:
-                        self.log_progress('Saving temporary nfdicore/cto triples')
+                        self.status_progress('Saving temporary nfdicore/cto triples')
                         feed_data.map_and_turtle('cto', self.organise.folder_cto + '/' + feed_name, self.organise.prepare)
 
                 # Save list without elements
@@ -158,9 +191,9 @@ class Job:
 
                         # Get feed element
                         if not self.organise.elements:
-                            self.log_progress('Retrieving feed elements', element_index, len(feed_data.element_uris.uris))
+                            self.status_progress('Retrieving feed elements', element_index, len(feed_data.element_uris.uris))
                         else:
-                            self.log_progress('Retrieving feed elements and extracting data', element_index, len(feed_data.element_uris.uris))
+                            self.status_progress('Retrieving feed elements and extracting data', element_index, len(feed_data.element_uris.uris))
                         element_file = File(element_uri.uri, self.organise.dialect)
                         self.last_request = element_file.request_time
 
@@ -208,6 +241,36 @@ class Job:
                                 if self.organise.add_publisher:
                                     element_data.publisher = UriList(self.organise.add_publisher)
 
+                                # Reconcile data
+                                if 'csv' in self.organise.output or 'cto' in self.organise.output:
+
+                                    # Check each vocab_further URI
+                                    vocab_further = []
+                                    for uri_label in element_data.vocab_further.uri_labels:
+                                        if uri_label.uri.uri:
+                                            check = self.lookup.check(uri_label.uri.uri)
+                                        else:
+                                            check = None
+
+                                        # Add it to the right list
+                                        if check == 'person':
+                                            element_data.vocab_related_person.uri_labels.append(uri_label)
+                                        elif check == 'organization':
+                                            element_data.vocab_related_organization.uri_labels.append(uri_label)
+                                        elif check == 'location':
+                                            element_data.vocab_related_location.uri_labels.append(uri_label)
+                                        elif check == 'event':
+                                            element_data.vocab_related_event.uri_labels.append(uri_label)
+                                        elif check == 'subject_concept':
+                                            element_data.vocab_subject_concept.uri_labels.append(uri_label)
+                                        elif check == 'element_type':
+                                            element_data.vocab_element_type.uri_labels.append(uri_label)
+
+                                        # Recompile vocab_further with everything else
+                                        else:
+                                            vocab_further.append(uri_label)
+                                    element_data.vocab_further.uri_labels = vocab_further
+
                                 # Transform data
                                 if 'beacon' in self.organise.output:
                                     element_data.map_and_save('beacon', self.organise.folder_beacon + '/' + element_name, prepare = self.organise.prepare)
@@ -224,31 +287,31 @@ class Job:
 
         # Compile outputs, task delayed to prevent memory issues during long harvests
         if self.organise.elements and 'beacon' in self.organise.output:
-            self.log_progress('Saving compiled Beacon-like list')
+            self.status_progress('Saving compiled Beacon-like list')
             self.combine_text(self.organise.folder_beacon, self.organise.folder + '/beacon', 'txt', '#')
             self.remove_folder(self.organise.folder_beacon)
         if self.organise.elements and 'csv' in self.organise.output:
-            self.log_progress('Saving compiled CSV table')
+            self.status_progress('Saving compiled CSV table')
             self.combine_text(self.organise.folder_csv, self.organise.folder + '/table', 'csv', '"feed_uri","element_uri","element_uri_same"')
             self.remove_folder(self.organise.folder_csv)
         if self.organise.elements and 'cto' in self.organise.output:
-            self.log_progress('Saving compiled nfdicore/cto triples')
+            self.status_progress('Saving compiled nfdicore/cto triples')
             self.combine_triples(self.organise.folder_cto, self.organise.folder + '/cto')
             self.remove_folder(self.organise.folder_cto)
         if 'triples' in self.organise.output:
-            self.log_progress('Saving compiled triples')
+            self.status_progress('Saving compiled triples')
             self.combine_triples(self.organise.folder_triples, self.organise.folder + '/triples')
             self.remove_folder(self.organise.folder_triples)
         logger.info('Cleaned up working folder')
 
         # Save look-up file
-        self.log_progress('Saving look-up file')
+        self.status_progress('Saving look-up file')
         self.lookup.save()
 
         # Show log report
         self.status.append(status_feed)
         self.status.append(status_elements)
-        self.log_report()
+        self.status_report()
 
 
     def delay_request(self, last_time:datetime, delay:int):
@@ -369,7 +432,7 @@ class Job:
         rmtree(folder)
 
 
-    def log_start(self):
+    def status_start(self):
         '''
         Produce an intro note to show at the beginning of a scraping run
         '''
@@ -379,9 +442,9 @@ class Job:
             print('')
 
 
-    def log_progress(self, note:str, current:int|None = None, max:int|None = None):
+    def status_progress(self, note:str, current:int|None = None, max:int|None = None):
         '''
-        Log and list progress information during a job
+        Show progress information during a job
 
             Parameters:
                 note (str): Note to show the user
@@ -409,7 +472,7 @@ class Job:
                 print(echo_string)
 
 
-    def log_report(self):
+    def status_report(self):
         '''
         Produce a final report of what happened during a scraping run
         '''

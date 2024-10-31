@@ -178,48 +178,33 @@ class FeedElement(ExtractFeedElementInterface):
                     if self.license == None and feed_license != None:
                         self.license = feed_license
 
-                    # Vocabulary (typed by source)
-                    keywords = self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.keywords, SDO.keywords, SCHEMA.contentLocation, SDO.contentLocation])
-                    vocab_subject_concept = []
-                    vocab_related_location = []
+                    # Vocabulary: element type
+                    #self.vocab_element_type = 
+
+                    # Vocabulary: subject concept
+                    #self.vocab_subject_concept = 
+
+                    # Vocabulary: related location
+                    #self.vocab_related_location = 
+
+                    # Vocabulary: related event
+                    #self.vocab_related_event = 
+
+                    # Vocabulary: related organization
+                    #self.vocab_related_organization = 
+
+                    # Vocabulary: related person
+                    #self.vocab_related_person = 
+
+                    # Further vocabulary terms
                     vocab_further = []
+                    keywords = self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.keywords, SDO.keywords, SCHEMA.contentLocation, SDO.contentLocation])
                     if keywords != None:
                         keywords = list(set(keywords))
                         for keyword in keywords:
-
-                            # Vocabulary: element type
-                            #self.vocab_element_type = 
-
-                            # Vocabulary: subject concept
-                            if 'iconclass.org' in keyword:
-                                keyword_tuple = self.rdf_uri_label(keyword, [SCHEMA.name, SDO.name])
-                                if keyword_tuple != None:
-                                    vocab_subject_concept.append(keyword_tuple)
-
-                            # Vocabulary: related location
-                            elif 'geonames.org' in keyword:
-                                keyword_tuple = self.rdf_uri_label(keyword, [SCHEMA.name, SDO.name])
-                                if keyword_tuple != None:
-                                    vocab_related_location.append(keyword_tuple)
-
-                            # Vocabulary: related event
-                            #self.vocab_related_event = 
-
-                            # Vocabulary: related organization
-                            #self.vocab_related_organization = 
-
-                            # Vocabulary: related person
-                            #self.vocab_related_person = 
-
-                            # Further vocabulary terms
-                            else:
-                                keyword_tuple = self.rdf_uri_label(keyword, [SCHEMA.name, SDO.name])
-                                if keyword_tuple != None:
-                                    vocab_further.append(keyword_tuple)
-                    
-                    # Vocabulary (final lists)
-                    self.vocab_subject_concept = UriLabelList(vocab_subject_concept)
-                    self.vocab_related_location = UriLabelList(vocab_related_location)
+                            keyword_tuple = self.rdf_uri_label(keyword, [SCHEMA.name, SDO.name])
+                            if keyword_tuple != None:
+                                vocab_further.append(keyword_tuple)
                     self.vocab_further = UriLabelList(vocab_further)
 
                     # Related item (if CTO used in schema.org)

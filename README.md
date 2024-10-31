@@ -113,21 +113,6 @@ NFDIcore/CTO triples from a local or remote **Beacon-like feed of LIDO files** (
 python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
 ```
 
----
-
-TODO
-NFDIcore/CTO triples from a local or remote **ZIP file containing CGIF/schema.org files**:
-NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files**:
-NFDIcore/CTO triples from a local **folder containing CGIF/schema.org files**:
-NFDIcore/CTO triples from a local **folder containing LIDO files**:
-
-```bash
-TODO
-python go.py -s dump-folder -l downloads/sample-nfdi/files -m rdf-members -o triples-nfdi -n sample-nfdi -d application/ld+json -p
-```
-
----
-
 ### Corpus Vitrearum Germany
 
 Files and triples from **JSON-LD** data:

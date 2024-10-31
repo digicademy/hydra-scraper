@@ -61,10 +61,6 @@ class Lookup:
                     self.keyvalue = json.loads(f.read())
                     logger.info('Look-up store read from file ' + self.file_path)
 
-            # Log missing store file
-            else:
-                logger.warning('No look-up store found at ' + self.file_path)
-
 
     def save(self):
         '''
@@ -112,7 +108,7 @@ class Lookup:
                 # Check response
                 if r.status_code == 200:
                     checks = r.json()
-                    logger.info('Look-up store saved to file ' + self.file_path)
+                    logger.info('SPARQLed authority data at ' + endpoint)
 
                     # Boolean
                     if query_type == 'bool':
@@ -185,7 +181,7 @@ class Lookup:
 
         # GND
         elif URIRef(uri) in GND:
-            remote = File(uri, 'text/turtle')
+            remote = File(uri + '/about/lds.ttl', 'text/turtle') # Avoid standard GND redirect
             if remote.success:
                 for type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if type in gnd_subject_concept:
