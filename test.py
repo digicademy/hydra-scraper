@@ -109,4 +109,5 @@ if 'schema-element-a' in tests:
 if 'lookup' in tests:
     lookup = Lookup('downloads/test-lookup')
     print(lookup.check('http://www.wikidata.org/entity/Q254'))
+    #print(lookup.check('https://d-nb.info/gnd/7766321-4'))
     lookup.save()

@@ -12,6 +12,7 @@ import logging
 from httpx import Client
 from os.path import isfile
 from rdflib import URIRef, Namespace
+from validators import url
 
 # Import script modules
 from base.file import File
@@ -150,6 +151,8 @@ class Lookup:
         # Check local key-value store as a shortcut
         output = None
         if uri in self.keyvalue:
+            if url(self.keyvalue[uri]):
+                uri = self.keyvalue[uri]
             output = self.keyvalue[uri]
 
         # CLEAR CASES
@@ -183,31 +186,41 @@ class Lookup:
         elif URIRef(uri) in GND:
             remote = File(uri, 'text/turtle')
             if remote.success:
-                for type in remote.rdf.objects(URIRef(uri), RDF.type):
-                    if type in gnd_subject_concept:
+                if uri != remote.location:
+                    self.keyvalue[uri] = remote.location
+                    uri = remote.location
+                for rdf_type in remote.rdf.objects(URIRef(uri), RDF.type):
+                    if rdf_type in gnd_subject_concept:
                         output = 'subject_concept'
-                    elif type in gnd_person:
+                    elif rdf_type in gnd_person:
                         output = 'person'
-                    elif type in gnd_organization:
+                    elif rdf_type in gnd_organization:
                         output = 'organization'
-                    elif type in gnd_location:
+                    elif rdf_type in gnd_location:
                         output = 'location'
-                    elif type in gnd_event:
+                    elif rdf_type in gnd_event:
                         output = 'event'
+            else:
+                self.keyvalue[uri] = 'invalid'
 
         # VIAF
         elif URIRef(uri) in VIAF:
             remote = File(uri, 'application/rdf+xml')
             if remote.success:
-                for type in remote.rdf.objects(URIRef(uri), RDF.type):
-                    if type in schema_person:
+                if uri != remote.location:
+                    self.keyvalue[uri] = remote.location
+                    uri = remote.location
+                for rdf_type in remote.rdf.objects(URIRef(uri), RDF.type):
+                    if rdf_type in schema_person:
                         output = 'person'
-                    elif type in schema_organization:
+                    elif rdf_type in schema_organization:
                         output = 'organization'
-                    elif type in schema_location:
+                    elif rdf_type in schema_location:
                         output = 'location'
-                    elif type in schema_event:
+                    elif rdf_type in schema_event:
                         output = 'event'
+            else:
+                self.keyvalue[uri] = 'invalid'
 
         # USE SPARQL ENDPOINT
 

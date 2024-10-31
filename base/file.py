@@ -96,6 +96,17 @@ class File:
                     self.success = True
                     logger.info('Fetched remote file ' + self.location)
 
+                    # Check response for 301 to save subsequent URI in redirect chain or successful URI
+                    check_next = False
+                    for prev_r in r.history:
+                        if check_next:
+                            self.location = str(prev_r.url)
+                            check_next = False
+                        if prev_r.status_code == 301:
+                            check_next = True
+                    if check_next:
+                            self.location = str(r.url)
+
                     # Store content type
                     self.content_type = r.headers['Content-Type']
                     self.content_type.replace('; charset=UTF-8', '')
