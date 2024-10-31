@@ -14,6 +14,7 @@
 - Prep work for further serialisations such as DCAT
 - New command-line interface and argument parsing
 - A `-quiet` option prevents reporting intermiedate progress
+- Provide optional OCI (Podman/Docker) container set-up
 - Observe rules layed out in `robots.txt` files
 - Recognise `http` and `https` namespaces in schema.org sources
 - Provide log files for scraping runs

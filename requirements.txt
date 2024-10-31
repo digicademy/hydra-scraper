@@ -1,16 +1,16 @@
 # Standard packages
 argparse
 datetime
-glob
-json
+#glob
+#json
 logging
-os
-shutil
-time
-urllib
+#os
+#shutil
+#time
+#urllib
 
 # Non-standard packages
-hashlib
+#hashlib
 httpx >= 0.24.0
 lxml >= 5.0.0
 pyoxigraph >= 0.4.0

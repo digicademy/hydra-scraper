@@ -29,11 +29,16 @@ This code is covered by the [MIT](https://opensource.org/license/MIT/) licence.
 
 ## Installation
 
-To use this script, make sure your Python environment has the packages listed
-in `requirements.txt`. Then clone this repository (e.g.
-`git clone https://github.com/digicademy/hydra-scraper.git` or the SSH
-equivalent). Open a terminal in the resulting folder to run the script as
-described in the "Examples" section below.
+There are two options to run this script: as a regular Python command-line tool
+or in an OCI container (Podman/Docker). For the regular install, clone this
+repository (e.g. `git clone https://github.com/digicademy/hydra-scraper.git` or
+the SSH equivalent). Then open a terminal in the resulting folder and run
+`pip install -r requirements.txt` to install the dependencies. To use the
+script, use the commands listed under "Examples" below.
+
+To run the container instead, clone this repo and open a terminal in the
+resulting folder. In the command examples below, replace `python go.py` with
+`podman compose run hydra-scraper`.
 
 ## Usage
 
@@ -78,8 +83,9 @@ additional options:
 
 The commands listed below illustrate possible command-line arguments. They
 refer to specific projects that use this scraper, but the commands should work
-with any other page using the indicated formats. Depending on your operating
-system, you may need to use `python3` instead of `python`.
+with any other page using the indicated formats. If you run the container,
+replace `python go.py` with `podman compose run hydra-scraper`. You may need
+to use `docker` instead of `podman`, or `python3` instead of `python`.
 
 ### NFDI4Culture
 
@@ -181,7 +187,6 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Expand `lookup` to become a look-up module plus a local storage file to speed up consecutive harvests
 - Allow for remote/local ZIP and local folder ingests (and alter this readme)
 - Update `assets` folder and release
 
@@ -189,7 +194,7 @@ Use GitHub to make the release. Use semantic versioning.
 
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
-- Optional OCI container
+- Automatically build OCI container via CI
 - Add TEI ingest support based on [Gregorovius](https://gregorovius-edition.dhi-roma.it/api/cmif)
 - Add [OAI-PMH](https://pro.deutsche-digitale-bibliothek.de/daten-nutzen/schnittstellen) ingest support
 - Add MEI ingest support
