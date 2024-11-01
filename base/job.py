@@ -53,7 +53,7 @@ class Job:
         self.last_request:datetime|None = None
 
         # Set up log report
-        self.status_start()
+        self.progress_start()
         status_feed = 'Entire feed processed.'
         status_elements = 'All feed elements processed.'
 
@@ -68,7 +68,7 @@ class Job:
                 self.delay_request(self.last_request, self.organise.delay)
 
             # Get feed
-            self.status_progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data')
+            status = Progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data', self.organise.quiet)
             feed_file = File(feed_uri)
             self.last_request = feed_file.request_time
 
@@ -119,17 +119,21 @@ class Job:
 
                     # Save original data
                     if 'files' in self.organise.output:
-                        self.status_progress('Saving original feed file')
+                        status.done()
+                        status = Progress('Saving original feed file', self.organise.quiet)
                         feed_file.save(self.organise.folder_files + '/' + feed_name)
                     if 'triples' in self.organise.output:
-                        self.status_progress('Saving temporary triples')
+                        status.done()
+                        status = Progress('Saving temporary triples', self.organise.quiet)
                         feed_file.turtle(self.organise.folder_triples + '/' + feed_name)
 
                     # Reconcile data
                     if 'csv' in self.organise.output or 'cto' in self.organise.output:
+                        status.done()
+                        status = Progress('Reconciling authority URIs', self.organise.quiet)
                         for element_index_minus, element_data in enumerate(feed_data.feed_elements):
                             element_index = element_index_minus + 1
-                            self.status_progress('Reconciling authority URIs', element_index, len(feed_data.feed_elements))
+                            status.update(element_index, len(feed_data.feed_elements))
 
                             # Check each vocab_further URI
                             vocab_further = []
@@ -160,13 +164,16 @@ class Job:
 
                     # Transform data
                     if 'beacon' in self.organise.output:
-                        self.status_progress('Saving temporary Beacon-like list')
+                        status.done()
+                        status = Progress('Saving temporary Beacon-like list', self.organise.quiet)
                         feed_data.map_and_save('beacon', self.organise.folder_beacon + '/' + feed_name, prepare = self.organise.prepare)
                     if 'csv' in self.organise.output:
-                        self.status_progress('Saving temporary CSV table')
+                        status.done()
+                        status = Progress('Saving temporary CSV table', self.organise.quiet)
                         feed_data.map_and_save('csv', self.organise.folder_csv + '/' + feed_name, prepare = self.organise.prepare)
                     if 'cto' in self.organise.output:
-                        self.status_progress('Saving temporary nfdicore/cto triples')
+                        status.done()
+                        status = Progress('Saving temporary nfdicore/cto triples', self.organise.quiet)
                         feed_data.map_and_turtle('cto', self.organise.folder_cto + '/' + feed_name, self.organise.prepare)
 
                 # Save list without elements
@@ -182,6 +189,11 @@ class Job:
                             feed_data.map_and_turtle('cto', self.organise.folder_cto + '/0', self.organise.prepare)
 
                     # Loop through elements
+                    status.done()
+                    if not self.organise.elements:
+                        status = Progress('Retrieving feed elements', self.organise.quiet)
+                    else:
+                        status = Progress('Retrieving feed elements and extracting data', self.organise.quiet)
                     for element_index_minus, element_uri in enumerate(feed_data.element_uris.uris):
                         element_index = element_index_minus + 1
 
@@ -190,10 +202,7 @@ class Job:
                             self.delay_request(self.last_request, self.organise.delay)
 
                         # Get feed element
-                        if not self.organise.elements:
-                            self.status_progress('Retrieving feed elements', element_index, len(feed_data.element_uris.uris))
-                        else:
-                            self.status_progress('Retrieving feed elements and extracting data', element_index, len(feed_data.element_uris.uris))
+                        status.update(element_index, len(feed_data.element_uris.uris))
                         element_file = File(element_uri.uri, self.organise.dialect)
                         self.last_request = element_file.request_time
 
@@ -287,31 +296,37 @@ class Job:
 
         # Compile outputs, task delayed to prevent memory issues during long harvests
         if self.organise.elements and 'beacon' in self.organise.output:
-            self.status_progress('Saving compiled Beacon-like list')
+            status.done()
+            status = Progress('Saving compiled Beacon-like list', self.organise.quiet)
             self.combine_text(self.organise.folder_beacon, self.organise.folder + '/beacon', 'txt', '#')
             self.remove_folder(self.organise.folder_beacon)
         if self.organise.elements and 'csv' in self.organise.output:
-            self.status_progress('Saving compiled CSV table')
+            status.done()
+            status = Progress('Saving compiled CSV table', self.organise.quiet)
             self.combine_text(self.organise.folder_csv, self.organise.folder + '/table', 'csv', '"feed_uri","element_uri","element_uri_same"')
             self.remove_folder(self.organise.folder_csv)
         if self.organise.elements and 'cto' in self.organise.output:
-            self.status_progress('Saving compiled nfdicore/cto triples')
+            status.done()
+            status = Progress('Saving compiled nfdicore/cto triples', self.organise.quiet)
             self.combine_triples(self.organise.folder_cto, self.organise.folder + '/cto')
             self.remove_folder(self.organise.folder_cto)
         if 'triples' in self.organise.output:
-            self.status_progress('Saving compiled triples')
+            status.done()
+            status = Progress('Saving compiled triples', self.organise.quiet)
             self.combine_triples(self.organise.folder_triples, self.organise.folder + '/triples')
             self.remove_folder(self.organise.folder_triples)
         logger.info('Cleaned up working folder')
 
         # Save look-up file
-        self.status_progress('Saving look-up file')
+        status.done()
+        status = Progress('Saving look-up file', self.organise.quiet)
         self.lookup.save()
+        status.done()
 
         # Show log report
         self.status.append(status_feed)
         self.status.append(status_elements)
-        self.status_report()
+        self.progress_report()
 
 
     def delay_request(self, last_time:datetime, delay:int):
@@ -432,7 +447,7 @@ class Job:
         rmtree(folder)
 
 
-    def status_start(self):
+    def progress_start(self):
         '''
         Produce an intro note to show at the beginning of a scraping run
         '''
@@ -442,37 +457,7 @@ class Job:
             print('')
 
 
-    def status_progress(self, note:str, current:int|None = None, max:int|None = None):
-        '''
-        Show progress information during a job
-
-            Parameters:
-                note (str): Note to show the user
-                current (int): Current number used to calculate a percentage
-                max (int): Total number used to calculate a percentage
-        '''
-
-        # Start string
-        if not self.organise.quiet:
-            echo_string = '- ' + note
-
-            # Just echo string if there is no loop
-            if current == None and max == None:
-                print(echo_string)
-
-            # Calculate percentage if loop is not complete
-            elif current < max:
-                progress = int((current / max ) * 100)
-                echo_string += '… ' + f"{progress:02}" + '%'
-                print(echo_string, end = '\r')
-
-            # End line when loop id complete
-            else:
-                echo_string +=  '… done'
-                print(echo_string)
-
-
-    def status_report(self):
+    def progress_report(self):
         '''
         Produce a final report of what happened during a scraping run
         '''
@@ -490,3 +475,57 @@ class Job:
 
             # Display result
             print('\n' + report + '\n')
+
+
+class Progress:
+
+
+    def __init__(self, note:str, quiet:bool = False):
+        '''
+        Show progress information during a job
+
+            Parameters:
+                note (str): Note to show the user
+        '''
+
+        # Vars
+        self.success:bool = False
+        self.quiet:bool = quiet
+        self.note:str = note + '… '
+
+        # Show note
+        if not self.quiet:
+            print('▹ ' + self.note, end = '\r')
+
+
+    def update(self, current:int, max:int):
+        '''
+        Update progress line with percentage
+
+            Parameters:
+                current (int): Current number used to calculate a percentage
+                max (int): Total number used to calculate a percentage
+        '''
+
+        # Calculate percentage
+        if current < max:
+            progress = int((current / max ) * 100)
+
+            # Show note
+            if not self.quiet:
+                print('▹ ' + self.note + f"{progress:02}" + '%', end = '\r')
+
+        else:
+            self.done()
+
+
+    def done(self):
+        '''
+        End progress line when complete
+        '''
+
+        # Show note
+        if not self.success:
+            self.success = True
+            if not self.quiet:
+                print('▸ ' + self.note + 'done')

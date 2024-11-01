@@ -226,7 +226,7 @@ class Organise:
 
         # Catch output commands that require data extraction
         if not self.elements:
-            if 'beacon' in self.organise.output or 'csv' in self.organise.output or 'cto' in self.organise.output:
+            if 'beacon' in self.output or 'csv' in self.output or 'cto' in self.output:
                 raise ValueError('Hydra Scraper called with extraction routine but no element markup.')
 
         # Check further URIs
