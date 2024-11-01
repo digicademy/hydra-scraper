@@ -8,10 +8,9 @@
 
 # Import libraries
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from pyoxigraph import DefaultGraph, RdfFormat, Store
 from rdflib import Graph, Namespace
-from time import sleep
 
 # Import script modules
 import extract.beacon as beacon
@@ -23,7 +22,7 @@ import extract.schema as schema
 from base.data import Uri, UriList
 from base.file import File, files_in_folder, remove_folder
 from base.lookup import Lookup
-from base.organise import Organise
+from base.organise import Organise, delay_request
 
 # Define namespaces
 SCHEMA = Namespace('http://schema.org/')
@@ -402,26 +401,6 @@ class Progress:
             self.success = True
             if not self.quiet:
                 print('▸ ' + self.note + 'done')
-
-
-def delay_request(last_time:datetime, delay:int):
-    '''
-    Dynamically delay the next request by a given time
-
-        Parameters:
-            last_time (datetime): Last time a request was made
-            delay (int): Delay to apply in milliseconds
-    '''
-
-    # Sleep if next allowed request time is not now
-    now = datetime.now()
-    then = last_time + timedelta(milliseconds = delay)
-    if now < then:
-        wait = then - now
-        sleep(wait.total_seconds())
-
-        # Log info
-        logger.info('Waited ' + str(wait.total_seconds()) + ' before making the next request')
 
 
 def combine_text(folder:str, file_path:str, file_extension:str, ignore:str):

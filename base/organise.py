@@ -9,8 +9,9 @@
 # Import libraries
 import logging
 from argparse import ArgumentParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from os.path import isdir, isfile
+from time import sleep
 from urllib.robotparser import RobotFileParser
 from validators import url
 
@@ -284,6 +285,26 @@ def generate_timestamp() -> str:
 
     # Return result
     return timestamp
+
+
+def delay_request(last_time:datetime, delay:int):
+    '''
+    Dynamically delay the next request by a given time
+
+        Parameters:
+            last_time (datetime): Last time a request was made
+            delay (int): Delay to apply in milliseconds
+    '''
+
+    # Sleep if next allowed request time is not now
+    now = datetime.now()
+    then = last_time + timedelta(milliseconds = delay)
+    if now < then:
+        wait = then - now
+        sleep(wait.total_seconds())
+
+        # Log info
+        logger.info('Waited ' + str(wait.total_seconds()) + ' before making the next request')
 
 
 def robots_delay(location:str) -> int|None:
