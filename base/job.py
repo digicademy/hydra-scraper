@@ -54,6 +54,7 @@ class Job:
 
         # Set up log report
         self.progress_start()
+        status = Progress('Setting up tasks', self.organise.quiet)
         status_feed = 'Entire feed processed.'
         status_elements = 'All feed elements processed.'
 
@@ -68,6 +69,7 @@ class Job:
                 self.delay_request(self.last_request, self.organise.delay)
 
             # Get feed
+            status.done()
             status = Progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data', self.organise.quiet)
             feed_file = File(feed_uri)
             self.last_request = feed_file.request_time
