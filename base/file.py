@@ -9,11 +9,13 @@
 # Import libraries
 import logging
 from datetime import datetime
+from glob import glob
 from httpx import Client
 from lxml import etree
-from os import linesep
+from os import linesep, makedirs
 from os.path import isfile
 from rdflib import Graph, Namespace
+from shutil import rmtree
 from validators import url
 
 # Import script modules
@@ -88,7 +90,7 @@ class File:
 
         # Request response from URL
         try:
-            with Client(headers = headers, timeout = 1800.0, follow_redirects = True) as client:
+            with Client(headers = headers, timeout = 300.0, follow_redirects = True) as client:
                 r = client.get(self.location)
 
                 # Check if response is valid
@@ -285,7 +287,7 @@ class File:
                     self.text = self.text[embed_start:embed_end]
 
                     # Remove empty lines
-                    self.text = self.strip_lines(self.text)
+                    self.text = strip_lines(self.text)
                     self.content = self.text.encode()
 
 
@@ -310,47 +312,6 @@ class File:
                         logger.error('Could not parse XML file ' + self.location)
                 else:
                     logger.error('Could not parse RDF file ' + self.location)
-
-
-    def strip_lines(self, input:str) -> str:
-        '''
-        Take a multi-line string, remove empty lines and comments, and return string
-
-            Parameters:
-                input (str): Input string to remove lines from
-
-            Returns:
-                str: Cleaned output string
-        '''
-
-        # Split up by lines and remove empty ones or comments
-        lines = [
-            line for line in input.splitlines()
-            if line.strip() and line[0] != '#'
-        ]
-
-        # Return re-assembled string
-        return linesep.join(lines)
-
-
-    def strip_string(self, input:str) -> str:
-        '''
-        Take a string, remove quotation marks and newlines, and return the string
-
-            Parameters:
-                string (str): Input string to clean
-
-            Returns:
-                str: Cleaned output string
-        '''
-
-        # Remove offending characters
-        input = input.replace('"', '\'')
-        input = input.replace('\n', '')
-        input = input.replace('\r', '')
-
-        # Return clean string
-        return input
 
 
     def save(self, file_path:str, format:str|None = None):
@@ -439,3 +400,91 @@ class File:
 
         # Shorthand method
         self.save(file_path, 'json-ld')
+
+
+def strip_lines(input:str) -> str:
+    '''
+    Take a multi-line string, remove empty lines and comments, and return string
+
+        Parameters:
+            input (str): Input string to remove lines from
+
+        Returns:
+            str: Cleaned output string
+    '''
+
+    # Split up by lines and remove empty ones or comments
+    lines = [
+        line for line in input.splitlines()
+        if line.strip() and line[0] != '#'
+    ]
+
+    # Return re-assembled string
+    return linesep.join(lines)
+
+
+def strip_string(input:str) -> str:
+    '''
+    Take a string, remove quotation marks and newlines, and return the string
+
+        Parameters:
+            string (str): Input string to clean
+
+        Returns:
+            str: Cleaned output string
+    '''
+
+    # Remove offending characters
+    input = input.replace('"', '\'')
+    input = input.replace('\n', '')
+    input = input.replace('\r', '')
+
+    # Return clean string
+    return input
+
+
+def files_in_folder(folder_path:str) -> list:
+    '''
+    Read a local folder and return a list of resources
+
+        Parameters:
+            folder_path (str): Path to the folder to read
+    '''
+
+    # Prepare list and path
+    entries = []
+    folder_path += '/**/*'
+
+    # Add each file path to list
+    for entry in glob(folder_path, recursive = True):
+        entries.append(entry)
+
+    # Return entries
+    return entries
+
+
+def create_folder(folder_name:str):
+    '''
+    Create a folder with a given name
+
+        Parameters:
+            folder_name (str): Name of the folder to create
+    '''
+
+    # Create folders, may be error-prone
+    try:
+        makedirs(folder_name, exist_ok = True)
+    except OSError:
+        pass
+
+
+def remove_folder(folder:str):
+    '''
+    Removes a temporary folder and its contents
+
+        Parameters:
+            folder (str): Path of the folder to remove
+    '''
+
+    # Remove folder
+    rmtree(folder)

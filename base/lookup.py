@@ -77,66 +77,6 @@ class Lookup:
             raise ValueError('No file name indicated to save the look-up file to.')
 
 
-    def sparql(self, endpoint:str, query_type:str, query:str) -> bool|list|None:
-        '''
-        Check whether a boolean SPARQL query returns true or false
-
-            Parameters:
-                endpoint (str): SPARQL endpoint to query
-                query_type (str): Type of SPARQL query to check
-                query (str): SPARQL query to send
-
-            Returns:
-                bool|list|None: Boolean or list result of the query
-        '''
-
-        # Prepare headers
-        headers = {
-            'User-Agent': harvest_identifier,
-            'Accept': 'application/sparql-results+json',
-        }
-
-        # Prepare params
-        params = {
-            'query': query,
-        }
-
-        # Make request
-        try:
-            with Client(headers = headers, params = params, timeout = 1800.0, follow_redirects = True) as client:
-                r = client.get(endpoint)
-
-                # Check response
-                if r.status_code == 200:
-                    checks = r.json()
-                    logger.info('SPARQLed authority data at ' + endpoint)
-
-                    # Boolean
-                    if query_type == 'bool':
-                        if checks['results']['bindings'][0]['bool']['value'] == 'true':
-                            return True
-                        else:
-                            return False
-
-                    # Boolean
-                    if query_type == 'obj':
-                        output = []
-                        checks = checks['results']['bindings']
-                        for check in checks:
-                            output.append(check['obj']['value'])
-                        return output
-
-                # If something weird happens
-                else:
-                    logger.error('SPARQL query not successful at ' + endpoint)
-                    return None
-
-        # If request fails
-        except:
-            logger.error('Could not SPARQL authority data at ' + endpoint)
-            return None
-
-
     def check(self, uri:str) -> str|None:
         '''
         Check an authority file URI to see which of six categories it belongs to
@@ -228,7 +168,7 @@ class Lookup:
         elif URIRef(uri) in AAT:
             output = 'subject_concept'
             query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + uri + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
-            check = self.sparql('https://vocab.getty.edu/sparql', 'bool', query)
+            check = sparql('https://vocab.getty.edu/sparql', 'bool', query)
             if check:
                 output = 'element_type'
 
@@ -236,7 +176,7 @@ class Lookup:
         elif URIRef(uri) in FG:
             output = 'subject_concept'
             query = 'SELECT ?obj WHERE { <' + uri + '> <https://database.factgrid.de/prop/P2>/<https://database.factgrid.de/prop/statement/P2>/<https://database.factgrid.de/prop/direct/P3>* ?obj . }'
-            checks = self.sparql('https://database.factgrid.de/sparql', 'obj', query)
+            checks = sparql('https://database.factgrid.de/sparql', 'obj', query)
             if checks:
                 for check in checks:
                     if URIRef(check) in fg_person:
@@ -252,7 +192,7 @@ class Lookup:
         elif URIRef(uri) in WD:
             output = 'subject_concept'
             query = 'SELECT ?obj WHERE { <' + uri + '> <http://www.wikidata.org/prop/P31>/<http://www.wikidata.org/prop/statement/P31>/<http://www.wikidata.org/prop/direct/P279>* ?obj . }'
-            checks = self.sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
+            checks = sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
             if checks:
                 for check in checks:
                     if URIRef(check) in wd_person:
@@ -268,6 +208,66 @@ class Lookup:
         if output:
             self.keyvalue[uri] = output
         return output
+
+
+def sparql(endpoint:str, query_type:str, query:str) -> bool|list|None:
+    '''
+    Check whether a boolean SPARQL query returns true or false
+
+        Parameters:
+            endpoint (str): SPARQL endpoint to query
+            query_type (str): Type of SPARQL query to check
+            query (str): SPARQL query to send
+
+        Returns:
+            bool|list|None: Boolean or list result of the query
+    '''
+
+    # Prepare headers
+    headers = {
+        'User-Agent': harvest_identifier,
+        'Accept': 'application/sparql-results+json',
+    }
+
+    # Prepare params
+    params = {
+        'query': query,
+    }
+
+    # Make request
+    try:
+        with Client(headers = headers, params = params, timeout = 300.0, follow_redirects = True) as client:
+            r = client.get(endpoint)
+
+            # Check response
+            if r.status_code == 200:
+                checks = r.json()
+                logger.info('SPARQLed authority data at ' + endpoint)
+
+                # Boolean
+                if query_type == 'bool':
+                    if checks['results']['bindings'][0]['bool']['value'] == 'true':
+                        return True
+                    else:
+                        return False
+
+                # Boolean
+                if query_type == 'obj':
+                    output = []
+                    checks = checks['results']['bindings']
+                    for check in checks:
+                        output.append(check['obj']['value'])
+                    return output
+
+            # If something weird happens
+            else:
+                logger.error('SPARQL query not successful at ' + endpoint)
+                return None
+
+    # If request fails
+    except:
+        logger.error('Could not SPARQL authority data at ' + endpoint)
+        return None
 
 
 # TYPE LISTS AND CHECKS
@@ -475,14 +475,6 @@ schema_item = [
 # Element type (only Getty AAT needed right now)
 
 # Subject concept
-
-def is_subject_concept(self, type:str) -> bool:
-    '''
-    Check a type URI from an authority file to see if it is a subject concept
-
-        Parameters:
-            type (str): URI of the type to check
-    '''
 
 gnd_subject_concept = [
     GND_API.AuthorityResource,

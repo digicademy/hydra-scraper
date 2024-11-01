@@ -9,10 +9,8 @@
 # Import libraries
 import logging
 from datetime import datetime, timedelta
-from glob import glob
 from pyoxigraph import DefaultGraph, RdfFormat, Store
 from rdflib import Graph, Namespace
-from shutil import rmtree
 from time import sleep
 
 # Import script modules
@@ -23,7 +21,7 @@ import extract.lido as lido
 import extract.schema as schema
 #import extract.zipped as zipped
 from base.data import Uri, UriList
-from base.file import File
+from base.file import File, files_in_folder, remove_folder
 from base.lookup import Lookup
 from base.organise import Organise
 
@@ -52,8 +50,9 @@ class Job:
         self.lookup:Lookup = Lookup(self.organise.folder + '/lookup')
         self.last_request:datetime|None = None
 
-        # Set up log report
-        self.progress_start()
+        # Set up reporting
+        if not self.organise.quiet:
+            print('')
         status = Progress('Setting up tasks', self.organise.quiet)
         status_feed = 'Entire feed processed.'
         status_elements = 'All feed elements processed.'
@@ -66,7 +65,7 @@ class Job:
 
             # Delay if necessary
             if self.last_request:
-                self.delay_request(self.last_request, self.organise.delay)
+                delay_request(self.last_request, self.organise.delay)
 
             # Get feed
             status.done()
@@ -201,7 +200,7 @@ class Job:
 
                         # Delay if necessary
                         if self.last_request:
-                            self.delay_request(self.last_request, self.organise.delay)
+                            delay_request(self.last_request, self.organise.delay)
 
                         # Get feed element
                         status.update(element_index, len(feed_data.element_uris.uris))
@@ -300,23 +299,23 @@ class Job:
         if self.organise.elements and 'beacon' in self.organise.output:
             status.done()
             status = Progress('Saving compiled Beacon-like list', self.organise.quiet)
-            self.combine_text(self.organise.folder_beacon, self.organise.folder + '/beacon', 'txt', '#')
-            self.remove_folder(self.organise.folder_beacon)
+            combine_text(self.organise.folder_beacon, self.organise.folder + '/beacon', 'txt', '#')
+            remove_folder(self.organise.folder_beacon)
         if self.organise.elements and 'csv' in self.organise.output:
             status.done()
             status = Progress('Saving compiled CSV table', self.organise.quiet)
-            self.combine_text(self.organise.folder_csv, self.organise.folder + '/table', 'csv', '"feed_uri","element_uri","element_uri_same"')
-            self.remove_folder(self.organise.folder_csv)
+            combine_text(self.organise.folder_csv, self.organise.folder + '/table', 'csv', '"feed_uri","element_uri","element_uri_same"')
+            remove_folder(self.organise.folder_csv)
         if self.organise.elements and 'cto' in self.organise.output:
             status.done()
             status = Progress('Saving compiled nfdicore/cto triples', self.organise.quiet)
-            self.combine_triples(self.organise.folder_cto, self.organise.folder + '/cto')
-            self.remove_folder(self.organise.folder_cto)
+            combine_triples(self.organise.folder_cto, self.organise.folder + '/cto')
+            remove_folder(self.organise.folder_cto)
         if 'triples' in self.organise.output:
             status.done()
             status = Progress('Saving compiled triples', self.organise.quiet)
-            self.combine_triples(self.organise.folder_triples, self.organise.folder + '/triples')
-            self.remove_folder(self.organise.folder_triples)
+            combine_triples(self.organise.folder_triples, self.organise.folder + '/triples')
+            remove_folder(self.organise.folder_triples)
         logger.info('Cleaned up working folder')
 
         # Save look-up file
@@ -328,138 +327,10 @@ class Job:
         # Show log report
         self.status.append(status_feed)
         self.status.append(status_elements)
-        self.progress_report()
+        self.status_report()
 
 
-    def delay_request(self, last_time:datetime, delay:int):
-        '''
-        Dynamically delay the next quest by a given time
-
-            Parameters:
-                note (str): Note to show the user
-                current (int): Current number used to calculate a percentage
-                max (int): Total number used to calculate a percentage
-        '''
-
-        # Sleep if next allowed request time is not now
-        now = datetime.now()
-        then = last_time + timedelta(milliseconds = delay)
-        if now < then:
-            wait = then - now
-            sleep(wait.total_seconds())
-
-            # Log info
-            logger.info('Waited ' + str(wait.total_seconds()) + ' before making the next request')
-
-
-    def combine_text(self, folder:str, file_path:str, file_extension:str, ignore:str):
-        '''
-        Collects text files and saves them in a single file
-
-            Parameters:
-                folder (str): Path of the folder to parse
-                file_path (str): Path of the file to create
-                file_extension (str): Extension of the file to create
-                ignore (str): Start of lines to ignore
-        '''
-
-        # Prepare paths
-        file_path += '.' + file_extension
-        paths = self.files_in_folder(folder)
-
-        # File by file, and line by line
-        with open(file_path, 'w') as collated:
-            for p, path in enumerate(paths):
-
-                # Add line break on consecutive files
-                if p != 0:
-                    collated.write('\n')
-                with open(path, 'r') as lines:
-                    for line in lines:
-
-                        # Full first file, leave out comments from consecutive ones
-                        if p == 0 or not line.startswith(ignore):
-                            collated.write(line)
-
-        # Log info
-        logger.info('Combined temporary text files into ' + file_path)
-
-
-    def combine_triples(self, folder:str, file_path:str):
-        '''
-        Parses all Turtle files in a folder and saves them as a single file
-
-            Parameters:
-                folder (str): Path of the folder to parse
-                file_path (str): Path of the file to create
-        '''
-
-        # Prepare paths
-        file_path += '.ttl'
-        paths = self.files_in_folder(folder)
-
-        # Parse and save using pyoxigraph (quick and dirty, JSON-LD not supported)
-        if len(paths) >= 15000:
-            rdf = Store()
-            for path in paths:
-                rdf.load(path = path, format = RdfFormat.TURTLE, to_graph = DefaultGraph())
-            rdf.dump(output = file_path, format = RdfFormat.TURTLE, from_graph = DefaultGraph())
-
-        # Parse and save using rdflib (slow and pretty)
-        else:
-            rdf = Graph()
-            rdf.bind('schema', SCHEMA, replace = True) # "Replace" overrides the RDFLib schema namespace (SDO), which uses "https"
-            for path in paths:
-                rdf.parse(path, format = 'turtle')
-            rdf.serialize(destination = file_path, format = 'turtle')
-
-        # Log info
-        logger.info('Combined temporary RDF files into ' + file_path)
-
-
-    def files_in_folder(self, folder_path:str) -> list:
-        '''
-        Read a local folder and return a list of resources
-
-            Parameters:
-                folder_path (str): Path to the folder to read
-        '''
-
-        # Prepare list and path
-        entries = []
-        folder_path += '/**/*'
-
-        # Add each file path to list
-        for entry in glob(folder_path, recursive = True):
-            entries.append(entry)
-
-        # Return entries
-        return entries
-
-
-    def remove_folder(self, folder:str):
-        '''
-        Removes a temporary folder and its contents
-
-            Parameters:
-                folder (str): Path of the folder to remove
-        '''
-
-        # Remove folder
-        rmtree(folder)
-
-
-    def progress_start(self):
-        '''
-        Produce an intro note to show at the beginning of a scraping run
-        '''
-
-        # Show note
-        if not self.organise.quiet:
-            print('')
-
-
-    def progress_report(self):
+    def status_report(self):
         '''
         Produce a final report of what happened during a scraping run
         '''
@@ -531,3 +402,88 @@ class Progress:
             self.success = True
             if not self.quiet:
                 print('▸ ' + self.note + 'done')
+
+
+def delay_request(last_time:datetime, delay:int):
+    '''
+    Dynamically delay the next request by a given time
+
+        Parameters:
+            last_time (datetime): Last time a request was made
+            delay (int): Delay to apply in milliseconds
+    '''
+
+    # Sleep if next allowed request time is not now
+    now = datetime.now()
+    then = last_time + timedelta(milliseconds = delay)
+    if now < then:
+        wait = then - now
+        sleep(wait.total_seconds())
+
+        # Log info
+        logger.info('Waited ' + str(wait.total_seconds()) + ' before making the next request')
+
+
+def combine_text(folder:str, file_path:str, file_extension:str, ignore:str):
+    '''
+    Collects text files and saves them in a single file
+
+        Parameters:
+            folder (str): Path of the folder to parse
+            file_path (str): Path of the file to create
+            file_extension (str): Extension of the file to create
+            ignore (str): Start of lines to ignore
+    '''
+
+    # Prepare paths
+    file_path += '.' + file_extension
+    paths = files_in_folder(folder)
+
+    # File by file, and line by line
+    with open(file_path, 'w') as collated:
+        for p, path in enumerate(paths):
+
+            # Add line break on consecutive files
+            if p != 0:
+                collated.write('\n')
+            with open(path, 'r') as lines:
+                for line in lines:
+
+                    # Full first file, leave out comments from consecutive ones
+                    if p == 0 or not line.startswith(ignore):
+                        collated.write(line)
+
+    # Log info
+    logger.info('Combined temporary text files into ' + file_path)
+
+
+def combine_triples(folder:str, file_path:str):
+    '''
+    Parses all Turtle files in a folder and saves them as a single file
+
+        Parameters:
+            folder (str): Path of the folder to parse
+            file_path (str): Path of the file to create
+    '''
+
+    # Prepare paths
+    file_path += '.ttl'
+    paths = files_in_folder(folder)
+
+    # Parse and save using pyoxigraph (quick and dirty, JSON-LD not supported)
+    if len(paths) >= 15000:
+        rdf = Store()
+        for path in paths:
+            rdf.load(path = path, format = RdfFormat.TURTLE, to_graph = DefaultGraph())
+        rdf.dump(output = file_path, format = RdfFormat.TURTLE, from_graph = DefaultGraph())
+
+    # Parse and save using rdflib (slow and pretty)
+    else:
+        rdf = Graph()
+        rdf.bind('schema', SCHEMA, replace = True) # "Replace" overrides the RDFLib schema namespace (SDO), which uses "https"
+        for path in paths:
+            rdf.parse(path, format = 'turtle')
+        rdf.serialize(destination = file_path, format = 'turtle')
+
+    # Log info
+    logger.info('Combined temporary RDF files into ' + file_path)

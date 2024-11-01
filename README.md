@@ -161,7 +161,7 @@ python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schem
 
 The file `go.py` executes a regular scraping run via several `base` modules that can also be used independently:
 
-1. `organise` provides the `Organise` object to collect and clean configuration info. It also creates the required folders and sets up logging.
+1. `organise` provides the `Organise` object to collect and clean configuration info. It also creates the required folders, sets up logging, and uses an additional `Progress` object to show progress messages to users.
 2. `job` provides the `Job` object to orchestrate a single scraping run. It contains the feed pagination and data collation logic.
 3. `file` provides the `File` object to retrieve a remote or local file. It also contains logic to identify file types and parse RDF or XML.
 4. `data` provides the data storage objects `Uri`, `UriList`, `Label`, `LabelList`, `UriLabel`, `UriLabelList`, `Date`, `DateList`, and `Incipit`. They include data serialisation logic and namespace normalization.

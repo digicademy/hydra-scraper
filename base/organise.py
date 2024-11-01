@@ -10,10 +10,12 @@
 import logging
 from argparse import ArgumentParser
 from datetime import datetime
-from os import makedirs
 from os.path import isdir, isfile
 from urllib.robotparser import RobotFileParser
 from validators import url
+
+# Import script modules
+from base.file import create_folder
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -120,7 +122,7 @@ class Organise:
         )
         available_args.add_argument(
             '-n', '--name',
-            default = self.generate_timestamp(),
+            default = generate_timestamp(),
             type = str,
             help = 'Name of the subfolder to download data to'
         )
@@ -236,30 +238,30 @@ class Organise:
 
         # Get delay based on robots.txt
         # Currently only checks the feed, not the feed element URI
-        robots_delay = self.robots_delay(self.location)
+        robots_delay = robots_delay(self.location)
         if robots_delay:
             self.delay = robots_delay
 
         # Create base folder
         self.folder += '/' + self.name
-        self.create_folder(self.folder)
+        create_folder(self.folder)
 
         # Create target folders
         if 'beacon' in self.output:
             self.folder_beacon = self.folder + '/beacon'
-            self.create_folder(self.folder_beacon)
+            create_folder(self.folder_beacon)
         if 'csv' in self.output:
             self.folder_csv = self.folder + '/csv'
-            self.create_folder(self.folder_csv)
+            create_folder(self.folder_csv)
         if 'cto' in self.output:
             self.folder_cto = self.folder + '/cto'
-            self.create_folder(self.folder_cto)
+            create_folder(self.folder_cto)
         if 'files' in self.output:
             self.folder_files = self.folder + '/files'
-            self.create_folder(self.folder_files)
+            create_folder(self.folder_files)
         if 'triples' in self.output:
             self.folder_triples = self.folder + '/triples'
-            self.create_folder(self.folder_triples)
+            create_folder(self.folder_triples)
 
         # Set up log file
         self.log = self.folder + '/harvesting.log'
@@ -268,76 +270,61 @@ class Organise:
         logger.info('Created working folder')
 
 
-    def generate_timestamp(self) -> str:
-        '''
-        Produce a current timestamp
+def generate_timestamp() -> str:
+    '''
+    Produce a current timestamp
 
-            Returns:
-                str: current date and time as a string
-        '''
+        Returns:
+            str: current date and time as a string
+    '''
 
-        # Format timestamp
-        timestamp = datetime.now()
-        timestamp = str(timestamp.isoformat())
+    # Format timestamp
+    timestamp = datetime.now()
+    timestamp = str(timestamp.isoformat())
 
-        # Return result
-        return timestamp
-
-
-    def create_folder(self, folder_name:str):
-        '''
-        Create a folder with a given name
-
-            Parameters:
-                folder_name (str): Name of the folder to create
-        '''
-
-        # Create folders, may be error-prone
-        try:
-            makedirs(folder_name, exist_ok = True)
-        except OSError:
-            pass
+    # Return result
+    return timestamp
 
 
-    def robots_delay(self, location:str) -> int|None:
-        '''
-        Find whether there is a delay recommendation for a URI
+def robots_delay(location:str) -> int|None:
+    '''
+    Find whether there is a delay recommendation for a URI
 
-            Parameters:
-                location (str): URI to identify the delay for
-        '''
+        Parameters:
+            location (str): URI to identify the delay for
+    '''
 
-        # Set up output
-        output = None
+    # Set up output
+    output = None
 
-        # URL
-        if url(location):
-            index = location.find('/')
-            if index:
-                index = location.find('/', index + 2)
-            if index:
-                domain = location[:index]
-            else:
-                domain = location
+    # URL
+    if url(location):
+        index = location.find('/')
+        if index:
+            index = location.find('/', index + 2)
+        if index:
+            domain = location[:index]
+        else:
+            domain = location
 
-            # Robots
-            robots = RobotFileParser()
-            robots.set_url(domain + '/robots.txt')
-            robots.read()
+        # Robots
+        robots = RobotFileParser()
+        robots.set_url(domain + '/robots.txt')
+        robots.read()
 
-            # Delay
-            delay = robots.crawl_delay(harvest_robots)
-            if not delay:
-                delay = robots.crawl_delay('*')
-            if delay:
-                output = int(delay * 1000)
+        # Delay
+        delay = robots.crawl_delay(harvest_robots)
+        if not delay:
+            delay = robots.crawl_delay('*')
+        if delay:
+            output = int(delay * 1000)
 
-            # Rate
-            rate = robots.request_rate(harvest_robots)
-            if not rate:
-                rate = robots.request_rate('*')
-            if rate:
-                output = int((rate.seconds / rate.requests) * 1000)
+        # Rate
+        rate = robots.request_rate(harvest_robots)
+        if not rate:
+            rate = robots.request_rate('*')
+        if rate:
+            output = int((rate.seconds / rate.requests) * 1000)
 
-        # Return
-        return output
+    # Return
+    return output

@@ -11,6 +11,7 @@ from re import search
 
 # Import script modules
 from base.data import Uri, UriList, Date
+from base.file import strip_lines
 from base.extract import ExtractFeedInterface
 
 
@@ -82,7 +83,7 @@ class Feed(ExtractFeedInterface):
                 pattern = None
 
         # Remove empty lines and comments
-        lines = self.file.strip_lines(self.file.text)
+        lines = strip_lines(self.file.text)
         lines = lines.splitlines()
 
         # In each line, remove additional Beacon features
