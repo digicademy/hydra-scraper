@@ -16,7 +16,6 @@ from validators import url
 
 # Import script modules
 from base.file import File
-from base.organise import harvest_identifier
 
 # Define namespaces
 from rdflib.namespace import RDF, SDO
@@ -225,7 +224,6 @@ def sparql(endpoint:str, query_type:str, query:str) -> bool|list|None:
 
     # Prepare headers
     headers = {
-        'User-Agent': harvest_identifier,
         'Accept': 'application/sparql-results+json',
     }
 

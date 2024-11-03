@@ -8,6 +8,7 @@
 
 # Import libraries
 from datetime import date, datetime
+from os.path import isfile
 from rdflib import Namespace
 from rdflib.term import Literal, URIRef
 from urllib.parse import quote, unquote
@@ -64,7 +65,7 @@ class Uri:
 
         # Save str
         elif isinstance(uri, str):
-            if url(uri):
+            if url(str(uri)):
                 if normalize:
                     self.uri = clean_namespaces(uri)
                 else:

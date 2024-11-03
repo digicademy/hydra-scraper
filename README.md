@@ -36,9 +36,9 @@ the SSH equivalent). Then open a terminal in the resulting folder and run
 `pip install -r requirements.txt` to install the dependencies. To use the
 script, use the commands listed under "Examples" below.
 
-To run the container instead, clone this repo and open a terminal in the
-resulting folder. In the command examples below, replace `python go.py` with
-`podman compose run hydra-scraper`.
+To run the container instead, which brings along all required Python tooling,
+clone this repo and open a terminal in the resulting folder. In the command
+examples below, replace `python go.py` with `podman compose run hydra-scraper`.
 
 ## Usage
 
@@ -49,10 +49,9 @@ indicate what kind of scraping run you desire.
 - `-f` or `--feed <value>`: type of feed or starting point for the scraping run:
   - `beacon`: a local or remote text file listing one URI per line (Beacon)
   - `cmif`: a local or remote CMIF file
-  - `folder`: a local folder of individual feed element files
+  - `folder`: a local folder or a local/remote ZIP archive of individual files
   - `schema`: an RDF-based, optionally Hydra-paginated schema.org API or embedded metadata (CGIF)
   - `schema-list`: same as above, but using the triples in individual schema.org files
-  - `zipped`: a ZIP-compressed folder of individual files
 - `-e` or `--elements <value>`: element markup to extract data from during the scraping run (leave out to not extract data):
   - `lido`: use LIDO files
   - `schema`: use RDF triples in a schema.org format (CGIF)
@@ -113,10 +112,34 @@ NFDIcore/CTO triples from a local or remote **Beacon-like feed of CGIF/schema.or
 python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e schema -o cto -n n4c-cgif-beacon -a /about.cgif -p E5308
 ```
 
+NFDIcore/CTO triples from a local or remote **ZIP file containing CGIF/schema.org files**:
+
+```bash
+python go.py -l downloads/n4c-cgif.zip -f folder -e schema -o cto -n n4c-cgif-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+```
+
+NFDIcore/CTO triples from a local **folder containing CGIF/schema.org files**:
+
+```bash
+python go.py -l downloads/n4c-cgif/files -f folder -e schema -o cto -n n4c-cgif-folder -p E5308
+```
+
 NFDIcore/CTO triples from a local or remote **Beacon-like feed of LIDO files** (feed URI added because it is not in the data):
 
 ```bash
 python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+```
+
+NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files**:
+
+```bash
+python go.py -l downloads/n4c-lido.zip -f folder -e lido -o cto -n n4c-lido-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+```
+
+NFDIcore/CTO triples from a local **folder containing LIDO files**:
+
+```bash
+python go.py -l downloads/n4c-lido/files -f folder -e lido -o cto -n n4c-lido-folder -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
 ```
 
 ### Corpus Vitrearum Germany
@@ -181,7 +204,7 @@ Before you make a new release, make sure the following files are up to date:
 - `CITATION.cff`: version number, authors, and release date
 - `requirements.txt`: list of required libraries
 - `setup.py`: version number and authors
-- `base/organise.py`: version number
+- `base/file.py`: version number in user agent
 
 Use GitHub to make the release. Use semantic versioning.
 
@@ -203,6 +226,6 @@ Use GitHub to make the release. Use semantic versioning.
 
 **Further ideas**
 
-- Use the system's download folder to be able to distribute the package
+- Use the system's download folder instead of `downloads` and `unpack` to be able to distribute the package
 - Fix setup file and release the package on PyPI
 - Find a lightweight way to periodically update the RDF class lists

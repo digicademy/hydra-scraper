@@ -15,10 +15,9 @@ from rdflib import Graph, Namespace
 # Import script modules
 import extract.beacon as beacon
 import extract.cmif as cmif
-#import extract.folder as folder
+import extract.folder as folder
 import extract.lido as lido
 import extract.schema as schema
-#import extract.zipped as zipped
 from base.data import Uri, UriList
 from base.file import File, files_in_folder, remove_folder
 from base.lookup import Lookup
@@ -77,10 +76,8 @@ class Job:
                 feed_data = beacon.Feed(feed_file)
             elif self.organise.feed == 'cmif':
                 feed_data = cmif.Feed(feed_file)
-            #elif self.organise.feed == 'folder':
-            #    feed_data = folder.Feed(feed_file)
-            #elif self.organise.feed == 'zipped':
-            #    feed_data = zipped.Feed(feed_file)
+            elif self.organise.feed == 'folder':
+                feed_data = folder.Feed(feed_file)
             elif self.organise.feed == 'schema':
                 feed_data = schema.Feed(feed_file, True)
             elif self.organise.feed == 'schema-list':
@@ -104,12 +101,12 @@ class Job:
 
                 # Alter element URIs
                 if self.organise.include:
-                    feed_data.element_uris = UriList([element_uri.uri for element_uri in feed_data.element_uris.uris if self.organise.include in element_uri.uri])
-                for index, element_uri in enumerate(feed_data.element_uris.uris):
+                    feed_data.element_uris = [element_uri for element_uri in feed_data.element_uris if self.organise.include in element_uri]
+                for index, element_uri in enumerate(feed_data.element_uris):
                     if self.organise.replace and self.organise.replace_with:
-                        feed_data.element_uris.uris[index].uri = element_uri.uri.replace(self.organise.replace, self.organise.replace_with, 1)
+                        feed_data.element_uris[index] = element_uri.replace(self.organise.replace, self.organise.replace_with, 1)
                     if self.organise.append:
-                        feed_data.element_uris.uris[index].uri = element_uri.uri + self.organise.append
+                        feed_data.element_uris[index] = element_uri + self.organise.append
 
                 # Generate feed file name
                 feed_name = str(feed_index).zfill(len(str(self.organise.max_pagination)))
@@ -190,11 +187,8 @@ class Job:
 
                     # Loop through elements
                     status.done()
-                    if not self.organise.elements:
-                        status = Progress('Retrieving feed elements', self.organise.quiet)
-                    else:
-                        status = Progress('Retrieving feed elements and extracting data', self.organise.quiet)
-                    for element_index_minus, element_uri in enumerate(feed_data.element_uris.uris):
+                    status = Progress('Retrieving feed elements and extracting data', self.organise.quiet)
+                    for element_index_minus, element_uri in enumerate(feed_data.element_uris):
                         element_index = element_index_minus + 1
 
                         # Delay if necessary
@@ -202,19 +196,19 @@ class Job:
                             delay_request(self.last_request, self.organise.delay)
 
                         # Get feed element
-                        status.update(element_index, len(feed_data.element_uris.uris))
-                        element_file = File(element_uri.uri, self.organise.dialect)
+                        status.update(element_index, len(feed_data.element_uris))
+                        element_file = File(element_uri, self.organise.dialect)
                         self.last_request = element_file.request_time
 
                         # Generate element file name
                         if self.organise.clean:
-                            element_name = element_uri.uri
+                            element_name = element_uri
                             for clean in self.organise.clean:
                                 element_name = element_name.replace(clean, '', 1)
                             element_name = element_name.replace('/', '')
                             element_name = element_name.replace(':', '')
                         else:
-                            element_name = feed_name + '-' + str(element_index).zfill(len(str(len(feed_data.element_uris.uris))))
+                            element_name = feed_name + '-' + str(element_index).zfill(len(str(len(feed_data.element_uris))))
 
                         # Save original data
                         if 'files' in self.organise.output:
@@ -233,7 +227,7 @@ class Job:
 
                             # Continue only when successfully retrieved
                             if not element_data.success:
-                                logger.error('Could not extract data from feed element ' + element_uri.uri)
+                                logger.error('Could not extract data from feed element ' + element_uri)
                                 status_elements = 'At least one feed element could not be processed.'
                                 self.success = False
                             else:
@@ -242,7 +236,7 @@ class Job:
                                 if not element_data.feed_uri:
                                     element_data.feed_uri = Uri(self.organise.location)
                                 if not element_data.element_uri:
-                                    element_data.element_uri = element_uri
+                                    element_data.element_uri = Uri(element_uri)
 
                                 # Alter data if requested
                                 if self.organise.add_feed:
@@ -291,8 +285,13 @@ class Job:
                 # Set up next feed page to harvest, if available
                 if feed_data.feed_uri_next:
                     feed_uri = feed_data.feed_uri_next.uri
+                    if feed_index >= self.organise.max_pagination:
+                        logger.error('Maximum number of paginated feeds reached, i.e., ' + str(self.organise.max_pagination))
                 else:
                     break
+
+        # Remove content of unpack folder
+        remove_folder(feed_file.unpack, True)
 
         # Compile outputs, task delayed to prevent memory issues during long harvests
         if self.organise.elements and 'beacon' in self.organise.output:

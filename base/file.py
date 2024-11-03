@@ -12,14 +12,12 @@ from datetime import datetime
 from glob import glob
 from httpx import Client
 from lxml import etree
-from os import linesep, makedirs
-from os.path import isfile
+from os import linesep, makedirs, remove
+from os.path import isdir, isfile
 from rdflib import Graph, Namespace
 from shutil import rmtree
 from validators import url
-
-# Import script modules
-from base.organise import harvest_identifier
+from zipfile import ZipFile
 
 # Define namespaces
 SCHEMA = Namespace('http://schema.org/')
@@ -31,46 +29,41 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None):
+    def __init__(self, location:str, content_type:str|None = None, user_agent:str = 'Hydra Scraper/0.9.0'):
         '''
         Retrieve remote or local files
 
             Parameters:
                 location (str): URL or local path to retrieve the file
                 content_type (str): Content type to request or parse
+                user_agent (str): User agent to use in remote file requests
         '''
 
         # Vars
         self.success:bool = False
+        self.unpack:str = 'unpack'
 
         # Content vars
-        self.location:str|None = None
+        self.location:str = location
         self.text:str|None = None
-        self.content:any = None
-        self.content_type:str|None = None
+        self.directory:list|None = None
+        self.rdf:Graph|None = None
+        self.xml:etree|None = None
+        self.content_type:str|None = content_type
         self.file_type:str|None = None
         self.file_extension:str|None = None
-        self.rdf:Graph|None = None
-        self.xml:any = None
+        self.user_agent:str = user_agent
         self.request_time:datetime|None = None
 
-        # Assign arguments to object
-        self.location = location
-        self.content_type = content_type
-
-        # Decide whether to use remote or local routine
+        # Remote, local, or folder routine
         if url(self.location):
             self.remote_file()
         elif isfile(self.location):
             self.local_file()
+        elif isdir(self.location):
+            self.local_folder()
         else:
-            logger.error('Location ' + self.location + ' is neither a URL nor a local path')
-
-        # Determine file type and extension
-        if self.success:
-            self.determine_type()
-            self.find_embedded_jsonld()
-            self.parse_content()
+            logger.error('Location ' + self.location + ' is neither a URL nor a local path nor a folder')
 
 
     def remote_file(self):
@@ -83,14 +76,14 @@ class File:
 
         # Compose request headers
         headers = {
-            'User-Agent': harvest_identifier,
+            'User-Agent': self.user_agent,
         }
         if self.content_type:
             headers['Accept'] = self.content_type
 
         # Request response from URL
         try:
-            with Client(headers = headers, timeout = 300.0, follow_redirects = True) as client:
+            with Client(headers = headers, timeout = 1800.0, follow_redirects = True) as client:
                 r = client.get(self.location)
 
                 # Check if response is valid
@@ -109,16 +102,77 @@ class File:
                     if check_next:
                             self.location = str(r.url)
 
-                    # Store content type
+                    # Store and clean content type
                     self.content_type = r.headers['Content-Type']
                     self.content_type.replace('; charset=UTF-8', '')
                     self.content_type.replace('; charset=utf-8', '')
                     self.content_type.replace(';charset=UTF-8', '')
                     self.content_type.replace(';charset=utf-8', '')
 
+                    # Determine file type and extension based on content type
+                    if 'text/html' in self.content_type:
+                        self.file_type = 'rdfa'
+                        self.file_extension = 'html'
+                    elif 'application/xhtml+xml' in self.content_type:
+                        self.file_type = 'rdfa'
+                        self.file_extension = 'xhtml'
+                    elif 'application/rdf+xml' in self.content_type:
+                        self.file_type = 'xml'
+                        self.file_extension = 'xml'
+                    elif 'text/n3' in self.content_type:
+                        self.file_type = 'n3'
+                        self.file_extension = 'n3'
+                    elif 'text/turtle' in self.content_type or 'application/x-turtle' in self.content_type:
+                        self.file_type = 'turtle'
+                        self.file_extension = 'ttl'
+                    elif 'application/trig' in self.content_type:
+                        self.file_type = 'trig'
+                        self.file_extension = 'trig'
+                    elif 'application/trix' in self.content_type:
+                        self.file_type = 'trix'
+                        self.file_extension = 'trix'
+                    elif 'application/n-quads' in self.content_type:
+                        self.file_type = 'nquads'
+                        self.file_extension = 'nq'
+                    elif 'application/ld+json' in self.content_type:
+                        self.file_type = 'json-ld'
+                        self.file_extension = 'jsonld'
+                    elif 'application/json' in self.content_type:
+                        self.file_type = 'json-ld'
+                        self.file_extension = 'json'
+                    elif 'application/hex+x-ndjson' in self.content_type:
+                        self.file_type = 'hext'
+                        self.file_extension = 'hext'
+                    elif 'application/n-triples' in self.content_type:
+                        self.file_type = 'nt'
+                        self.file_extension = 'nt'
+                    elif 'application/xml' in self.content_type:
+                        self.file_type = 'xml'
+                        self.file_extension = 'xml'
+                    elif 'application/zip' in self.content_type:
+                        self.file_type = 'folder'
+                        self.file_extension = 'zip'
+                    elif 'text/plain' in self.content_type:
+                        self.file_type = 'txt'
+                        self.file_extension = 'txt'
+                    else:
+                        self.file_type = 'txt'
+                        self.file_extension = 'txt'
+                        logger.warning('Could not recognise file type of ' + self.location)
+
                     # Store content
-                    self.text = r.text
-                    self.content = r.content
+                    if not self.file_extension == 'zip':
+                        self.text = r.text
+                        self.parse_content()
+
+                    # Handle ZIP file
+                    else:
+                        zip = self.unpack + '/payload.zip'
+                        with open(zip, 'wb') as f:
+                            f.write(r.content)
+                        unpack_zip(zip, self.unpack)
+                        remove(zip)
+                        self.local_folder(self.unpack)
 
         # Log info
         except:
@@ -142,153 +196,91 @@ class File:
                     i += 1
                     self.file_extension = self.location[i:]
 
+                # Determine content and file type based on file extension
+                if self.file_extension.startswith('htm'):
+                    self.content_type = 'text/html'
+                    self.file_type = 'rdfa'
+                elif self.file_extension.startswith('xhtm'):
+                    self.content_type = 'application/xhtml+xml'
+                    self.file_type = 'rdfa'
+                elif self.file_extension == 'n3':
+                    self.content_type = 'text/n3'
+                    self.file_type = 'n3'
+                elif self.file_extension == 'ttl':
+                    self.content_type = 'text/turtle'
+                    self.file_type = 'turtle'
+                elif self.file_extension == 'trig':
+                    self.content_type = 'application/trig'
+                    self.file_type = 'trig'
+                elif self.file_extension == 'trix':
+                    self.content_type = 'application/trix'
+                    self.file_type = 'trix'
+                elif self.file_extension == 'nq':
+                    self.content_type = 'application/n-quads'
+                    self.file_type = 'nquads'
+                elif self.file_extension.startswith('json'):
+                    self.content_type = 'application/ld+json'
+                    self.file_type = 'json-ld'
+                elif self.file_extension == 'hext':
+                    self.content_type = 'application/hex+x-ndjson'
+                    self.file_type = 'hext'
+                elif self.file_extension == 'nt':
+                    self.content_type = 'application/n-triples'
+                    self.file_type = 'nt'
+                elif self.file_extension == 'xml':
+                    self.content_type = 'application/xml' # Could also be 'application/rdf+xml'
+                    self.file_type = 'xml'
+                elif self.file_extension == 'zip':
+                    self.content_type = 'application/zip'
+                    self.file_type = 'folder'
+                elif self.file_extension == 'txt':
+                    self.content_type = 'text/plain'
+                    self.file_type = 'txt'
+                else:
+                    self.content_type = 'text/plain'
+                    self.file_type = 'txt'
+                    logger.warning('Could not recognise file type of ' + self.location)
+
                 # Store content
-                self.content = f.read()
-                self.text = self.content
+                if not self.file_extension == 'zip':
+                    self.text = f.read()
+                    self.parse_content()
+
+                # Handle ZIP file
+                else:
+                    unpack_zip(self.location, self.unpack)
+                    self.local_folder(self.unpack)
 
         # Log info
         except:
             logger.error('Could not fetch local file ' + self.location)
 
 
-    def determine_type(self):
+    def local_folder(self, location:str|None = None):
         '''
-        Determine file type and extension based on a content type
+        Retrieve content of a local folder
         '''
 
-        # Routine for remote files
-        if self.content_type:
+        if not location:
+            location = self.location
 
-            # RDF file types and extensions, list mostly based on
-            # https://github.com/RDFLib/rdflib/blob/main/rdflib/parser.py#L561
-            if 'text/html' in self.content_type:
-                self.file_type = 'rdfa'
-                self.file_extension = 'html'
-            elif 'application/xhtml+xml' in self.content_type:
-                self.file_type = 'rdfa'
-                self.file_extension = 'xhtml'
-            elif 'application/rdf+xml' in self.content_type:
-                self.file_type = 'xml'
-                self.file_extension = 'xml'
-            elif 'text/n3' in self.content_type:
-                self.file_type = 'n3'
-                self.file_extension = 'n3'
-            elif 'text/turtle' in self.content_type or 'application/x-turtle' in self.content_type:
-                self.file_type = 'turtle'
-                self.file_extension = 'ttl'
-            elif 'application/trig' in self.content_type:
-                self.file_type = 'trig'
-                self.file_extension = 'trig'
-            elif 'application/trix' in self.content_type:
-                self.file_type = 'trix'
-                self.file_extension = 'trix'
-            elif 'application/n-quads' in self.content_type:
-                self.file_type = 'nquads'
-                self.file_extension = 'nq'
-            elif 'application/ld+json' in self.content_type:
-                self.file_type = 'json-ld'
-                self.file_extension = 'jsonld'
-            elif 'application/json' in self.content_type:
-                self.file_type = 'json-ld'
-                self.file_extension = 'json'
-            elif 'application/hex+x-ndjson' in self.content_type:
-                self.file_type = 'hext'
-                self.file_extension = 'hext'
-            elif 'application/n-triples' in self.content_type:
-                self.file_type = 'nt'
-                self.file_extension = 'nt'
+        # Retrieve folder content
+        files = files_in_folder(location)
+        if len(files) > 0:
+            self.success = True
+            logger.info('Indexed local folder ' + location)
 
-            # Non-RDF file types and extensions
-            elif 'application/xml' in self.content_type:
-                self.file_type = 'xml'
-                self.file_extension = 'xml'
-            elif 'text/plain' in self.content_type:
-                self.file_type = 'txt'
-                self.file_extension = 'txt'
-            else:
-                self.file_type = 'txt'
-                self.file_extension = 'txt'
-                logger.warning('Could not recognise file type of ' + self.location)
+            # Set content and file type as well as file extension
+            self.content_type = 'application/zip'
+            self.file_type = 'folder'
+            self.file_extension = 'zip'
 
-        # Routine for local files
-        elif self.file_extension:
+            # Store file list
+            self.directory = files
 
-            # RDF content and file types
-            if self.file_extension.startswith('htm'):
-                self.content_type = 'text/html'
-                self.file_type = 'rdfa'
-            elif self.file_extension.startswith('xhtm'):
-                self.content_type = 'application/xhtml+xml'
-                self.file_type = 'rdfa'
-            elif self.file_extension == 'n3':
-                self.content_type = 'text/n3'
-                self.file_type = 'n3'
-            elif self.file_extension == 'ttl':
-                self.content_type = 'text/turtle'
-                self.file_type = 'turtle'
-            elif self.file_extension == 'trig':
-                self.content_type = 'application/trig'
-                self.file_type = 'trig'
-            elif self.file_extension == 'trix':
-                self.content_type = 'application/trix'
-                self.file_type = 'trix'
-            elif self.file_extension == 'nq':
-                self.content_type = 'application/n-quads'
-                self.file_type = 'nquads'
-            elif self.file_extension.startswith('json'):
-                self.content_type = 'application/ld+json'
-                self.file_type = 'json-ld'
-            elif self.file_extension == 'hext':
-                self.content_type = 'application/hex+x-ndjson'
-                self.file_type = 'hext'
-            elif self.file_extension == 'nt':
-                self.content_type = 'application/n-triples'
-                self.file_type = 'nt'
-
-            # Non-RDF file types and extensions
-            elif self.file_extension == 'xml':
-                self.content_type = 'application/xml' # Could also be 'application/rdf+xml'
-                self.file_type = 'xml'
-            elif self.file_extension == 'txt':
-                self.content_type = 'text/plain'
-                self.file_type = 'txt'
-            else:
-                self.content_type = 'text/plain'
-                self.file_type = 'txt'
-                self.file_extension = 'txt'
-                logger.warning('Could not recognise file type of ' + self.location)
-
-        # Edge case
+        # Log info
         else:
-            self.content_type = 'text/plain'
-            self.file_type = 'txt'
-            self.file_extension = 'txt'
-            logger.warning('Could not recognise file type of ' + self.location)
-
-
-    def find_embedded_jsonld(self):
-        '''
-        Finds embedded JSON-LD as it is not supported by RDFLib yet
-        '''
-
-        # Go ahead in HTML and XHTML responses
-        if self.file_type == 'rdfa':
-            embed = self.text.find('application/ld+json')
-            if embed != -1:
-
-                # Get start and end of JSON-LD block without requiring Beatiful Soup
-                embed_start = self.text.find('>', embed) + 1
-                embed_end = self.text.find('</script>', embed)
-                if embed_start > 0 and embed_end > embed_start:
-
-                    # Correct original assumptions
-                    self.file_type = 'json-ld'
-                    self.file_extension = 'jsonld'
-                    self.text = self.text[embed_start:embed_end]
-
-                    # Remove empty lines
-                    self.text = strip_lines(self.text)
-                    self.content = self.text.encode()
+            logger.error('Empty local folder ' + location)
 
 
     def parse_content(self):
@@ -296,22 +288,49 @@ class File:
         Parse content as RDF or XML
         '''
 
+        # Check HTML and XHTML responses for embedded JSON-LD
+        if self.file_type == 'rdfa':
+            self.find_embedded_jsonld()
+
         # Parse as RDF
         if self.file_type in ['rdfa', 'xml', 'n3', 'turtle', 'trig', 'trix', 'nquads', 'json-ld', 'hext', 'nt']:
             try:
                 self.rdf = Graph()
                 self.rdf.bind('schema', SCHEMA, replace = True) # "Replace" overrides the RDFLib schema namespace (SDO), which uses "https"
-                self.rdf.parse(self.content, format = self.file_type)
+                self.rdf.parse(data = self.text.encode(), format = self.file_type)
 
             # Parse as XML instead (nested because RDF may be XML)
             except:
                 if self.file_type == 'xml':
                     try:
-                        self.xml = etree.fromstring(self.content)
+                        self.xml = etree.fromstring(self.text.encode())
                     except:
                         logger.error('Could not parse XML file ' + self.location)
                 else:
                     logger.error('Could not parse RDF file ' + self.location)
+
+
+    def find_embedded_jsonld(self):
+        '''
+        Finds embedded JSON-LD as it is not automatically recognized by RDFLib (yet)
+        '''
+
+        # Find JSON-LD block
+        embed = self.text.find('application/ld+json')
+        if embed != -1:
+
+            # Get start and end of JSON-LD block without requiring Beatiful Soup
+            embed_start = self.text.find('>', embed) + 1
+            embed_end = self.text.find('</script>', embed)
+            if embed_start > 0 and embed_end > embed_start:
+
+                # Correct original assumptions
+                self.file_type = 'json-ld'
+                self.file_extension = 'jsonld'
+                self.text = self.text[embed_start:embed_end]
+
+                # Remove empty lines
+                self.text = strip_lines(self.text)
 
 
     def save(self, file_path:str, format:str|None = None):
@@ -443,6 +462,25 @@ def strip_string(input:str) -> str:
     return input
 
 
+def unpack_zip(file_path:str, folder_path:str):
+    '''
+    Unpack a ZIP archive to a local folder
+
+        Parameters:
+            file_path (str): Path to the ZIP archive to unpack
+            folder_path (str): Path to the folder to unpack the archive in
+    '''
+
+    try:
+        with ZipFile(file_path, 'r') as zip:
+            zip.extractall(folder_path)
+        logger.info('Unpacked ZIP archive ' + file_path)
+
+    # Log info
+    except:
+        logger.error('Failed to unpack ZIP archive ' + file_path)
+
+
 def files_in_folder(folder_path:str) -> list:
     '''
     Read a local folder and return a list of resources
@@ -478,7 +516,7 @@ def create_folder(folder_name:str):
         pass
 
 
-def remove_folder(folder:str):
+def remove_folder(folder:str, contents_only:bool = False):
     '''
     Removes a temporary folder and its contents
 
@@ -486,5 +524,12 @@ def remove_folder(folder:str):
             folder (str): Path of the folder to remove
     '''
 
-    # Remove folder
-    rmtree(folder)
+    # Remove entire folder
+    if not contents_only:
+        rmtree(folder)
+
+    # Only remove files in folder
+    else:
+        files = files_in_folder(folder)
+        for file in files:
+            remove(file)

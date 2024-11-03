@@ -694,7 +694,7 @@ class ExtractFeedInterface(ExtractInterface):
         self.catalog_uri:Uri = Uri()
         self.catalog_uri_same:UriList = UriList()
         self.modified_date:Date = Date()
-        self.element_uris:UriList = UriList()
+        self.element_uris:list = []
         self.feed_elements:list = []
 
         # Inherit from interface class

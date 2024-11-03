@@ -38,7 +38,9 @@ class Feed(ExtractFeedInterface):
         self.modified_date = Date(self.xml_first_attribute('.//{T}teiHeader/{T}fileDesc/{T}publicationStmt/{T}date[@when]', 'when'))
 
         # Element URIs
-        self.element_uris = UriList(self.xml_all_attributes('.//{T}teiHeader/{T}profileDesc/{T}correspDesc[@ref]', 'ref'), normalize = False)
+        element_uris = self.xml_all_attributes('.//{T}teiHeader/{T}profileDesc/{T}correspDesc[@ref]', 'ref')
+        if element_uris:
+            self.element_uris = element_uris
 
         # Feed elements
         #if self.feed_elements == 

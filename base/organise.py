@@ -21,10 +21,6 @@ from base.file import create_folder
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Set up user agent
-harvest_identifier = 'Hydra Scraper/0.9.0-beta'
-harvest_robots = 'HydraScraper'
-
 
 class Organise:
 
@@ -40,7 +36,7 @@ class Organise:
         # Const
         self.delay:int = 500 # millisenconds, i.e., two requests per second
         self.folder:str = 'downloads'
-        self.max_pagination:int = 1000
+        self.max_pagination:int = 10000
 
         # Vars
         self.log:str|None = None
@@ -84,11 +80,10 @@ class Organise:
                 'beacon',
                 'cmif',
                 #'csv',
-                #'folder',
+                'folder',
                 #'oaipmh',
                 'schema',
-                'schema-list',
-                #'zipped'
+                'schema-list'
             ],
             required = True,
             type = str,
@@ -218,9 +213,9 @@ class Organise:
 
         # Check location based on feed parameter
         if self.feed == 'folder':
-            if not isdir(self.location):
+            if not url(self.location) and not isfile(self.location) and not isdir(self.location):
                 raise ValueError('Hydra Scraper called with a malformed folder location.')
-        elif self.feed in ['beacon', 'cmif', 'csv', 'zipped']:
+        elif self.feed in ['beacon', 'cmif', 'csv']:
             if not url(self.location) and not isfile(self.location):
                 raise ValueError('Hydra Scraper called with a malformed ZIP file location.')
         elif self.feed in ['oaipmh', 'schema', 'schema-list']:
@@ -239,9 +234,9 @@ class Organise:
 
         # Get delay based on robots.txt
         # Currently only checks the feed, not the feed element URI
-        robots_delay = robots_delay(self.location)
-        if robots_delay:
-            self.delay = robots_delay
+        delay = robots_delay(self.location)
+        if delay:
+            self.delay = delay
 
         # Create base folder
         self.folder += '/' + self.name
@@ -307,12 +302,13 @@ def delay_request(last_time:datetime, delay:int):
         logger.info('Waited ' + str(wait.total_seconds()) + ' before making the next request')
 
 
-def robots_delay(location:str) -> int|None:
+def robots_delay(location:str, robots_user_agent:str = 'HydraScraper') -> int|None:
     '''
     Find whether there is a delay recommendation for a URI
 
         Parameters:
             location (str): URI to identify the delay for
+            robots_user_agent (str): Simplified user agent to query robots.txt
     '''
 
     # Set up output
@@ -334,14 +330,14 @@ def robots_delay(location:str) -> int|None:
         robots.read()
 
         # Delay
-        delay = robots.crawl_delay(harvest_robots)
+        delay = robots.crawl_delay(robots_user_agent)
         if not delay:
             delay = robots.crawl_delay('*')
         if delay:
             output = int(delay * 1000)
 
         # Rate
-        rate = robots.request_rate(harvest_robots)
+        rate = robots.request_rate(robots_user_agent)
         if not rate:
             rate = robots.request_rate('*')
         if rate:

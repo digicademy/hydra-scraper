@@ -61,27 +61,25 @@ class Feed(ExtractFeedInterface):
                     self.modified_date = Date(self.rdf_first_object(self.feed_uri.rdflib(), [SCHEMA.dateModified, SDO.dateModified]))
 
                     # Element URIs (feed and single-element notation)
-                    element_uris = []
                     wrappers = self.rdf_all_objects(self.feed_uri.rdflib(), [SCHEMA.dataFeedElement, SDO.dataFeedElement])
                     if wrappers != None:
                         for wrapper in wrappers:
                             if (wrapper, RDF.type, SCHEMA.DataFeedItem) in self.file.rdf or (wrapper, RDF.type, SDO.DataFeedItem) in self.file.rdf:
-                                element_uris.append(self.rdf_first_object(wrapper, [SCHEMA.item, SDO.item]))
+                                self.element_uris.append(self.rdf_first_object(wrapper, [SCHEMA.item, SDO.item]))
                     elements = self.rdf_all_subjects([SCHEMA.isPartOf, SDO.isPartOf], self.feed_uri.rdflib())
                     if elements != None:
                         for element in elements:
-                            element_uris.append(element)
+                            self.element_uris.append(element)
                     elements = self.rdf_all_objects(self.feed_uri.rdflib(), HYDRA.member)
                     if elements != None:
                         for element in elements:
-                            element_uris.append(element)
-                    if len(element_uris) != 0:
-                        self.element_uris = UriList(element_uris, normalize = False)
+                            self.element_uris.append(element)
+                    self.element_uris = list(set(self.element_uris))
 
                     # Feed elements
                     if self.elements_in_feed:
-                        for element_uri in self.element_uris.uris:
-                            self.feed_elements.append(FeedElement(self.file, self.feed_uri.uri, element_uri.uri))
+                        for element_uri in self.element_uris:
+                            self.feed_elements.append(FeedElement(self.file, self.feed_uri.uri, element_uri))
 
 
 class FeedElement(ExtractFeedElementInterface):
@@ -119,7 +117,6 @@ class FeedElement(ExtractFeedElementInterface):
                                 self.element_uri = Uri(self.rdf_first_object(wrapper, [SCHEMA.item, SDO.item]))
                         if not self.element_uri:
                             self.element_uri = Uri(self.rdf_first_subject([SCHEMA.isPartOf, SDO.isPartOf], self.feed_uri.rdflib()), normalize = False)
-                    #print(self.element_uri)
 
                     # Same as element URI
                     self.element_uri_same = UriList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.sameAs, SDO.sameAs]), normalize = False)

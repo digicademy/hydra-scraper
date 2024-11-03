@@ -63,7 +63,7 @@ class Feed(MapFeedInterface):
                 self.rdf.add((self.feed_uri.rdflib(), SCHEMA.dateModified, self.modified_date.rdflib()))
             else:
                 today = date.today()
-                self.rdf.add((self.feed_uri.rdflib(), SCHEMA.dateModified, Literal(today.strftime('%Y-%M-%D'), datatype = XSD.date)))
+                self.rdf.add((self.feed_uri.rdflib(), SCHEMA.dateModified, Literal(str(today.isoformat()), datatype = XSD.date)))
 
             # Same as feed URI
             for i in self.feed_uri_same.rdflib():

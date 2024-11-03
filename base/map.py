@@ -184,7 +184,7 @@ class MapFeedInterface(MapInterface):
         self.catalog_uri_same:UriList = UriList()
         self.catalog_uri_next:Uri = Uri()
         self.modified_date:Date = Date()
-        self.element_uris:UriList = UriList()
+        self.element_uris:list = []
         self.feed_elements:list = []
 
         # Inherit from interface class

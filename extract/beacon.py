@@ -42,7 +42,7 @@ class Feed(ExtractFeedInterface):
         self.modified_date = Date(self.beacon_info('TIMESTAMP'))
 
         # Element URIs
-        self.element_uris = UriList(self.beacon_uris(), normalize = False)
+        self.element_uris = self.beacon_uris()
 
         # Feed elements
         #if self.feed_elements == 
