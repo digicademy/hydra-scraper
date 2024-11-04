@@ -1,0 +1,16 @@
+# Podman Compose config to run Hydra Scraper
+#
+# This file is part of the Hydra Scraper package.
+#
+# For the full copyright and license information, please read the
+# LICENSE.txt file that was distributed with this source code.
+
+services:
+  hydra-scraper:
+    build:
+      context: .
+      dockerfile: ./Containerfile
+    image: localhost/digicademy/hydra-scraper
+    container_name: hydra-scraper
+    volumes:
+      - ./downloads:/usr/src/hydra-scraper/downloads:rw,z

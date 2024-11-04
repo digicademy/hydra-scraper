@@ -1,0 +1,19 @@
+# Non-PIP packages
+#glob
+#hashlib
+#json
+#os
+#shutil
+#time
+#urllib
+#zipfile
+
+# PIP packages
+argparse
+datetime
+httpx >= 0.24.0
+logging
+lxml >= 5.0.0
+pyoxigraph >= 0.4.0
+rdflib >= 7.0.0
+validators
