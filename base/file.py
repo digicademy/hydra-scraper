@@ -7,6 +7,7 @@
 
 
 # Import libraries
+import codecs
 import logging
 from datetime import datetime
 from glob import glob
@@ -100,7 +101,7 @@ class File:
                         if prev_r.status_code == 301:
                             check_next = True
                     if check_next:
-                            self.location = str(r.url)
+                        self.location = str(r.url)
 
                     # Store and clean content type
                     self.content_type = r.headers['Content-Type']
@@ -291,6 +292,10 @@ class File:
         # Check HTML and XHTML responses for embedded JSON-LD
         if self.file_type == 'rdfa':
             self.find_embedded_jsonld()
+
+        # Remove UTF-8 BOM if present
+        if self.text[0:1].encode() == codecs.BOM_UTF8:
+            self.text = self.text[1:]
 
         # Parse as RDF
         if self.file_type in ['rdfa', 'xml', 'n3', 'turtle', 'trig', 'trix', 'nquads', 'json-ld', 'hext', 'nt']:

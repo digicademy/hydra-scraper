@@ -125,7 +125,7 @@ class Lookup:
         elif URIRef(uri) in GND:
             remote = File(uri, 'text/turtle')
             if remote.success:
-                if uri != remote.location:
+                if uri != remote.location: # Follow permanent redirects as they mark old/wrong entries
                     self.keyvalue[uri] = remote.location
                     uri = remote.location
                 for rdf_type in remote.rdf.objects(URIRef(uri), RDF.type):
@@ -146,9 +146,9 @@ class Lookup:
         elif URIRef(uri) in VIAF:
             remote = File(uri, 'application/rdf+xml')
             if remote.success:
-                if uri != remote.location:
-                    self.keyvalue[uri] = remote.location
-                    uri = remote.location
+                #if uri != remote.location: # Cannot follow permanent redirects as 301 is misused on actual authority URIs
+                #    self.keyvalue[uri] = remote.location
+                #    uri = remote.location
                 for rdf_type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if rdf_type in schema_person:
                         output = 'person'

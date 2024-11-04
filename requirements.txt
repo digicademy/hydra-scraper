@@ -1,4 +1,5 @@
 # Non-PIP packages
+#codecs
 #glob
 #hashlib
 #json

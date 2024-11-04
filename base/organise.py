@@ -213,10 +213,10 @@ class Organise:
         if self.feed == 'folder':
             if not url(self.location) and not isfile(self.location) and not isdir(self.location):
                 raise ValueError('Hydra Scraper called with a malformed folder location.')
-        elif self.feed in ['beacon', 'cmif', 'csv']:
+        elif self.feed in ['beacon', 'cmif', 'csv', 'schema', 'schema-list']:
             if not url(self.location) and not isfile(self.location):
                 raise ValueError('Hydra Scraper called with a malformed ZIP file location.')
-        elif self.feed in ['oaipmh', 'schema', 'schema-list']:
+        elif self.feed in ['oaipmh']:
             if not url(self.location):
                 raise ValueError('Hydra Scraper called with a malformed API location.')
 
