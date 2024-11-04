@@ -79,7 +79,6 @@ class Organise:
             choices = [
                 'beacon',
                 'cmif',
-                #'csv',
                 'folder',
                 #'oaipmh',
                 'schema',
@@ -92,7 +91,6 @@ class Organise:
         available_args.add_argument(
             '-e', '--elements',
             choices = [
-                #'csv',
                 'lido',
                 #'mei',
                 'schema',

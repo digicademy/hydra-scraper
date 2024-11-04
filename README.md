@@ -56,11 +56,11 @@ indicate what kind of scraping run you desire.
   - `lido`: use LIDO files
   - `schema`: use RDF triples in a schema.org format (CGIF)
 - `-o` or `--output <value> <value>`: outputs to produce in the scraping run:
-  - `files`: the original files
-  - `triples`: the original triples
   - `beacon`: a text file listing one URI per line
   - `csv`: a CSV table of data
   - `cto`: NFDI4Culture-style triples
+  - `files`: the original files
+  - `triples`: the original triples
 
 In addition, and depending on the main config, you can specify these
 additional options:
@@ -200,32 +200,28 @@ If you change the code, please remember to document each object/function and wal
 
 Before you make a new release, make sure the following files are up to date:
 
+- `base/file.py`: version number in user agent
 - `CHANGELOG.md`: version number and changes
 - `CITATION.cff`: version number, authors, and release date
+- `LICENCE.txt`: release date
 - `requirements.txt`: list of required libraries
 - `setup.py`: version number and authors
-- `base/file.py`: version number in user agent
 
 Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
-- Allow for remote/local ZIP and local folder ingests (and alter this readme)
-- Update `assets` folder and release
-
-**Likely after 0.9.0**
-
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
-- Automatically build OCI container via CI
+- Automatically build OCI container via CI instead of on demand
 - Add TEI ingest support based on [Gregorovius](https://gregorovius-edition.dhi-roma.it/api/cmif)
 - Add [OAI-PMH](https://pro.deutsche-digitale-bibliothek.de/daten-nutzen/schnittstellen) ingest support
 - Add MEI ingest support
 - Add DCAT serialisation
-- Add support for ingesting CSV/JSON data?
 
 **Further ideas**
 
+- Add support for ingesting CSV/JSON data
 - Use the system's download folder instead of `downloads` and `unpack` to be able to distribute the package
 - Fix setup file and release the package on PyPI
 - Find a lightweight way to periodically update the RDF class lists
