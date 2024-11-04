@@ -600,7 +600,7 @@ class ExtractInterface:
         pass
 
 
-    def map_and_save(self, target:str, file_path:str, format:str|None = None, prepare:str|None = None):
+    def map_and_save(self, target:str, file_path:str, format:str|None = None, prepare:list|None = None):
         '''
         Serialise triples in another standard as a file
 
@@ -608,7 +608,7 @@ class ExtractInterface:
                 target (str): Identifier of the target standard to use
                 file_path (str): Path of the file to create
                 format (str|None): Optional RDFLib file format to use
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Create and save target
@@ -616,56 +616,56 @@ class ExtractInterface:
         mapped.save(file_path, format, prepare)
 
 
-    def map_and_turtle(self, target:str, file_path:str, prepare:str|None = None):
+    def map_and_turtle(self, target:str, file_path:str, prepare:list|None = None):
         '''
         Serialise triples in another standard as a Turtle file
 
             Parameters:
                 target (str): Identifier of the target standard to use
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method
         self.map_and_save(target, file_path, 'turtle', prepare)
 
 
-    def map_and_ntriples(self, target:str, file_path:str, prepare:str|None = None):
+    def map_and_ntriples(self, target:str, file_path:str, prepare:list|None = None):
         '''
         Serialise triples in another standard as an NTriples file
 
             Parameters:
                 target (str): Identifier of the target standard to use
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method
         self.map_and_save(target, file_path, 'nt', prepare)
 
 
-    def map_and_rdfxml(self, target:str, file_path:str, prepare:str|None = None):
+    def map_and_rdfxml(self, target:str, file_path:str, prepare:list|None = None):
         '''
         Serialise triples in another standard as an RDF/XML file
 
             Parameters:
                 target (str): Identifier of the target standard to use
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method
         self.map_and_save(target, file_path, 'xml', prepare)
 
 
-    def map_and_jsonld(self, target:str, file_path:str, prepare:str|None = None):
+    def map_and_jsonld(self, target:str, file_path:str, prepare:list|None = None):
         '''
         Serialise triples in another standard as a JSON-LD file
 
             Parameters:
                 target (str): Identifier of the target standard to use
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method

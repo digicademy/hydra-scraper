@@ -75,7 +75,7 @@ additional options:
 - `-ac` or `-add_catalog <uri>`: URI of a data catalog the data feed belongs to
 - `-ap` or `-add_publisher <uri>`: URI of the data publisher
 - `-c` or `--clean <string> <string>`: strings to remove from feed element URIs to build their file names
-- `-p` or `--prepare <string>`: prepare cto output for this NFDI4Culture feed ID
+- `-p` or `--prepare <string> <string>`: prepare cto output for this NFDI4Culture feed and catalog ID
 - `-q` or `--quiet`: do not display status messages
 
 ## Examples
@@ -97,49 +97,49 @@ python go.py -l https://nfdi4culture.de/resource.ttl -f schema-list -o triples -
 NFDIcore/CTO triples from a local or remote **CGIF/schema.org feed (embedded)**:
 
 ```bash
-python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o cto -n n4c-cgif -p E5308
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o cto -n n4c-cgif -p E4229 E5308
 ```
 
 NFDIcore/CTO triples from a local or remote **CGIF/schema.org feed (API)**:
 
 ```bash
-python go.py -l https://gn.biblhertz.it/fotothek/seo -f schema -e schema -o cto -n n4c-cgif-api -p E4244
+python go.py -l https://gn.biblhertz.it/fotothek/seo -f schema -e schema -o cto -n n4c-cgif-api -p E4244 E6064
 ```
 
 NFDIcore/CTO triples from a local or remote **Beacon-like feed of CGIF/schema.org files**:
 
 ```bash
-python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e schema -o cto -n n4c-cgif-beacon -a /about.cgif -p E5308
+python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e schema -o cto -n n4c-cgif-beacon -a /about.cgif -p E4229 E5308
 ```
 
 NFDIcore/CTO triples from a local or remote **ZIP file containing CGIF/schema.org files**:
 
 ```bash
-python go.py -l downloads/n4c-cgif.zip -f folder -e schema -o cto -n n4c-cgif-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+python go.py -l downloads/n4c-cgif.zip -f folder -e schema -o cto -n n4c-cgif-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E4229 E5308
 ```
 
 NFDIcore/CTO triples from a local **folder containing CGIF/schema.org files**:
 
 ```bash
-python go.py -l downloads/n4c-cgif/files -f folder -e schema -o cto -n n4c-cgif-folder -p E5308
+python go.py -l downloads/n4c-cgif/files -f folder -e schema -o cto -n n4c-cgif-folder -p E4229 E5308
 ```
 
 NFDIcore/CTO triples from a local or remote **Beacon-like feed of LIDO files** (feed URI added because it is not in the data):
 
 ```bash
-python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E4229 E5308
 ```
 
 NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files**:
 
 ```bash
-python go.py -l downloads/n4c-lido.zip -f folder -e lido -o cto -n n4c-lido-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+python go.py -l downloads/n4c-lido.zip -f folder -e lido -o cto -n n4c-lido-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E4229 E5308
 ```
 
 NFDIcore/CTO triples from a local **folder containing LIDO files**:
 
 ```bash
-python go.py -l downloads/n4c-lido/files -f folder -e lido -o cto -n n4c-lido-folder -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308
+python go.py -l downloads/n4c-lido/files -f folder -e lido -o cto -n n4c-lido-folder -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E4229 E5308
 ```
 
 ### Corpus Vitrearum Germany
@@ -165,13 +165,13 @@ python go.py -l https://corpusvitrearum.de/id/about.ttl -f schema-list -o files 
 Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (embedded)** data:
 
 ```bash
-python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o beacon csv cto files triples -n cvma-cgif -p E5308 -c https://corpusvitrearum.de/id/
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o beacon csv cto files triples -n cvma-cgif -p E4229 E5308 -c https://corpusvitrearum.de/id/
 ```
 
 Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (API)** data:
 
 ```bash
-python go.py -l https://corpusvitrearum.de/id/about.cgif -f schema -e schema -o beacon csv cto files triples -n cvma-cgif-api -p E5308
+python go.py -l https://corpusvitrearum.de/id/about.cgif -f schema -e schema -o beacon csv cto files triples -n cvma-cgif-api -p E4229 E5308
 ```
 
 Beacon, CSV table, NFDIcore/CTO, and files from **LIDO** data:

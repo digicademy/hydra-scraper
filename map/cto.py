@@ -41,12 +41,12 @@ logger = logging.getLogger(__name__)
 class Feed(MapFeedInterface):
 
 
-    def generate(self, prepare:str|None = None):
+    def generate(self, prepare:list|None = None):
         '''
         Generate nfdicore/cto-style feed triples and fill the store attribute
 
             Parameters:
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Check requirements
@@ -56,27 +56,41 @@ class Feed(MapFeedInterface):
             self.rdf = namespaces()
 
             # Feed URI
-            self.rdf.add((self.feed_uri.rdflib(), RDF.type, NFDICORE.Dataset))
+            if prepare != None and len(prepare) == 2:
+                feed_uri = URIRef(str(N4C) + prepare[0])
+            else:
+                feed_uri = self.feed_uri.rdflib()
+            self.rdf.add((feed_uri, RDF.type, NFDICORE.Dataset))
+            self.rdf.add((feed_uri, RDF.type, SCHEMA.DataFeed))
 
             # Date modified
             if self.modified_date:
-                self.rdf.add((self.feed_uri.rdflib(), SCHEMA.dateModified, self.modified_date.rdflib()))
+                self.rdf.add((feed_uri, SCHEMA.dateModified, self.modified_date.rdflib()))
             else:
                 today = date.today()
-                self.rdf.add((self.feed_uri.rdflib(), SCHEMA.dateModified, Literal(str(today.isoformat()), datatype = XSD.date)))
+                self.rdf.add((feed_uri, SCHEMA.dateModified, Literal(str(today.isoformat()), datatype = XSD.date)))
 
             # Same as feed URI
+            if prepare != None and len(prepare) == 2:
+                self.rdf.add((feed_uri, OWL.sameAs, self.feed_uri.rdflib()))
             for i in self.feed_uri_same.rdflib():
-                self.rdf.add((self.feed_uri.rdflib(), OWL.sameAs, i))
+                self.rdf.add((feed_uri, OWL.sameAs, i))
 
             # Catalog URI
-            if self.catalog_uri:
-                self.rdf.add((self.catalog_uri.rdflib(), RDF.type, NFDICORE.DataPortal))
-                self.rdf.add((self.catalog_uri.rdflib(), NFDICORE.dataset, self.feed_uri.rdflib()))
+            if prepare != None and len(prepare) == 2:
+                catalog_uri = URIRef(str(N4C) + prepare[1])
+            else:
+                catalog_uri = self.catalog_uri.rdflib()
+
+            if catalog_uri:
+                self.rdf.add((catalog_uri, RDF.type, NFDICORE.DataPortal))
+                self.rdf.add((catalog_uri, NFDICORE.dataset, feed_uri))
 
                 # Same as catalog URI
+                if prepare != None and len(prepare) == 2:
+                    self.rdf.add((catalog_uri, OWL.sameAs, self.catalog_uri.rdflib()))
                 for i in self.catalog_uri_same.rdflib():
-                    self.rdf.add((self.catalog_uri.rdflib(), OWL.sameAs, i))
+                    self.rdf.add((catalog_uri, OWL.sameAs, i))
 
             # Add element triples after overwriting feed URI
             for i in self.feed_elements:
@@ -92,12 +106,12 @@ class Feed(MapFeedInterface):
 class FeedElement(MapFeedElementInterface):
 
 
-    def generate(self, prepare:str|None = None):
+    def generate(self, prepare:list|None = None):
         '''
         Generate nfdicore/cto-style feed element triples and fill the store attribute
 
             Parameters:
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Check requirements
@@ -111,7 +125,11 @@ class FeedElement(MapFeedElementInterface):
             # ELEMENT
 
             # Feed URI
-            self.rdf.add((self.element_uri.rdflib(), CTO.elementOf, self.feed_uri.rdflib()))
+            if prepare != None and len(prepare) == 2:
+                feed_uri = URIRef(str(N4C) + prepare[0])
+            else:
+                feed_uri = self.feed_uri.rdflib()
+            self.rdf.add((self.element_uri.rdflib(), CTO.elementOf, feed_uri))
 
             # Same as element URI
             for i in self.element_uri_same.rdflib():
@@ -137,7 +155,7 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.externalVocabulary, i))
 
             # Element type and element type shorthand
-            self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.DatafeedElement))
+            self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.DataFeedElement))
             # Element type: person
             if self.element_type_shorthand == 'person' or self.element_type.rdflib() in schema_person:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Person))
@@ -152,15 +170,16 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Event))
             # Element type: item that is a schema.org creative work
             elif self.element_type.rdflib() in schema_item:
+                self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.Item))
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, self.element_type.rdflib()))
             # Element type: generic item
             else:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.Item))
 
             # Optional wrapper
-            if prepare != None and prepare != '':
-                wrapper = element_ark(self.element_uri.text(), prepare)
-                self.rdf.add((self.feed_uri.rdflib(), SCHEMA.dataFeedElement, wrapper))
+            if prepare != None and len(prepare) == 2:
+                wrapper = element_ark(self.element_uri.text(), prepare[0])
+                self.rdf.add((feed_uri, SCHEMA.dataFeedElement, wrapper))
                 self.rdf.add((wrapper, RDF.type, SCHEMA.DataFeedItem))
                 self.rdf.add((wrapper, SCHEMA.item, self.element_uri.rdflib()))
 
@@ -423,13 +442,13 @@ def namespaces() -> Graph:
     return output
 
 
-def element_ark(element_uri:str, prepare:str) -> URIRef:
+def element_ark(element_uri:str, prepare_feed:str) -> URIRef:
     '''
     Generate an NFDI4Culture ARK ID for the wrapper of a data feed element
 
         Parameters:
             element_uri (str): URI of the element to produce an ARK ID for
-            prepare (str): NFDI4Culture IRI of the feed
+            prepare_feed (str): NFDI4Culture IRI of the feed
 
         Returns:
             URIRef: ARK ID based on a hash of the element URI
@@ -437,7 +456,7 @@ def element_ark(element_uri:str, prepare:str) -> URIRef:
 
     # Generate hash and ARK ID
     hash = sha256(element_uri.encode()).hexdigest()[:8]
-    uri = 'https://nfdi4culture.de/id/ark:/60538/' + prepare + '_' + hash
+    uri = 'https://nfdi4culture.de/id/ark:/60538/' + prepare_feed + '_' + hash
 
     # Return ARK ID as URI
     return URIRef(uri)

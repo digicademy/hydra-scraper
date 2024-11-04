@@ -13,7 +13,7 @@ from distutils.core import setup
 # Add set-up information
 setup(
     name = 'hydra-scraper',
-    version = '0.9.0',
+    version = '0.9.1',
     description = 'Comprehensive scraper for paginated APIs, RDF, XML, file dumps, and Beacon files',
     author = 'Jonatan Jalle Steller',
     author_email = 'jonatan.steller@adwmainz.de',

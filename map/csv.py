@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 class Feed(MapFeedInterface):
 
 
-    def generate(self, prepare:str|None = None):
+    def generate(self, prepare:list|None = None):
         '''
         Generate a CSV table of the feed and fill the content attribute
 
             Parameters:
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Set file extension
@@ -90,12 +90,12 @@ class Feed(MapFeedInterface):
 class FeedElement(MapFeedElementInterface):
 
 
-    def generate(self, prepare:str|None = None):
+    def generate(self, prepare:list|None = None):
         '''
         Generate a CSV table of the feed elements and fill the content attribute
 
             Parameters:
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Set file extension

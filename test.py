@@ -87,7 +87,7 @@ if 'schema-feed-a' in tests:
     #print(extract)
     extract.map_and_save('beacon', 'downloads/test-schema-feed-a')
     extract.map_and_save('csv', 'downloads/test-schema-feed-a')
-    extract.map_and_turtle('cto', 'downloads/test-schema-feed-a', prepare = 'E1234')
+    extract.map_and_turtle('cto', 'downloads/test-schema-feed-a', prepare = ['E1234', 'E5678'])
 
 # Schema.org feed and elements B
 if 'schema-feed-b' in tests:

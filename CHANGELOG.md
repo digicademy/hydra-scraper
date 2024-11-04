@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.1
+
+- Updated nfdicore/cto structure with altered `prepare` parameter
+
 ## 0.9.0
 
 - Full rewrite with a modular architecture

@@ -51,26 +51,26 @@ class MapInterface:
         pass
 
 
-    def generate(self, prepare:str|None = None):
+    def generate(self, prepare:list|None = None):
         '''
         Placeholder to generate triples and fill the store attribute
 
             Parameters:
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Do nothing
         pass
 
 
-    def save(self, file_path:str, format:str|None = None, prepare:str|None = None):
+    def save(self, file_path:str, format:str|None = None, prepare:list|None = None):
         '''
         Serialise content or triples as a file
 
             Parameters:
                 file_path (str): Path of the file to create
                 format (str|None): Optional RDFLib file format to use
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Store content or triples
@@ -114,52 +114,52 @@ class MapInterface:
             logger.error('There was no data to save to file')
 
 
-    def turtle(self, file_path:str, prepare:str|None = None):
+    def turtle(self, file_path:str, prepare:list|None = None):
         '''
         Serialise triples as a Turtle file
 
             Parameters:
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method
         self.save(file_path, 'turtle', prepare)
 
 
-    def ntriples(self, file_path:str, prepare:str|None = None):
+    def ntriples(self, file_path:str, prepare:list|None = None):
         '''
         Serialise triples as an NTriples file
 
             Parameters:
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method
         self.save(file_path, 'nt', prepare)
 
 
-    def rdfxml(self, file_path:str, prepare:str|None = None):
+    def rdfxml(self, file_path:str, prepare:list|None = None):
         '''
         Serialise triples as an RDF/XML file
 
             Parameters:
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method
         self.save(file_path, 'xml', prepare)
 
 
-    def jsonld(self, file_path:str, prepare:str|None = None):
+    def jsonld(self, file_path:str, prepare:list|None = None):
         '''
         Serialise triples as a JSON-LD file
 
             Parameters:
                 file_path (str): Path of the file to create
-                prepare (str|None): Prepare cto output for this NFDI4Culture feed ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
         '''
 
         # Shorthand method

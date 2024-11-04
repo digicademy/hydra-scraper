@@ -50,7 +50,7 @@ class Organise:
         self.location:str|None = None
         self.feed:str|None = None
         self.elements:str|None = None
-        self.output:str|None = None
+        self.output:list|None = None
         self.name:str|None = None
         self.dialect:str|None = None
         self.include:str|None = None
@@ -60,8 +60,8 @@ class Organise:
         self.add_feed:str|None = None
         self.add_catalog:str|None = None
         self.add_publisher:str|None = None
-        self.clean:str|None = None
-        self.prepare:str|None = None
+        self.clean:list|None = None
+        self.prepare:list|None = None
         self.quiet:bool = False
 
         # Set up list of allowed arguments
@@ -109,7 +109,7 @@ class Organise:
                 'files',
                 'triples'
             ],
-            nargs='+',
+            nargs = '+',
             required = True,
             type = str,
             help = 'Outputs to produce in the scraping run'
@@ -172,14 +172,15 @@ class Organise:
             '-c', '--clean',
             default = None,
             type = str,
-            nargs='+',
+            nargs = '+',
             help = 'Strings to remove from feed element URIs to build their file names'
         )
         available_args.add_argument(
             '-p', '--prepare',
             default = None,
             type = str,
-            help = 'Prepare cto output for this NFDI4Culture feed ID'
+            nargs = 2,
+            help = 'Prepare cto output for this NFDI4Culture feed and catalog ID'
         )
         available_args.add_argument(
             '-q', '--quiet',
