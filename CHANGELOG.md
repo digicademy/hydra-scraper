@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2-pre
+
+- Retry fetching remote files in case of 5xx responses
+
 ## 0.9.1
 
 - Updated nfdicore/cto structure with altered `prepare` parameter

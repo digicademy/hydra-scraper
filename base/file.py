@@ -17,6 +17,7 @@ from os import linesep, makedirs, remove
 from os.path import isdir, isfile
 from rdflib import Graph, Namespace
 from shutil import rmtree
+from time import sleep
 from validators import url
 from zipfile import ZipFile
 
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None, user_agent:str = 'Hydra Scraper/0.9.1'):
+    def __init__(self, location:str, content_type:str|None = None, user_agent:str = 'Hydra Scraper/0.9.2-pre'):
         '''
         Retrieve remote or local files
 
@@ -82,98 +83,123 @@ class File:
         if self.content_type:
             headers['Accept'] = self.content_type
 
-        # Request response from URL
+        # Set up three request attempts in case of server issues
         try:
-            with Client(headers = headers, timeout = 1800.0, follow_redirects = True) as client:
-                r = client.get(self.location)
+            lap = 0
+            while lap < 3:
+                lap += 1
 
-                # Check if response is valid
-                if r.status_code == 200:
-                    self.success = True
-                    logger.info('Fetched remote file ' + self.location)
+                # Wait for servers to recover from server-side issues in consecutive attempts
+                if lap > 1:
+                    timer = 30
+                    sleep(timer)
+                    logger.info('Waiting for ' + str(timer) + ' seconds for the server to recover')
 
-                    # Check response for 301 to save subsequent URI in redirect chain or successful URI
-                    check_next = False
-                    for prev_r in r.history:
+                # Request response from URL
+                with Client(headers = headers, timeout = 1800.0, follow_redirects = True) as client:
+                    r = client.get(self.location)
+
+                    # Check if response is valid
+                    if r.status_code == 200:
+                        self.success = True
+                        logger.info('Fetched remote file ' + self.location)
+
+                        # Check response for 301 to save subsequent URI in redirect chain or successful URI
+                        check_next = False
+                        for prev_r in r.history:
+                            if check_next:
+                                self.location = str(prev_r.url)
+                                check_next = False
+                            if prev_r.status_code == 301:
+                                check_next = True
                         if check_next:
-                            self.location = str(prev_r.url)
-                            check_next = False
-                        if prev_r.status_code == 301:
-                            check_next = True
-                    if check_next:
-                        self.location = str(r.url)
+                            self.location = str(r.url)
 
-                    # Store and clean content type
-                    self.content_type = r.headers['Content-Type']
-                    self.content_type.replace('; charset=UTF-8', '')
-                    self.content_type.replace('; charset=utf-8', '')
-                    self.content_type.replace(';charset=UTF-8', '')
-                    self.content_type.replace(';charset=utf-8', '')
+                        # Store and clean content type
+                        self.content_type = r.headers['Content-Type']
+                        self.content_type.replace('; charset=UTF-8', '')
+                        self.content_type.replace('; charset=utf-8', '')
+                        self.content_type.replace(';charset=UTF-8', '')
+                        self.content_type.replace(';charset=utf-8', '')
 
-                    # Determine file type and extension based on content type
-                    if 'text/html' in self.content_type:
-                        self.file_type = 'rdfa'
-                        self.file_extension = 'html'
-                    elif 'application/xhtml+xml' in self.content_type:
-                        self.file_type = 'rdfa'
-                        self.file_extension = 'xhtml'
-                    elif 'application/rdf+xml' in self.content_type:
-                        self.file_type = 'xml'
-                        self.file_extension = 'xml'
-                    elif 'text/n3' in self.content_type:
-                        self.file_type = 'n3'
-                        self.file_extension = 'n3'
-                    elif 'text/turtle' in self.content_type or 'application/x-turtle' in self.content_type:
-                        self.file_type = 'turtle'
-                        self.file_extension = 'ttl'
-                    elif 'application/trig' in self.content_type:
-                        self.file_type = 'trig'
-                        self.file_extension = 'trig'
-                    elif 'application/trix' in self.content_type:
-                        self.file_type = 'trix'
-                        self.file_extension = 'trix'
-                    elif 'application/n-quads' in self.content_type:
-                        self.file_type = 'nquads'
-                        self.file_extension = 'nq'
-                    elif 'application/ld+json' in self.content_type:
-                        self.file_type = 'json-ld'
-                        self.file_extension = 'jsonld'
-                    elif 'application/json' in self.content_type:
-                        self.file_type = 'json-ld'
-                        self.file_extension = 'json'
-                    elif 'application/hex+x-ndjson' in self.content_type:
-                        self.file_type = 'hext'
-                        self.file_extension = 'hext'
-                    elif 'application/n-triples' in self.content_type:
-                        self.file_type = 'nt'
-                        self.file_extension = 'nt'
-                    elif 'application/xml' in self.content_type:
-                        self.file_type = 'xml'
-                        self.file_extension = 'xml'
-                    elif 'application/zip' in self.content_type:
-                        self.file_type = 'folder'
-                        self.file_extension = 'zip'
-                    elif 'text/plain' in self.content_type:
-                        self.file_type = 'txt'
-                        self.file_extension = 'txt'
+                        # Determine file type and extension based on content type
+                        if 'text/html' in self.content_type:
+                            self.file_type = 'rdfa'
+                            self.file_extension = 'html'
+                        elif 'application/xhtml+xml' in self.content_type:
+                            self.file_type = 'rdfa'
+                            self.file_extension = 'xhtml'
+                        elif 'application/rdf+xml' in self.content_type:
+                            self.file_type = 'xml'
+                            self.file_extension = 'xml'
+                        elif 'text/n3' in self.content_type:
+                            self.file_type = 'n3'
+                            self.file_extension = 'n3'
+                        elif 'text/turtle' in self.content_type or 'application/x-turtle' in self.content_type:
+                            self.file_type = 'turtle'
+                            self.file_extension = 'ttl'
+                        elif 'application/trig' in self.content_type:
+                            self.file_type = 'trig'
+                            self.file_extension = 'trig'
+                        elif 'application/trix' in self.content_type:
+                            self.file_type = 'trix'
+                            self.file_extension = 'trix'
+                        elif 'application/n-quads' in self.content_type:
+                            self.file_type = 'nquads'
+                            self.file_extension = 'nq'
+                        elif 'application/ld+json' in self.content_type:
+                            self.file_type = 'json-ld'
+                            self.file_extension = 'jsonld'
+                        elif 'application/json' in self.content_type:
+                            self.file_type = 'json-ld'
+                            self.file_extension = 'json'
+                        elif 'application/hex+x-ndjson' in self.content_type:
+                            self.file_type = 'hext'
+                            self.file_extension = 'hext'
+                        elif 'application/n-triples' in self.content_type:
+                            self.file_type = 'nt'
+                            self.file_extension = 'nt'
+                        elif 'application/xml' in self.content_type:
+                            self.file_type = 'xml'
+                            self.file_extension = 'xml'
+                        elif 'application/zip' in self.content_type:
+                            self.file_type = 'folder'
+                            self.file_extension = 'zip'
+                        elif 'text/plain' in self.content_type:
+                            self.file_type = 'txt'
+                            self.file_extension = 'txt'
+                        else:
+                            self.file_type = 'txt'
+                            self.file_extension = 'txt'
+                            logger.warning('Could not recognise file type of ' + self.location)
+
+                        # Store content
+                        if not self.file_extension == 'zip':
+                            self.text = r.text
+                            self.parse_content()
+
+                        # Handle ZIP file
+                        else:
+                            zip = self.unpack + '/payload.zip'
+                            with open(zip, 'wb') as f:
+                                f.write(r.content)
+                            unpack_zip(zip, self.unpack)
+                            remove(zip)
+                            self.local_folder(self.unpack)
+
+                        # Prevent further attempts in case of successful retrieval
+                        break
+                    
+                    # Try again for server-side issues that may heal themselves
+                    elif r.status_code in [500, 502, 503, 504]:
+                        if lap >= 3:
+                            logger.warning('Server-side issue, could not fetch remote file ' + self.location)
+                        pass
+
+                    # Prevent further attempts in case of URI issues retrieval
                     else:
-                        self.file_type = 'txt'
-                        self.file_extension = 'txt'
-                        logger.warning('Could not recognise file type of ' + self.location)
-
-                    # Store content
-                    if not self.file_extension == 'zip':
-                        self.text = r.text
-                        self.parse_content()
-
-                    # Handle ZIP file
-                    else:
-                        zip = self.unpack + '/payload.zip'
-                        with open(zip, 'wb') as f:
-                            f.write(r.content)
-                        unpack_zip(zip, self.unpack)
-                        remove(zip)
-                        self.local_folder(self.unpack)
+                        logger.warning('Could not fetch remote file ' + self.location + ' due to a URI issue')
+                        break
 
         # Log info
         except:
