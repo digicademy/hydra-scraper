@@ -3,6 +3,7 @@
 ## 0.9.2-pre
 
 - Retry fetching remote files in case of 5xx responses
+- Switch to file size to calculate RDFLib/pyoxigraph switch
 
 ## 0.9.1
 

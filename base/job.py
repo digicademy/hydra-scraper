@@ -9,6 +9,7 @@
 # Import libraries
 import logging
 from datetime import datetime
+from os.path import getsize
 from pyoxigraph import DefaultGraph, RdfFormat, Store
 from rdflib import Graph, Namespace
 
@@ -448,14 +449,19 @@ def combine_triples(folder:str, file_path:str):
     file_path += '.ttl'
     paths = files_in_folder(folder)
 
+    # Calculate size of folder
+    folder_size = 0
+    for path in paths:
+        folder_size += getsize(path)
+
     # Parse and save using pyoxigraph (quick and dirty, JSON-LD not supported)
-    if len(paths) >= 15000:
+    if folder_size >= 50000000: # 50 MB
         rdf = Store()
         for path in paths:
             rdf.load(path = path, format = RdfFormat.TURTLE, to_graph = DefaultGraph())
         rdf.dump(output = file_path, format = RdfFormat.TURTLE, from_graph = DefaultGraph())
 
-    # Parse and save using rdflib (slow and pretty)
+    # Parse and save using rdflib (slow and pretty, hogs more memory)
     else:
         rdf = Graph()
         rdf.bind('schema', SCHEMA, replace = True) # "Replace" overrides the RDFLib schema namespace (SDO), which uses "https"
