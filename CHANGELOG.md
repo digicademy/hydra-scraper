@@ -1,9 +1,11 @@
 # Changelog
 
-## 0.9.2-pre
+## 0.9.2
 
 - Retry fetching remote files in case of 5xx responses
-- Switch to file size to calculate RDFLib/pyoxigraph switch
+- Use file size to calculate RDFLib/pyoxigraph switch
+- Enhance LIDO conversion when image sizes are not indicated
+- Fix issue in CTO conversion where list are used instead of literal
 
 ## 0.9.1
 

@@ -133,7 +133,7 @@ python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-li
 NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files**:
 
 ```bash
-python go.py -l downloads/n4c-lido.zip -f folder -e lido -o cto -n n4c-lido-zip -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308 E4229
+python go.py -l downloads/n4c-bildindex.zip -f folder -e lido -o cto -n n4c-bildindex -af https://www.bildindex.de/ete?action=objectMode -ac https://www.bildindex.de/ -p E6161 E2916
 ```
 
 NFDIcore/CTO triples from a local **folder containing LIDO files**:
