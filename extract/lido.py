@@ -67,7 +67,7 @@ class FeedElement(ExtractFeedElementInterface):
         # Shelf mark
         #self.shelf_mark = 
 
-        # Image (select largest, not first)
+        # Image (select largest or first)
         largest_width = 0
         widths = self.xml_all_elements('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}resourceMeasurementsSet/{L}measurementValue')
         if widths:
@@ -75,6 +75,8 @@ class FeedElement(ExtractFeedElementInterface):
                 if int(width.text) > largest_width:
                     largest_width = int(width.text)
                     self.image = Uri(width.getparent().getparent().findtext('.//{http://www.lido-schema.org}linkResource'), normalize = False)
+        else:
+            self.image = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}linkResource'), normalize = False)
 
         # Lyrics
         #self.lyrics = 
