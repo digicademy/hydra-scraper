@@ -278,7 +278,8 @@ class FeedElement(MapFeedElementInterface):
                         for e in i[1]:
                             self.rdf.add((i[0], RDFS.label, e))
                 else:
-                    self.rdf.add((self.element_uri.rdflib(), CTO.elementTypeLiteral, i[1]))
+                    for e in i[1]:
+                        self.rdf.add((self.element_uri.rdflib(), CTO.elementTypeLiteral, e))
 
             # Subject concept
             for i in self.vocab_subject_concept.rdflib():
@@ -288,7 +289,8 @@ class FeedElement(MapFeedElementInterface):
                         for e in i[1]:
                             self.rdf.add((i[0], RDFS.label, e))
                 else:
-                    self.rdf.add((self.element_uri.rdflib(), CTO.subjectConceptLiteral, i[1]))
+                    for e in i[1]:
+                        self.rdf.add((self.element_uri.rdflib(), CTO.subjectConceptLiteral, e))
 
             # Related location
             for i in self.vocab_related_location.rdflib():
@@ -311,7 +313,8 @@ class FeedElement(MapFeedElementInterface):
                         for e in i[1]:
                             self.rdf.add((i[0], RDFS.label, e))
                 else:
-                    self.rdf.add((self.element_uri.rdflib(), CTO.relatedEventLiteral, i[1]))
+                    for e in i[1]:
+                        self.rdf.add((self.element_uri.rdflib(), CTO.relatedEventLiteral, e))
 
             # Related organization
             for i in self.vocab_related_organization.rdflib():
@@ -322,7 +325,8 @@ class FeedElement(MapFeedElementInterface):
                         for e in i[1]:
                             self.rdf.add((i[0], RDFS.label, e))
                 else:
-                    self.rdf.add((self.element_uri.rdflib(), CTO.relatedOrganizationLiteral, i[1]))
+                    for e in i[1]:
+                        self.rdf.add((self.element_uri.rdflib(), CTO.relatedOrganizationLiteral, e))
 
             # Related person
             for i in self.vocab_related_person.rdflib():
@@ -333,7 +337,8 @@ class FeedElement(MapFeedElementInterface):
                         for e in i[1]:
                             self.rdf.add((i[0], RDFS.label, e))
                 else:
-                    self.rdf.add((self.element_uri.rdflib(), CTO.relatedPersonLiteral, i[1]))
+                    for e in i[1]:
+                        self.rdf.add((self.element_uri.rdflib(), CTO.relatedPersonLiteral, e))
 
             # Related item
             for i in self.related_item.rdflib():
