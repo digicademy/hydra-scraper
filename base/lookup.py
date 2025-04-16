@@ -12,6 +12,7 @@ import logging
 from httpx import Client
 from os.path import isfile
 from rdflib import URIRef, Namespace
+from rdflib.term import _is_valid_uri
 from validators import url
 
 # Import script modules
@@ -90,7 +91,7 @@ class Lookup:
         # Check local key-value store as a shortcut
         output = None
         if uri in self.keyvalue:
-            if url(self.keyvalue[uri]):
+            if _is_valid_uri(self.keyvalue[uri]):
                 uri = self.keyvalue[uri]
             output = self.keyvalue[uri]
 

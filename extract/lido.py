@@ -50,17 +50,18 @@ class FeedElement(ExtractFeedElementInterface):
         label_alt = []
         label_alt_langs = []
         all_labels = self.xml_all_texts('.//{L}objectIdentificationWrap/{L}titleWrap/{L}titleSet/{L}appellationValue', True)
-        for single_label in all_labels:
-            if isinstance(single_label, Literal):
-                label_lang = single_label.language
-            else:
-                label_lang = None
-            if label_lang not in label_langs:
-                label.append(single_label)
-                label_langs.append(label_lang)
-            elif label_lang not in label_alt_langs:
-                label_alt.append(single_label)
-                label_alt_langs.append(label_lang)
+        if all_labels != None:
+            for single_label in all_labels:
+                if isinstance(single_label, Literal):
+                    label_lang = single_label.language
+                else:
+                    label_lang = None
+                if label_lang not in label_langs:
+                    label.append(single_label)
+                    label_langs.append(label_lang)
+                elif label_lang not in label_alt_langs:
+                    label_alt.append(single_label)
+                    label_alt_langs.append(label_lang)
         self.label = LabelList(label)
         self.label_alt = LabelList(label_alt)
 
@@ -91,7 +92,7 @@ class FeedElement(ExtractFeedElementInterface):
         self.source_file = Uri(self.file.location, normalize = False)
 
         # IIIF image API
-        #self.iiif_image_api = 
+        self.iiif_image_api = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00912"]/{L}linkResource'), normalize = False)
 
         # IIIF presentation API
         #self.iiif_presentation_api = 

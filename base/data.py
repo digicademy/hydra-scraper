@@ -10,7 +10,7 @@
 from datetime import date, datetime
 from os.path import isfile
 from rdflib import Namespace
-from rdflib.term import Literal, URIRef
+from rdflib.term import Literal, URIRef, _is_valid_uri
 from urllib.parse import quote, unquote
 from validators import url
 
@@ -49,7 +49,7 @@ class Uri:
 
         # Save URIRef
         if isinstance(uri, URIRef):
-            if url(str(uri)):
+            if _is_valid_uri(str(uri)):
                 if normalize:
                     self.uri = clean_namespaces(str(uri))
                 else:
@@ -57,7 +57,7 @@ class Uri:
 
         # Save Literal
         elif isinstance(uri, Literal):
-            if url(str(uri)):
+            if _is_valid_uri(str(uri)):
                 if normalize:
                     self.uri = clean_namespaces(str(uri))
                 else:
@@ -65,7 +65,7 @@ class Uri:
 
         # Save str
         elif isinstance(uri, str):
-            if url(str(uri)):
+            if _is_valid_uri(str(uri)):
                 if normalize:
                     self.uri = clean_namespaces(uri)
                 else:
@@ -428,12 +428,12 @@ class UriLabel:
 
             # Literal and string may be URI or label
             if isinstance(combined, Literal):
-                if url(str(combined)):
+                if u_is_valid_uri(str(combined)):
                     self.uri = Uri(str(combined))
                 else:
                     self.labels = LabelList(combined)
             if isinstance(combined, str):
-                if url(combined):
+                if _is_valid_uri(combined):
                     self.uri = Uri(combined)
                 else:
                     self.labels = LabelList(combined)
