@@ -11,15 +11,17 @@ import codecs
 import logging
 from datetime import datetime
 from glob import glob
-from httpx import Client
+from httpx import Client, HTTPError
 from lxml import etree
+from lxml.etree import ParserError as XmlParserError
 from os import linesep, makedirs, remove
 from os.path import isdir, isfile
 from rdflib import Graph, Namespace
+from rdflib.exceptions import ParserError as RdfParserError
 from shutil import rmtree
 from time import sleep
 from validators import url
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
 # Define namespaces
 SCHEMA = Namespace('http://schema.org/')
@@ -31,7 +33,7 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None, user_agent:str = 'Hydra Scraper/0.9.2'):
+    def __init__(self, location:str, content_type:str|None = None, user_agent:str = 'Hydra Scraper/0.9.3'):
         '''
         Retrieve remote or local files
 
@@ -202,7 +204,7 @@ class File:
                         break
 
         # Log info
-        except:
+        except HTTPError:
             logger.error('Could not fetch remote file ' + self.location)
 
 
@@ -279,7 +281,7 @@ class File:
                     self.local_folder(self.unpack)
 
         # Log info
-        except:
+        except OSError:
             logger.error('Could not fetch local file ' + self.location)
 
 
@@ -331,11 +333,11 @@ class File:
                 self.rdf.parse(data = self.text.encode(), format = self.file_type)
 
             # Parse as XML instead (nested because RDF may be XML)
-            except:
+            except RdfParserError:
                 if self.file_type == 'xml':
                     try:
                         self.xml = etree.fromstring(self.text.encode())
-                    except:
+                    except XmlParserError:
                         logger.error('Could not parse XML file ' + self.location)
                 else:
                     logger.error('Could not parse RDF file ' + self.location)
@@ -508,7 +510,7 @@ def unpack_zip(file_path:str, folder_path:str):
         logger.info('Unpacked ZIP archive ' + file_path)
 
     # Log info
-    except:
+    except BadZipFile:
         logger.error('Failed to unpack ZIP archive ' + file_path)
 
 

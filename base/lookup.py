@@ -9,10 +9,9 @@
 # Import libraries
 import json
 import logging
-from httpx import Client
+from httpx import Client, HTTPError
 from os.path import isfile
 from rdflib import URIRef, Namespace
-from rdflib.term import _is_valid_uri
 from validators import url
 
 # Import script modules
@@ -91,7 +90,7 @@ class Lookup:
         # Check local key-value store as a shortcut
         output = None
         if uri in self.keyvalue:
-            if _is_valid_uri(self.keyvalue[uri]):
+            if url(self.keyvalue[uri]):
                 uri = self.keyvalue[uri]
             output = self.keyvalue[uri]
 
@@ -264,7 +263,7 @@ def sparql(endpoint:str, query_type:str, query:str) -> bool|list|None:
                 return None
 
     # If request fails
-    except:
+    except HTTPError:
         logger.error('Could not SPARQL authority data at ' + endpoint)
         return None
 

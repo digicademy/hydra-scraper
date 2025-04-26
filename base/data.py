@@ -8,11 +8,9 @@
 
 # Import libraries
 from datetime import date, datetime
-from os.path import isfile
 from rdflib import Namespace
 from rdflib.term import Literal, URIRef, _is_valid_uri
 from urllib.parse import quote, unquote
-from validators import url
 
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, XSD
@@ -641,17 +639,17 @@ class Date:
                 # Check if regular dates or proper datetimes were used
                 try:
                     self.start_time = datetime.fromisoformat(start_and_end[0] + 'T00:00:00')
-                except:
+                except ValueError:
                     try:
                         self.start_time = datetime.fromisoformat(start_and_end[0])
-                    except:
+                    except ValueError:
                         pass
                 try:
                     self.end_time = datetime.fromisoformat(start_and_end[1] + 'T23:59:59')
-                except:
+                except ValueError:
                     try:
                         self.end_time = datetime.fromisoformat(start_and_end[1])
-                    except:
+                    except ValueError:
                         pass
 
                 # Save string as backup
@@ -662,10 +660,10 @@ class Date:
             else:
                 try:
                     self.start = date.fromisoformat(input)
-                except:
+                except ValueError:
                     try:
                         self.start_time = datetime.fromisoformat(input)
-                    except:
+                    except ValueError:
                         self.label = Label(input)
 
 

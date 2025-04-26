@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.3
+
+- Further LIDO fixes and enhancements
+- Better error handling to make sure `KeyboardInterrupt` always works
+
 ## 0.9.2
 
 - Retry fetching remote files in case of 5xx responses
