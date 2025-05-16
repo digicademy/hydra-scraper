@@ -238,7 +238,8 @@ class FeedElement(MapFeedElementInterface):
 
             # Source file
             if self.source_file:
-                self.rdf.add((self.element_uri.rdflib(), CTO.sourceFile, Literal(self.source_file.uri, datatype = SCHEMA.URL)))
+                self.source_file.data_type = SCHEMA.URL
+                self.rdf.add((self.element_uri.rdflib(), CTO.sourceFile, self.source_file.rdflib()))
 
             # API LITERALS
 

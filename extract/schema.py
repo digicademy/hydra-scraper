@@ -10,7 +10,7 @@
 from rdflib import Namespace
 
 # Import script modules
-from base.data import Uri, UriList, LabelList, UriLabelList, Date, DateList
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList
 from base.extract import ExtractFeedInterface, ExtractFeedElementInterface
 from base.lookup import schema_feed
 
@@ -151,7 +151,7 @@ class FeedElement(ExtractFeedElementInterface):
                     #self.music_incipit = 
 
                     # Source file
-                    self.source_file = Uri(self.file.location, normalize = False)
+                    self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
 
                     # IIIF image API (if CTO used in schema.org)
                     self.iiif_image_api = Uri(self.rdf_all_objects(self.element_uri.rdflib(), CTO.iiifImageAPI))

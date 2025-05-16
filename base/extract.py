@@ -11,7 +11,7 @@ import logging
 from rdflib.term import BNode, Literal, URIRef
 
 # Import script modules
-from base.data import Uri, UriList, LabelList, UriLabelList, Date, DateList, Incipit
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Incipit
 from base.file import File
 import map.beacon as beacon
 import map.csv as csv
@@ -791,7 +791,7 @@ class ExtractFeedElementInterface(ExtractInterface):
         self.lyrics:LabelList = LabelList()
         self.text_incipit:LabelList = LabelList()
         self.music_incipit:Incipit = Incipit()
-        self.source_file:Uri = Uri()
+        self.source_file:Label = Label()
         self.iiif_image_api:Uri = Uri()
         self.iiif_presentation_api:Uri = Uri()
         self.ddb_api:Uri = Uri()

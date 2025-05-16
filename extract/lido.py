@@ -12,7 +12,7 @@ from rdflib import Namespace
 from rdflib.term import Literal
 
 # Import script modules
-from base.data import Uri, UriList, LabelList, UriLabelList, Date, DateList
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList
 from base.extract import ExtractFeedElementInterface
 
 # Define namespaces
@@ -89,7 +89,7 @@ class FeedElement(ExtractFeedElementInterface):
         #self.music_incipit = 
 
         # Source file
-        self.source_file = Uri(self.file.location, normalize = False)
+        self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
 
         # IIIF image API
         self.iiif_image_api = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00912"]/{L}linkResource'), normalize = False)

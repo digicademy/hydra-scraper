@@ -11,7 +11,7 @@ import logging
 from rdflib import Graph
 
 # Import script modules
-from base.data import Uri, UriList, LabelList, UriLabelList, Date, DateList, Incipit
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Incipit
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -283,7 +283,7 @@ class MapFeedElementInterface(MapInterface):
         self.lyrics:LabelList = LabelList()
         self.text_incipit:LabelList = LabelList()
         self.music_incipit:Incipit = Incipit()
-        self.source_file:Uri = Uri()
+        self.source_file:Label = Label()
         self.iiif_image_api:Uri = Uri()
         self.iiif_presentation_api:Uri = Uri()
         self.ddb_api:Uri = Uri()

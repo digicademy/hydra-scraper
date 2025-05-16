@@ -208,13 +208,14 @@ class UriList:
 class Label:
 
 
-    def __init__(self, label:str|Literal|URIRef|None = None, data_type:str|Literal|URIRef|None = None):
+    def __init__(self, label:str|Literal|URIRef|None = None, data_type:str|Literal|URIRef|None = None, remove_path:str|None = None):
         '''
         Generic string literal node
 
             Parameters:
                 label (str|Literal|URIRef|None): Input to build the string literal
                 data_type (str|Literal|URIRef|None): Data type of the literal
+                remove_path (str|None): Local file path to sanitize
         '''
 
         # Content vars
@@ -240,6 +241,10 @@ class Label:
         elif isinstance(label, str):
             if label and label != '':
                 self.label = label
+
+        # Clean label
+        if remove_path:
+            self.label = clean_path(self.label, remove_path)
 
         # Save data type
         if data_type:
@@ -919,6 +924,30 @@ class Incipit:
             return incipit
         else:
             return None
+
+
+def clean_path(input:str, remove_path:str) -> str:
+    '''
+    Sanitize local file paths of incoming locations
+
+        Parameters:
+            input (str): Variable to check and transform
+            remove_paths (list): List of file paths to remove
+
+        Returns:
+            str: Clean file path or file name
+    '''
+
+    # Check for path to remove
+    if not input.endswith('/'):
+        remove_path = remove_path + '/'
+    if input.startswith(remove_path):
+
+        # Remove path
+        input = input.replace(remove_path, '', 1)
+
+    # Return clean path
+    return input
 
 
 def clean_namespaces(input:str) -> str:

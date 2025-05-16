@@ -51,6 +51,7 @@ class File:
         self.location:str = location
         self.text:str|None = None
         self.directory:list|None = None
+        self.directory_path:str|None = None
         self.rdf:Graph|None = None
         self.xml:etree|None = None
         self.content_type:str|None = content_type
@@ -306,6 +307,7 @@ class File:
 
             # Store file list
             self.directory = files
+            self.directory_path = location
 
         # Log info
         else:

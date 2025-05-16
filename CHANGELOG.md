@@ -3,6 +3,7 @@
 ## 0.9.4
 
 - Fix a URL testing bug in `UriLabel`s
+- Remove local file paths from source-file path
 
 ## 0.9.3
 
