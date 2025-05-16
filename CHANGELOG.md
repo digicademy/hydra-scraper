@@ -5,6 +5,7 @@
 - Fix a URL testing bug in `UriLabel`s
 - Remove local file paths from source-file path
 - Ignore LIDO files that have no LIDO content
+- Fix authentication issues when looking for a `robots.txt`
 
 ## 0.9.3
 

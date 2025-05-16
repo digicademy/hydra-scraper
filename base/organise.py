@@ -314,33 +314,38 @@ def robots_delay(location:str, robots_user_agent:str = 'HydraScraper') -> int|No
     output = None
 
     # URL
-    if url(location):
-        index = location.find('/')
-        if index:
-            index = location.find('/', index + 2)
-        if index:
-            domain = location[:index]
-        else:
-            domain = location
+    try:
+        if url(location):
+            index = location.find('/')
+            if index:
+                index = location.find('/', index + 2)
+            if index:
+                domain = location[:index]
+            else:
+                domain = location
 
-        # Robots
-        robots = RobotFileParser()
-        robots.set_url(domain + '/robots.txt')
-        robots.read()
+            # Robots
+            robots = RobotFileParser()
+            robots.set_url(domain + '/robots.txt')
+            robots.read()
 
-        # Delay
-        delay = robots.crawl_delay(robots_user_agent)
-        if not delay:
-            delay = robots.crawl_delay('*')
-        if delay:
-            output = int(delay * 1000)
+            # Delay
+            delay = robots.crawl_delay(robots_user_agent)
+            if not delay:
+                delay = robots.crawl_delay('*')
+            if delay:
+                output = int(delay * 1000)
 
-        # Rate
-        rate = robots.request_rate(robots_user_agent)
-        if not rate:
-            rate = robots.request_rate('*')
-        if rate:
-            output = int((rate.seconds / rate.requests) * 1000)
+            # Rate
+            rate = robots.request_rate(robots_user_agent)
+            if not rate:
+                rate = robots.request_rate('*')
+            if rate:
+                output = int((rate.seconds / rate.requests) * 1000)
+
+    # If, for example, authentication stands in the way
+    except:
+        pass
 
     # Return
     return output
