@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.4
+
+- Fix a URL testing bug in `UriLabel`s
+
 ## 0.9.3
 
 - Further LIDO fixes and enhancements

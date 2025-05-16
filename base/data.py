@@ -426,7 +426,7 @@ class UriLabel:
 
             # Literal and string may be URI or label
             if isinstance(combined, Literal):
-                if u_is_valid_uri(str(combined)):
+                if _is_valid_uri(str(combined)):
                     self.uri = Uri(str(combined))
                 else:
                     self.labels = LabelList(combined)
