@@ -4,6 +4,7 @@
 
 - Fix a URL testing bug in `UriLabel`s
 - Remove local file paths from source-file path
+- Ignore LIDO files that have no LIDO content
 
 ## 0.9.3
 

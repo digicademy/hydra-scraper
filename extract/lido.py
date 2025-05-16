@@ -28,218 +28,221 @@ class FeedElement(ExtractFeedElementInterface):
         Extract feed element data from LIDO files
         '''
 
-        # Feed URI
-        #self.feed_uri = 
+        # Check for LIDO content
+        if self.xml_first_element('.//{L}lido') != None:
 
-        # Element URI
-        if not self.element_uri:
-            self.element_uri = Uri(self.xml_first_text('.//{L}recordWrap/{L}recordInfoSet/{L}recordInfoLink'), normalize = False)
+            # Feed URI
+            #self.feed_uri = 
 
-        # Same as element URI
-        self.element_uri_same = UriList(self.xml_all_texts('.//{L}lido/objectPublishedID'))
+            # Element URI
+            if not self.element_uri:
+                self.element_uri = Uri(self.xml_first_text('.//{L}recordWrap/{L}recordInfoSet/{L}recordInfoLink'), normalize = False)
 
-        # Element type
-        self.element_type = Uri(SCHEMA.VisualArtwork)
+            # Same as element URI
+            self.element_uri_same = UriList(self.xml_all_texts('.//{L}lido/objectPublishedID'))
 
-        # Element type shorthand
-        #self.element_type_shorthand = 
+            # Element type
+            self.element_type = Uri(SCHEMA.VisualArtwork)
 
-        # Label and alternative label (overflow mechanic)
-        label = []
-        label_langs = []
-        label_alt = []
-        label_alt_langs = []
-        all_labels = self.xml_all_texts('.//{L}objectIdentificationWrap/{L}titleWrap/{L}titleSet/{L}appellationValue', True)
-        if all_labels != None:
-            for single_label in all_labels:
-                if isinstance(single_label, Literal):
-                    label_lang = single_label.language
-                else:
-                    label_lang = None
-                if label_lang not in label_langs:
-                    label.append(single_label)
-                    label_langs.append(label_lang)
-                elif label_lang not in label_alt_langs:
-                    label_alt.append(single_label)
-                    label_alt_langs.append(label_lang)
-        self.label = LabelList(label)
-        self.label_alt = LabelList(label_alt)
+            # Element type shorthand
+            #self.element_type_shorthand = 
 
-        # Shelf mark
-        #self.shelf_mark = 
+            # Label and alternative label (overflow mechanic)
+            label = []
+            label_langs = []
+            label_alt = []
+            label_alt_langs = []
+            all_labels = self.xml_all_texts('.//{L}objectIdentificationWrap/{L}titleWrap/{L}titleSet/{L}appellationValue', True)
+            if all_labels != None:
+                for single_label in all_labels:
+                    if isinstance(single_label, Literal):
+                        label_lang = single_label.language
+                    else:
+                        label_lang = None
+                    if label_lang not in label_langs:
+                        label.append(single_label)
+                        label_langs.append(label_lang)
+                    elif label_lang not in label_alt_langs:
+                        label_alt.append(single_label)
+                        label_alt_langs.append(label_lang)
+            self.label = LabelList(label)
+            self.label_alt = LabelList(label_alt)
 
-        # Image (select largest or first)
-        largest_width = 0
-        widths = self.xml_all_elements('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}resourceMeasurementsSet/{L}measurementValue')
-        if widths:
-            for width in widths:
-                if int(width.text) > largest_width:
-                    largest_width = int(width.text)
-                    self.image = Uri(width.getparent().getparent().findtext('.//{http://www.lido-schema.org}linkResource'), normalize = False)
-        else:
-            self.image = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}linkResource'), normalize = False)
+            # Shelf mark
+            #self.shelf_mark = 
 
-        # Lyrics
-        #self.lyrics = 
+            # Image (select largest or first)
+            largest_width = 0
+            widths = self.xml_all_elements('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}resourceMeasurementsSet/{L}measurementValue')
+            if widths:
+                for width in widths:
+                    if int(width.text) > largest_width:
+                        largest_width = int(width.text)
+                        self.image = Uri(width.getparent().getparent().findtext('.//{http://www.lido-schema.org}linkResource'), normalize = False)
+            else:
+                self.image = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}linkResource'), normalize = False)
 
-        # Text incipit
-        #self.text_incipit = 
+            # Lyrics
+            #self.lyrics = 
 
-        # Music incipit
-        #self.music_incipit = 
+            # Text incipit
+            #self.text_incipit = 
 
-        # Source file
-        self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
+            # Music incipit
+            #self.music_incipit = 
 
-        # IIIF image API
-        self.iiif_image_api = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00912"]/{L}linkResource'), normalize = False)
+            # Source file
+            self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
 
-        # IIIF presentation API
-        #self.iiif_presentation_api = 
+            # IIIF image API
+            self.iiif_image_api = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00912"]/{L}linkResource'), normalize = False)
 
-        # DDB API
-        #self.ddb_api = 
+            # IIIF presentation API
+            #self.iiif_presentation_api = 
 
-        # OAI-PMH API
-        #self.oaipmh_api = 
+            # DDB API
+            #self.ddb_api = 
 
-        # Publisher (auto-correct ISIL URIs)
-        publishers = self.xml_all_texts('.//{L}recordWrap/{L}recordSource/{L}legalBodyID[@{L}source="ISIL (ISO 15511)"]')
-        if publishers != None:
-            for publisher in publishers:
-                publisher.replace('info:isil/', 'https://ld.zdb-services.de/resource/organisations/')
-        self.publisher = UriList(publishers)
+            # OAI-PMH API
+            #self.oaipmh_api = 
 
-        # License (observe work, record, and image licenses)
-        self.license = UriList(self.xml_all_lido_concepts([
-            './/{L}rightsWorkSet/{L}rightsType',
-            './/{L}recordRights/{L}rightsType',
-            './/{L}rightsResource/{L}rightsType',
-        ]))
+            # Publisher (auto-correct ISIL URIs)
+            publishers = self.xml_all_texts('.//{L}recordWrap/{L}recordSource/{L}legalBodyID[@{L}source="ISIL (ISO 15511)"]')
+            if publishers != None:
+                for publisher in publishers:
+                    publisher.replace('info:isil/', 'https://ld.zdb-services.de/resource/organisations/')
+            self.publisher = UriList(publishers)
 
-        # Vocabulary: element type
-        self.vocab_element_type = UriLabelList(self.xml_all_lido_concepts('.//{L}objectClassificationWrap/{L}objectWorkTypeWrap/{L}objectWorkType'))
+            # License (observe work, record, and image licenses)
+            self.license = UriList(self.xml_all_lido_concepts([
+                './/{L}rightsWorkSet/{L}rightsType',
+                './/{L}recordRights/{L}rightsType',
+                './/{L}rightsResource/{L}rightsType',
+            ]))
 
-        # Vocabulary: subject concept
-        self.vocab_subject_concept = UriLabelList(self.xml_all_lido_concepts('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectConcept'))
+            # Vocabulary: element type
+            self.vocab_element_type = UriLabelList(self.xml_all_lido_concepts('.//{L}objectClassificationWrap/{L}objectWorkTypeWrap/{L}objectWorkType'))
 
-        # Vocabulary: related location (two distinct nodes)
-        vocab_related_location = []
-        repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), './/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}namePlaceSet/{L}appellationValue')
-        if repo_location != None:
-            vocab_related_location += repo_location
-        event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace/{L}place'), './/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}displayPlace', True)
-        if event_locations != None:
-            vocab_related_location += event_locations
-        self.vocab_related_location = UriLabelList(list(set(vocab_related_location)))
+            # Vocabulary: subject concept
+            self.vocab_subject_concept = UriLabelList(self.xml_all_lido_concepts('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectConcept'))
 
-        # Vocabulary: related event
-        #self.vocab_related_event = 
+            # Vocabulary: related location (two distinct nodes)
+            vocab_related_location = []
+            repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), './/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}namePlaceSet/{L}appellationValue')
+            if repo_location != None:
+                vocab_related_location += repo_location
+            event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace/{L}place'), './/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}displayPlace', True)
+            if event_locations != None:
+                vocab_related_location += event_locations
+            self.vocab_related_location = UriLabelList(list(set(vocab_related_location)))
 
-        # Vocabulary: related organization
-        self.vocab_related_organization = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="organization"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
+            # Vocabulary: related event
+            #self.vocab_related_event = 
 
-        # Vocabulary: related person
-        self.vocab_related_person = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="person"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
+            # Vocabulary: related organization
+            self.vocab_related_organization = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="organization"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
 
-        # Further vocabulary terms
-        self.vocab_further = UriLabelList(self.xml_all_lido_concepts('.//{L}objectIdentificationWrap/{L}objectMaterialsTechWrap/{L}objectMaterialsTechSet/{L}materialsTech/{L}termMaterialsTech'))
+            # Vocabulary: related person
+            self.vocab_related_person = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="person"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
 
-        # Related item
-        self.related_item = UriList(self.xml_all_texts('.//{L}objectRelationWrap/{L}relatedWorksWrap/{L}relatedWorkSet/{L}relatedWork/{L}object/{L}objectWebResource'))
+            # Further vocabulary terms
+            self.vocab_further = UriLabelList(self.xml_all_lido_concepts('.//{L}objectIdentificationWrap/{L}objectMaterialsTechWrap/{L}objectMaterialsTechSet/{L}materialsTech/{L}termMaterialsTech'))
 
-        # Birth date
-        #self.birth_date = 
+            # Related item
+            self.related_item = UriList(self.xml_all_texts('.//{L}objectRelationWrap/{L}relatedWorksWrap/{L}relatedWorkSet/{L}relatedWork/{L}object/{L}objectWebResource'))
 
-        # Death date
-        #self.death_date = 
+            # Birth date
+            #self.birth_date = 
 
-        # Foundation date
-        #self.foundation_date = 
+            # Death date
+            #self.death_date = 
 
-        # Dissolution date
-        #self.dissolution_date = 
+            # Foundation date
+            #self.foundation_date = 
 
-        # Start date
-        #self.start_date = 
+            # Dissolution date
+            #self.dissolution_date = 
 
-        # End date
-        #self.end_date = 
+            # Start date
+            #self.start_date = 
 
-        # Creation date (check for specific event names, LIDO 1.0 and 1.1 notation)
-        check_terms = [
-            'creation',
-            'Creation',
-            'production',
-            'Production',
-            'Herstellung'
-        ]
-        events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
-        if events != None:
-            for event in events:
-                if event.text in check_terms:
-                    try:
-                        self.creation_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
-                    except ValueError:
-                        pass
-        events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
-        if events != None:
-            for event in events:
-                if event.text in check_terms:
-                    try:
-                        self.creation_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
-                    except ValueError:
-                        pass
+            # End date
+            #self.end_date = 
 
-        # Creation period (check for specific event names, LIDO 1.0 and 1.1 notation)
-        events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
-        if events != None:
-            for event in events:
-                if event.text in check_terms:
-                    try:
-                        self.creation_period = DateList(Literal(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'), lang = self.xml_lang(event.getparent().getparent().find('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'))))
-                    except ValueError:
-                        pass
-        events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
-        if events != None:
-            for event in events:
-                if event.text in check_terms:
-                    try:
-                        self.creation_period = DateList(Literal(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'), lang = self.xml_lang(event.getparent().getparent().getparent().find('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'))))
-                    except ValueError:
-                        pass
+            # Creation date (check for specific event names, LIDO 1.0 and 1.1 notation)
+            check_terms = [
+                'creation',
+                'Creation',
+                'production',
+                'Production',
+                'Herstellung'
+            ]
+            events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
+            if events != None:
+                for event in events:
+                    if event.text in check_terms:
+                        try:
+                            self.creation_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
+                        except ValueError:
+                            pass
+            events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
+            if events != None:
+                for event in events:
+                    if event.text in check_terms:
+                        try:
+                            self.creation_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
+                        except ValueError:
+                            pass
 
-        # Destruction date (check for specific event names, LIDO 1.0 and 1.1 notation)
-        check_terms = [
-            'destruction',
-            'Destruction',
-            'loss',
-            'Verlust',
-            'Zerstörung',
-            'Verlust'
-        ]
-        events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
-        if events != None:
-            for event in events:
-                if event.text in check_terms:
-                    try:
-                        self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
-                    except ValueError:
-                        pass
-        events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
-        if events != None:
-            for event in events:
-                if event.text in check_terms:
-                    try:
-                        self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
-                    except ValueError:
-                        pass
+            # Creation period (check for specific event names, LIDO 1.0 and 1.1 notation)
+            events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
+            if events != None:
+                for event in events:
+                    if event.text in check_terms:
+                        try:
+                            self.creation_period = DateList(Literal(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'), lang = self.xml_lang(event.getparent().getparent().find('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'))))
+                        except ValueError:
+                            pass
+            events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
+            if events != None:
+                for event in events:
+                    if event.text in check_terms:
+                        try:
+                            self.creation_period = DateList(Literal(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'), lang = self.xml_lang(event.getparent().getparent().getparent().find('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'))))
+                        except ValueError:
+                            pass
 
-        # Approximate period
-        #self.approximate_period = 
+            # Destruction date (check for specific event names, LIDO 1.0 and 1.1 notation)
+            check_terms = [
+                'destruction',
+                'Destruction',
+                'loss',
+                'Verlust',
+                'Zerstörung',
+                'Verlust'
+            ]
+            events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
+            if events != None:
+                for event in events:
+                    if event.text in check_terms:
+                        try:
+                            self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
+                        except ValueError:
+                            pass
+            events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
+            if events != None:
+                for event in events:
+                    if event.text in check_terms:
+                        try:
+                            self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
+                        except ValueError:
+                            pass
 
-        # Existence period
-        #self.existence_period = 
+            # Approximate period
+            #self.approximate_period = 
+
+            # Existence period
+            #self.existence_period = 
 
 
     def xml_all_lido_concepts(self, element_paths:str|list) -> list|None:

@@ -19,28 +19,31 @@ class Feed(ExtractFeedInterface):
         Extract feed data from CMIF files
         '''
 
-        # Feed URI
-        self.feed_uri = Uri(self.xml_first_text('.//{T}teiHeader/{T}fileDesc/{T}publicationStmt/{T}idno[@type="url"]'), normalize = False)
+        # Check for TEI content
+        if self.xml_first_element('.//{T}teiHeader') != None:
 
-        # Same as feed
-        self.feed_uri_same = UriList(self.xml_first_attribute('.//{T}teiHeader/{T}fileDesc/{T}sourceDesc/{T}bibl/{T}ref[@target]', 'target'), normalize = False)
+            # Feed URI
+            self.feed_uri = Uri(self.xml_first_text('.//{T}teiHeader/{T}fileDesc/{T}publicationStmt/{T}idno[@type="url"]'), normalize = False)
 
-        # Next feed URI
-        #self.feed_uri_next = 
+            # Same as feed
+            self.feed_uri_same = UriList(self.xml_first_attribute('.//{T}teiHeader/{T}fileDesc/{T}sourceDesc/{T}bibl/{T}ref[@target]', 'target'), normalize = False)
 
-        # Catalog URI
-        #self.catalog_uri = 
+            # Next feed URI
+            #self.feed_uri_next = 
 
-        # Same as catalog
-        #self.catalog_uri_same = 
+            # Catalog URI
+            #self.catalog_uri = 
 
-        # Date modified
-        self.modified_date = Date(self.xml_first_attribute('.//{T}teiHeader/{T}fileDesc/{T}publicationStmt/{T}date[@when]', 'when'))
+            # Same as catalog
+            #self.catalog_uri_same = 
 
-        # Element URIs
-        element_uris = self.xml_all_attributes('.//{T}teiHeader/{T}profileDesc/{T}correspDesc[@ref]', 'ref')
-        if element_uris:
-            self.element_uris = element_uris
+            # Date modified
+            self.modified_date = Date(self.xml_first_attribute('.//{T}teiHeader/{T}fileDesc/{T}publicationStmt/{T}date[@when]', 'when'))
 
-        # Feed elements
-        #if self.feed_elements == 
+            # Element URIs
+            element_uris = self.xml_all_attributes('.//{T}teiHeader/{T}profileDesc/{T}correspDesc[@ref]', 'ref')
+            if element_uris:
+                self.element_uris = element_uris
+
+            # Feed elements
+            #if self.feed_elements == 
