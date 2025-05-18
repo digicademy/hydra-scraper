@@ -69,7 +69,7 @@ class Job:
             # Get feed
             status.done()
             status = Progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data', self.organise.quiet)
-            feed_file = File(feed_uri)
+            feed_file = File(feed_uri, ba_username = self.organise.ba_username, ba_password = self.organise.ba_password)
             self.last_request = feed_file.request_time
 
             # Extract feed data
@@ -198,7 +198,7 @@ class Job:
 
                         # Get feed element
                         status.update(element_index, len(feed_data.element_uris))
-                        element_file = File(element_uri, self.organise.dialect)
+                        element_file = File(element_uri, self.organise.dialect, ba_username = self.organise.ba_username, ba_password = self.organise.ba_password)
                         self.last_request = element_file.request_time
 
                         # Generate element file name

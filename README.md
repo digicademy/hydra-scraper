@@ -76,6 +76,8 @@ additional options:
 - `-ap` or `-add_publisher <uri>`: URI of the data publisher
 - `-c` or `--clean <string> <string>`: strings to remove from feed element URIs to build their file names
 - `-p` or `--prepare <string> <string>`: prepare cto output for this NFDI4Culture feed and catalog ID
+- `-bu` or `--ba_username <string>`: Basic Auth username for requests
+- `-bp` or `--ba_password <string>`: Basic Auth password for requests
 - `-q` or `--quiet`: do not display status messages
 
 ## Examples

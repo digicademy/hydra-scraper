@@ -11,7 +11,7 @@ import codecs
 import logging
 from datetime import datetime
 from glob import glob
-from httpx import Client, HTTPError
+from httpx import BasicAuth, Client, HTTPError
 from lxml import etree
 from lxml.etree import ParserError as XmlParserError
 from os import linesep, makedirs, remove
@@ -33,13 +33,15 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None, user_agent:str = 'Hydra Scraper/0.9.4'):
+    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.4'):
         '''
         Retrieve remote or local files
 
             Parameters:
                 location (str): URL or local path to retrieve the file
                 content_type (str): Content type to request or parse
+                ba_username (str): Basic Auth username for requests
+                ba_password (str): Basic Auth password for requests
                 user_agent (str): User agent to use in remote file requests
         '''
 
@@ -49,6 +51,8 @@ class File:
 
         # Content vars
         self.location:str = location
+        self.ba_username:str|None = ba_username
+        self.ba_password:str|None = ba_password
         self.text:str|None = None
         self.directory:list|None = None
         self.directory_path:str|None = None
@@ -86,6 +90,11 @@ class File:
         if self.content_type:
             headers['Accept'] = self.content_type
 
+        # Compose Basic Auth data
+        auth = None
+        if self.ba_username and self.ba_password:
+            auth = BasicAuth(username = self.ba_username, password = self.ba_password)
+
         # Set up three request attempts in case of server issues
         try:
             lap = 0
@@ -99,7 +108,7 @@ class File:
                     logger.info('Waiting for ' + str(timer) + ' seconds for the server to recover')
 
                 # Request response from URL
-                with Client(headers = headers, timeout = 1800.0, follow_redirects = True) as client:
+                with Client(headers = headers, auth = auth, timeout = 1800.0, follow_redirects = True) as client:
                     r = client.get(self.location)
 
                     # Check if response is valid
