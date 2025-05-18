@@ -10,6 +10,7 @@
 import logging
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
+from http.client import InvalidURL
 from os.path import isdir, isfile
 from time import sleep
 from urllib.robotparser import RobotFileParser
@@ -62,6 +63,8 @@ class Organise:
         self.add_publisher:str|None = None
         self.clean:list|None = None
         self.prepare:list|None = None
+        self.ba_username:str|None = None
+        self.ba_password:str|None = None
         self.quiet:bool = False
 
         # Set up list of allowed arguments
@@ -183,6 +186,18 @@ class Organise:
             help = 'Prepare cto output for this NFDI4Culture feed and catalog ID'
         )
         available_args.add_argument(
+            '-bu', '--ba_username',
+            default = None,
+            type = str,
+            help = 'Basic Auth username for requests'
+        )
+        available_args.add_argument(
+            '-bp', '--ba_password',
+            default = None,
+            type = str,
+            help = 'Basic Auth password for requests'
+        )
+        available_args.add_argument(
             '-q', '--quiet',
             default = False,
             action = 'store_true',
@@ -208,6 +223,8 @@ class Organise:
         self.add_publisher = args.add_publisher
         self.clean = args.clean
         self.prepare = args.prepare
+        self.ba_username = args.ba_username
+        self.ba_password = args.ba_password
         self.quiet = args.quiet
 
         # Check location based on feed parameter
@@ -216,7 +233,7 @@ class Organise:
                 raise ValueError('Hydra Scraper called with a malformed folder location.')
         elif self.feed in ['beacon', 'cmif', 'csv', 'schema', 'schema-list']:
             if not url(self.location) and not isfile(self.location):
-                raise ValueError('Hydra Scraper called with a malformed ZIP file location.')
+                raise ValueError('Hydra Scraper called with a malformed entry-point location.')
         elif self.feed in ['oaipmh']:
             if not url(self.location):
                 raise ValueError('Hydra Scraper called with a malformed API location.')
@@ -225,6 +242,12 @@ class Organise:
         if not self.elements:
             if 'beacon' in self.output or 'csv' in self.output or 'cto' in self.output:
                 raise ValueError('Hydra Scraper called with extraction routine but no element markup.')
+
+        # Check Basic Auth data
+        if self.ba_username != None and self.ba_password == None:
+            raise ValueError('Hydra Scraper called with Basic Auth username but no password.')
+        elif self.ba_username == None and self.ba_password != None:
+            raise ValueError('Hydra Scraper called with Basic Auth password but no username.')
 
         # Check further URIs
         for uri in [self.add_feed, self.add_catalog, self.add_publisher]:
@@ -314,33 +337,38 @@ def robots_delay(location:str, robots_user_agent:str = 'HydraScraper') -> int|No
     output = None
 
     # URL
-    if url(location):
-        index = location.find('/')
-        if index:
-            index = location.find('/', index + 2)
-        if index:
-            domain = location[:index]
-        else:
-            domain = location
+    try:
+        if url(location):
+            index = location.find('/')
+            if index:
+                index = location.find('/', index + 2)
+            if index:
+                domain = location[:index]
+            else:
+                domain = location
 
-        # Robots
-        robots = RobotFileParser()
-        robots.set_url(domain + '/robots.txt')
-        robots.read()
+            # Robots
+            robots = RobotFileParser()
+            robots.set_url(domain + '/robots.txt')
+            robots.read()
 
-        # Delay
-        delay = robots.crawl_delay(robots_user_agent)
-        if not delay:
-            delay = robots.crawl_delay('*')
-        if delay:
-            output = int(delay * 1000)
+            # Delay
+            delay = robots.crawl_delay(robots_user_agent)
+            if not delay:
+                delay = robots.crawl_delay('*')
+            if delay:
+                output = int(delay * 1000)
 
-        # Rate
-        rate = robots.request_rate(robots_user_agent)
-        if not rate:
-            rate = robots.request_rate('*')
-        if rate:
-            output = int((rate.seconds / rate.requests) * 1000)
+            # Rate
+            rate = robots.request_rate(robots_user_agent)
+            if not rate:
+                rate = robots.request_rate('*')
+            if rate:
+                output = int((rate.seconds / rate.requests) * 1000)
+
+    # If, for example, authentication stands in the way
+    except InvalidURL:
+        pass
 
     # Return
     return output

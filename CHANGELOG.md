@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.4
+
+- Remove local file paths from source-file path
+- Ignore LIDO files that have no LIDO content
+- Various fixes to deal with faulty URIs
+- Fix authentication issues when looking for a `robots.txt`
+- Support Basic Auth via `--ba_username` and `--ba_password`
+
 ## 0.9.3
 
 - Further LIDO fixes and enhancements
