@@ -20,7 +20,9 @@ class Feed(ExtractFeedInterface):
         '''
 
         # Check for TEI content
-        if self.xml_first_element('.//{T}teiHeader') != None:
+        if self.xml_first_element('.//{T}teiHeader') == None:
+            self.success = False
+        else:
 
             # Feed URI
             self.feed_uri = Uri(self.xml_first_text('.//{T}teiHeader/{T}fileDesc/{T}publicationStmt/{T}idno[@type="url"]'), normalize = False)

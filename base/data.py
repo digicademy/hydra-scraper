@@ -11,6 +11,7 @@ from datetime import date, datetime
 from rdflib import Namespace
 from rdflib.term import Literal, URIRef, _is_valid_uri
 from urllib.parse import quote, unquote
+from validators import url
 
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, XSD
@@ -47,7 +48,7 @@ class Uri:
 
         # Save URIRef
         if isinstance(uri, URIRef):
-            if _is_valid_uri(str(uri)):
+            if _is_valid_uri(str(uri)) and url(str(uri)):
                 if normalize:
                     self.uri = clean_namespaces(str(uri))
                 else:
@@ -55,7 +56,7 @@ class Uri:
 
         # Save Literal
         elif isinstance(uri, Literal):
-            if _is_valid_uri(str(uri)):
+            if _is_valid_uri(str(uri)) and url(str(uri)):
                 if normalize:
                     self.uri = clean_namespaces(str(uri))
                 else:
@@ -63,11 +64,16 @@ class Uri:
 
         # Save str
         elif isinstance(uri, str):
-            if _is_valid_uri(str(uri)):
+            if _is_valid_uri(uri) and url(uri):
                 if normalize:
                     self.uri = clean_namespaces(uri)
                 else:
                     self.uri = uri
+
+        # Clean up square brackets not caught by previous checks
+        if self.uri != None:
+            self.uri = self.uri.replace('[', '%5B')
+            self.uri = self.uri.replace(']', '%5D')
 
 
     def __bool__(self) -> bool:
@@ -431,12 +437,12 @@ class UriLabel:
 
             # Literal and string may be URI or label
             if isinstance(combined, Literal):
-                if _is_valid_uri(str(combined)):
+                if _is_valid_uri(str(combined)) and url(str(combined)):
                     self.uri = Uri(str(combined))
                 else:
                     self.labels = LabelList(combined)
             if isinstance(combined, str):
-                if _is_valid_uri(combined):
+                if _is_valid_uri(combined) and url(combined):
                     self.uri = Uri(combined)
                 else:
                     self.labels = LabelList(combined)
@@ -644,17 +650,17 @@ class Date:
                 # Check if regular dates or proper datetimes were used
                 try:
                     self.start_time = datetime.fromisoformat(start_and_end[0] + 'T00:00:00')
-                except ValueError:
+                except (ValueError, TypeError):
                     try:
                         self.start_time = datetime.fromisoformat(start_and_end[0])
-                    except ValueError:
+                    except (ValueError, TypeError):
                         pass
                 try:
                     self.end_time = datetime.fromisoformat(start_and_end[1] + 'T23:59:59')
-                except ValueError:
+                except (ValueError, TypeError):
                     try:
                         self.end_time = datetime.fromisoformat(start_and_end[1])
-                    except ValueError:
+                    except (ValueError, TypeError):
                         pass
 
                 # Save string as backup
@@ -665,10 +671,10 @@ class Date:
             else:
                 try:
                     self.start = date.fromisoformat(input)
-                except ValueError:
+                except (ValueError, TypeError):
                     try:
                         self.start_time = datetime.fromisoformat(input)
-                    except ValueError:
+                    except (ValueError, TypeError):
                         self.label = Label(input)
 
 

@@ -29,9 +29,13 @@ class Feed(ExtractFeedInterface):
         Extract feed data from schema.org triples
         '''
 
-        # Retrieve first feed that contains data (feed and single-element notation)
+        # Check for schema.org content
         feed_uris = self.rdf_all_subjects([RDF.type, SCHEMA.additionalType, SDO.additionalType], schema_feed)
-        if feed_uris:
+        if feed_uris == None:
+            self.success = False
+        else:
+
+            # Retrieve first feed that contains data (feed and single-element notation)
             for feed_uri in feed_uris:
                 if not self.feed_uri and (self.rdf_all_triples(feed_uri, [SCHEMA.dataFeedElement, SDO.dataFeedElement, HYDRA.member], None, True) > 0 or self.rdf_all_triples(None, [SCHEMA.isPartOf, SDO.isPartOf], feed_uri, True) > 0):
 
@@ -90,9 +94,13 @@ class FeedElement(ExtractFeedElementInterface):
         Extract feed element data from schmema.org triples
         '''
 
-        # Retrieve indicated feed or first feed that contains data (feed and single-element notation)
+        # Check for schema.org content
         feed_uris = self.rdf_all_subjects(RDF.type, schema_feed)
-        if feed_uris:
+        if feed_uris == None:
+            self.success = None
+        else:
+
+            # Retrieve indicated feed or first feed that contains data (feed and single-element notation)
             for feed_uri in feed_uris:
                 if str(feed_uri) == self.feed_uri.uri or (not self.feed_uri and (self.rdf_all_triples(feed_uri, [SCHEMA.dataFeedElement, SDO.dataFeedElement], None, True) > 0 or self.rdf_all_triples(None, [SCHEMA.isPartOf, SDO.isPartOf], feed_uri, True) > 0)):
 

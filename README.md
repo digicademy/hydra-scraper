@@ -165,7 +165,7 @@ python go.py -l https://corpusvitrearum.de/id/about.ttl -f schema-list -o files 
 Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (embedded)** data:
 
 ```bash
-python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o beacon csv cto files triples -n cvma-cgif -p E5308E4229  -c https://corpusvitrearum.de/id/
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema -e schema -o beacon csv cto files triples -n cvma-cgif -p E5308 E4229  -c https://corpusvitrearum.de/id/
 ```
 
 Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (API)** data:

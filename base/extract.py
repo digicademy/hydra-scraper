@@ -39,17 +39,26 @@ class ExtractInterface:
         # Retrieve file and data
         if file.success == True:
             self.file = file
+            self.success = True
             self.retrieve()
 
-            # Log info
-            self.success = True
+            # Log info for feed elements
             if hasattr(self, 'element_uri'):
-                logger.info('Extracted data from feed element ' + self.element_uri.text())
+                element_uri = self.element_uri.text()
+                if element_uri == '':
+                    logger.warning('Could not extract data from feed element')
+                else:
+                    logger.info('Extracted data from feed element ' + element_uri)
+
+            # Log info for feeds
             else:
-                logger.info('Extracted data from feed ' + self.feed_uri.text())
+                feed_uri = self.feed_uri.text()
+                if feed_uri == '':
+                    logger.warning('Could not extract data from feed')
+                else:
+                    logger.info('Extracted data from feed ' + feed_uri)
         else:
             logger.error('Could not extract data because file was not available')
-
 
 
     def retrieve(self):

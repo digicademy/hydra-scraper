@@ -270,6 +270,11 @@ class File:
                     self.content_type = 'text/plain'
                     self.file_type = 'txt'
                     logger.warning('Could not recognise file type of ' + self.location)
+                
+                # Remember directory
+                directory_path_index = self.location.rfind('/')
+                if directory_path_index > 0:
+                    self.directory_path = self.location[:directory_path_index]
 
                 # Store content
                 if not self.file_extension == 'zip':
@@ -307,7 +312,6 @@ class File:
 
             # Store file list
             self.directory = files
-            self.directory_path = location
 
         # Log info
         else:

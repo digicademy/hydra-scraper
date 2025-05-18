@@ -10,6 +10,7 @@
 import logging
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
+from http.client import InvalidURL
 from os.path import isdir, isfile
 from time import sleep
 from urllib.robotparser import RobotFileParser
@@ -344,7 +345,7 @@ def robots_delay(location:str, robots_user_agent:str = 'HydraScraper') -> int|No
                 output = int((rate.seconds / rate.requests) * 1000)
 
     # If, for example, authentication stands in the way
-    except:
+    except InvalidURL:
         pass
 
     # Return

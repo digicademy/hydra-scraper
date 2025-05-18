@@ -29,7 +29,9 @@ class FeedElement(ExtractFeedElementInterface):
         '''
 
         # Check for LIDO content
-        if self.xml_first_element('.//{L}lido') != None:
+        if self.xml_first_element('.//{L}lido') == None:
+            self.success = False
+        else:
 
             # Feed URI
             #self.feed_uri = 
@@ -183,7 +185,7 @@ class FeedElement(ExtractFeedElementInterface):
                     if event.text in check_terms:
                         try:
                             self.creation_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
-                        except ValueError:
+                        except (ValueError, TypeError):
                             pass
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
             if events != None:
@@ -191,7 +193,7 @@ class FeedElement(ExtractFeedElementInterface):
                     if event.text in check_terms:
                         try:
                             self.creation_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
-                        except ValueError:
+                        except (ValueError, TypeError):
                             pass
 
             # Creation period (check for specific event names, LIDO 1.0 and 1.1 notation)
@@ -227,7 +229,7 @@ class FeedElement(ExtractFeedElementInterface):
                     if event.text in check_terms:
                         try:
                             self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
-                        except ValueError:
+                        except (ValueError, TypeError):
                             pass
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
             if events != None:
@@ -235,7 +237,7 @@ class FeedElement(ExtractFeedElementInterface):
                     if event.text in check_terms:
                         try:
                             self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
-                        except ValueError:
+                        except (ValueError, TypeError):
                             pass
 
             # Approximate period
