@@ -33,6 +33,7 @@ RISM = Namespace('https://rism.online/')
 SCHEMA = Namespace('http://schema.org/')
 VIAF = Namespace('http://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
+TGN = Namespace('https://vocab.getty.edu/tgn/')
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -443,6 +444,7 @@ def namespaces() -> Graph:
     output.bind('rism', RISM)
     output.bind('fg', FG)
     output.bind('isil', ISIL)
+    output.bind('tgn', TGN)
 
     # Return graph
     return output

@@ -29,6 +29,7 @@ RISM = Namespace('https://rism.online/')
 FG = Namespace('https://database.factgrid.de/entity/')
 ISIL = Namespace('https://ld.zdb-services.de/resource/organisations/')
 SCHEMA = Namespace('http://schema.org/')
+TGN = Namespace('https://vocab.getty.edu/tgn/')
 
 
 class Uri:
@@ -1008,7 +1009,8 @@ def clean_namespaces(input:str) -> str:
         str(VIAF),
         str(RISM),
         str(FG),
-        str(ISIL)
+        str(ISIL),
+        str(TGN)
     ]
 
     # Prepare additional http/https check if not a regular namespace
