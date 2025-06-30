@@ -126,7 +126,7 @@ class Job:
                         feed_file.turtle(self.organise.folder_triples + '/' + feed_name)
 
                     # Reconcile data
-                    if 'csv' in self.organise.output or 'cto' in self.organise.output:
+                    if 'csv' in self.organise.output or 'cto' in self.organise.output or 'cto3' in self.organise.output:
                         status.done()
                         status = Progress('Reconciling authority URIs', self.organise.quiet)
                         for element_index_minus, element_data in enumerate(feed_data.feed_elements):
@@ -173,6 +173,10 @@ class Job:
                         status.done()
                         status = Progress('Saving temporary nfdicore/cto triples', self.organise.quiet)
                         feed_data.map_and_turtle('cto', self.organise.folder_cto + '/' + feed_name, self.organise.prepare)
+                    if 'cto3' in self.organise.output:
+                        status.done()
+                        status = Progress('Saving temporary nfdicore/cto v3 triples', self.organise.quiet)
+                        feed_data.map_and_turtle('cto3', self.organise.folder_cto3 + '/' + feed_name, self.organise.prepare)
 
                 # Save list without elements
                 else:
@@ -185,6 +189,8 @@ class Job:
                             feed_data.map_and_save('csv', self.organise.folder_csv + '/0', prepare = self.organise.prepare)
                         if 'cto' in self.organise.output:
                             feed_data.map_and_turtle('cto', self.organise.folder_cto + '/0', self.organise.prepare)
+                        if 'cto3' in self.organise.output:
+                            feed_data.map_and_turtle('cto3', self.organise.folder_cto3 + '/0', self.organise.prepare)
 
                     # Loop through elements
                     status.done()
@@ -246,7 +252,7 @@ class Job:
                                     element_data.publisher = UriList(self.organise.add_publisher)
 
                                 # Reconcile data
-                                if 'csv' in self.organise.output or 'cto' in self.organise.output:
+                                if 'csv' in self.organise.output or 'cto' in self.organise.output or 'cto3' in self.organise.output:
 
                                     # Check each vocab_further URI
                                     vocab_further = []
@@ -282,6 +288,8 @@ class Job:
                                     element_data.map_and_save('csv', self.organise.folder_csv + '/' + element_name, prepare = self.organise.prepare)
                                 if 'cto' in self.organise.output:
                                     element_data.map_and_turtle('cto', self.organise.folder_cto + '/' + element_name, self.organise.prepare)
+                                if 'cto3' in self.organise.output:
+                                    element_data.map_and_turtle('cto3', self.organise.folder_cto3 + '/' + element_name, self.organise.prepare)
 
                 # Set up next feed page to harvest, if available
                 if feed_data.feed_uri_next:
@@ -310,6 +318,11 @@ class Job:
             status = Progress('Saving compiled nfdicore/cto triples', self.organise.quiet)
             combine_triples(self.organise.folder_cto, self.organise.folder + '/cto')
             remove_folder(self.organise.folder_cto)
+        if self.organise.elements and 'cto3' in self.organise.output:
+            status.done()
+            status = Progress('Saving compiled nfdicore/cto v3 triples', self.organise.quiet)
+            combine_triples(self.organise.folder_cto3, self.organise.folder + '/cto3')
+            remove_folder(self.organise.folder_cto3)
         if 'triples' in self.organise.output:
             status.done()
             status = Progress('Saving compiled triples', self.organise.quiet)

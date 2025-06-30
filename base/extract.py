@@ -16,6 +16,7 @@ from base.file import File
 import map.beacon as beacon
 import map.csv as csv
 import map.cto as cto
+import map.cto3 as cto3
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -750,7 +751,7 @@ class ExtractFeedInterface(ExtractInterface):
         return properties
 
 
-    def map(self, target:str) -> beacon.Feed|csv.Feed|cto.Feed:
+    def map(self, target:str) -> beacon.Feed|csv.Feed|cto.Feed|cto3.Feed:
         '''
         Map extracted feed data to another standard
 
@@ -758,7 +759,7 @@ class ExtractFeedInterface(ExtractInterface):
                 target (str): Identifier of the target standard to use
 
             Returns:
-                beacon.Feed|csv.Feed|cto.Feed: Feed in the target standard
+                beacon.Feed|csv.Feed|cto.Feed|cto3.Feed: Feed in the target standard
         '''
 
         # Create a feed
@@ -768,6 +769,8 @@ class ExtractFeedInterface(ExtractInterface):
             return csv.Feed(self)
         elif target == 'cto':
             return cto.Feed(self)
+        elif target == 'cto3':
+            return cto3.Feed(self)
         
         # Throw error for other target strings
         else:
@@ -894,7 +897,7 @@ class ExtractFeedElementInterface(ExtractInterface):
         return properties
 
 
-    def map(self, target:str) -> beacon.FeedElement|csv.FeedElement|cto.FeedElement:
+    def map(self, target:str) -> beacon.FeedElement|csv.FeedElement|cto.FeedElement|cto3.FeedElement:
         '''
         Map extracted feed element data to another standard
 
@@ -902,16 +905,18 @@ class ExtractFeedElementInterface(ExtractInterface):
                 target (str): Identifier of the target to use
 
             Returns:
-                beacon.FeedElement|csv.FeedElement|cto.FeedElement: Feed element in the target standard
+                beacon.FeedElement|csv.FeedElement|cto.FeedElement|cto3.FeedElement: Feed element in the target standard
         '''
 
-        # Create CTO feed element
+        # Create a feed element
         if target == 'beacon':
             return beacon.FeedElement(self)
         elif target == 'csv':
             return csv.FeedElement(self)
         elif target == 'cto':
             return cto.FeedElement(self)
+        elif target == 'cto3':
+            return cto3.FeedElement(self)
         
         # Throw error for other target strings
         else:
