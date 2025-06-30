@@ -983,6 +983,10 @@ def clean_namespaces(input:str) -> str:
         input = input.replace('http://vocab.getty.edu/page/aat/', str(AAT), 1)
     elif input.startswith('https://vocab.getty.edu/page/aat/'):
         input = input.replace('https://vocab.getty.edu/page/aat/', str(AAT), 1)
+    elif input.startswith('http://vocab.getty.edu/resource/aat/'):
+        input = input.replace('http://vocab.getty.edu/resource/aat/', str(AAT), 1)
+    elif input.startswith('https://vocab.getty.edu/resource/aat/'):
+        input = input.replace('https://vocab.getty.edu/resource/aat/', str(AAT), 1)
 
     # Avoid known GeoNames issues
     if input.startswith('http://www.geonames.org/'):

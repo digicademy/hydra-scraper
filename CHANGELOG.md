@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.5
+
+- Add TGN and further normalise AAT identifiers
+
 ## 0.9.4
 
 - Remove local file paths from source-file path
