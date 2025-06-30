@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.4'):
+    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.5'):
         '''
         Retrieve remote or local files
 
