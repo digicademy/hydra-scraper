@@ -2,6 +2,7 @@
 
 ## 0.9.5
 
+- Preliminarily include `SCHEMA.associatedMedia` in image extraction
 - Add TGN and further normalise AAT identifiers
 
 ## 0.9.4

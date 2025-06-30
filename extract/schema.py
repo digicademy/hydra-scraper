@@ -145,7 +145,7 @@ class FeedElement(ExtractFeedElementInterface):
                     self.shelf_mark = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), CTO.shelfMark))
 
                     # Image
-                    self.image = Uri(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.image, SDO.image, SCHEMA.contentUrl, SDO.contentUrl]), normalize = False)
+                    self.image = Uri(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.image, SDO.image, SCHEMA.contentUrl, SDO.contentUrl, SCHEMA.associatedMedia, SDO.associatedMedia]), normalize = False)
 
                     # Lyrics
                     wrapper = self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.lyrics, SDO.lyrics])
