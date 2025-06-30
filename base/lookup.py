@@ -33,6 +33,7 @@ RISM_API = Namespace('https://rism.online/api/v1#')
 SCHEMA = Namespace('http://schema.org/')
 VIAF = Namespace('http://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
+TGN = Namespace('https://vocab.getty.edu/tgn/')
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -98,6 +99,10 @@ class Lookup:
 
         # GeoNames
         elif URIRef(uri) in GN:
+            output = 'location'
+
+        # TGN
+        elif URIRef(uri) in TGN:
             output = 'location'
 
         # Iconclass
