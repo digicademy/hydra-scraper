@@ -12,7 +12,7 @@ from rdflib import Namespace
 from rdflib.term import Literal
 
 # Import script modules
-from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Media
 from base.extract import ExtractFeedElementInterface
 
 # Define namespaces
@@ -44,10 +44,14 @@ class FeedElement(ExtractFeedElementInterface):
             self.element_uri_same = UriList(self.xml_all_texts('.//{L}lido/objectPublishedID'))
 
             # Element type
+            # Deprecated, remove along with CTO2
             self.element_type = Uri(SCHEMA.VisualArtwork)
 
             # Element type shorthand
-            #self.element_type_shorthand = 
+            #self.element_type_short = 
+
+            # Data concept shorthand
+            #self.data_concept_short = 
 
             # Label and alternative label (overflow mechanic)
             label = []
@@ -70,43 +74,36 @@ class FeedElement(ExtractFeedElementInterface):
             self.label = LabelList(label)
             self.label_alt = LabelList(label_alt)
 
+            # Holding organization
+            #self.holding_org = 
+
             # Shelf mark
             #self.shelf_mark = 
 
-            # Image (select largest or first)
+            # Media (select largest or first image)
             largest_width = 0
             widths = self.xml_all_elements('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}resourceMeasurementsSet/{L}measurementValue')
             if widths:
                 for width in widths:
                     if int(width.text) > largest_width:
                         largest_width = int(width.text)
-                        self.image = Uri(width.getparent().getparent().findtext('.//{http://www.lido-schema.org}linkResource'), normalize = False)
+                        self.media = Media(width.getparent().getparent().findtext('.//{http://www.lido-schema.org}linkResource'), type = 'image')
+                        # TODO: Add image license and byline data
             else:
-                self.image = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}linkResource'), normalize = False)
+                self.media = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}linkResource'), type = 'image')
+                # TODO: Add image license and byline data
 
             # Lyrics
             #self.lyrics = 
 
-            # Text incipit
-            #self.text_incipit = 
+            # Teaser
+            #self.teaser = 
 
-            # Music incipit
-            #self.music_incipit = 
+            # Incipit
+            #self.incipit = 
 
             # Source file
             self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
-
-            # IIIF image API
-            self.iiif_image_api = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00912"]/{L}linkResource'), normalize = False)
-
-            # IIIF presentation API
-            #self.iiif_presentation_api = 
-
-            # DDB API
-            #self.ddb_api = 
-
-            # OAI-PMH API
-            #self.oaipmh_api = 
 
             # Publisher (auto-correct ISIL URIs)
             publishers = self.xml_all_texts('.//{L}recordWrap/{L}recordSource/{L}legalBodyID[@{L}source="ISIL (ISO 15511)"]')
@@ -116,17 +113,27 @@ class FeedElement(ExtractFeedElementInterface):
             self.publisher = UriList(publishers)
 
             # License (observe work, record, and image licenses)
-            self.license = UriList(self.xml_all_lido_concepts([
+            self.license = UriLabelList(self.xml_all_lido_concepts([
                 './/{L}rightsWorkSet/{L}rightsType',
                 './/{L}recordRights/{L}rightsType',
                 './/{L}rightsResource/{L}rightsType',
             ]))
 
+            # Byline
+            #self.byline =
+            # TODO Check if byline data is available
+
             # Vocabulary: element type
+            # Deprecated, remove along with CTO2
             self.vocab_element_type = UriLabelList(self.xml_all_lido_concepts('.//{L}objectClassificationWrap/{L}objectWorkTypeWrap/{L}objectWorkType'))
 
             # Vocabulary: subject concept
+            # Deprecated, remove along with CTO2
             self.vocab_subject_concept = UriLabelList(self.xml_all_lido_concepts('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectConcept'))
+
+            # Vocabulary: classifier
+            #self.vocab_classifier = UriLabelList()
+            # TODO Make sure classifiers are recognised
 
             # Vocabulary: related location (two distinct nodes)
             vocab_related_location = []

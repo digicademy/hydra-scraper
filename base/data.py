@@ -841,13 +841,14 @@ class DateList:
 class Incipit:
 
 
-    def __init__(self, uri:str|Literal|URIRef|None = None, clef:str|Literal|URIRef|None = None, key_sig:str|Literal|URIRef|None = None, time_sig:str|Literal|URIRef|None = None, pattern:str|Literal|URIRef|None = None):
+    def __init__(self, uri:str|Literal|URIRef|None = None, clef:str|Literal|URIRef|None = None, key:str|Literal|URIRef|None = None, key_sig:str|Literal|URIRef|None = None, time_sig:str|Literal|URIRef|None = None, pattern:str|Literal|URIRef|None = None):
         '''
-        Music incipit node
+        Incipit node
 
             Parameters:
                 uri (str|Literal|URIRef|None): Input to build the URI
                 clef (str|Literal|URIRef|None): Input to build the string literal
+                key (str|Literal|URIRef|None): Input to build the string literal
                 key_sig (str|Literal|URIRef|None): Input to build the string literal
                 time_sig (str|Literal|URIRef|None): Input to build the string literal
                 pattern (str|Literal|URIRef|None): Input to build the string literal
@@ -856,6 +857,7 @@ class Incipit:
         # Content vars
         self.uri:Uri = Uri(uri)
         self.clef:Label = Label(clef)
+        self.key:Label = Label(key)
         self.key_sig:Label = Label(key_sig)
         self.time_sig:Label = Label(time_sig)
         self.pattern:Label = Label(pattern)
@@ -870,7 +872,7 @@ class Incipit:
         '''
 
         # Return bool
-        if self.uri or self.clef or self.key_sig or self.time_sig or self.pattern:
+        if self.uri or self.clef or self.key or self.key_sig or self.time_sig or self.pattern:
             return True
         else:
             return False
@@ -882,8 +884,8 @@ class Incipit:
         '''
 
         # Return string
-        if self.uri or self.clef or self.key_sig or self.time_sig or self.pattern:
-            return '<' + str(self.uri) + ', ' + str(self.clef) + ', ' + str(self.key_sig) + ', ' + str(self.time_sig) + ', ' + str(self.pattern) + '>'
+        if self.uri or self.clef or self.key or self.key_sig or self.time_sig or self.pattern:
+            return '<' + str(self.uri) + ', ' + str(self.clef) + ', ' + str(self.key) + ', ' + str(self.key_sig) + ', ' + str(self.time_sig) + ', ' + str(self.pattern) + '>'
         else:
             return 'Empty incipit'
 
@@ -894,12 +896,14 @@ class Incipit:
         '''
 
         # Return string
-        if self.uri or self.clef or self.key_sig or self.time_sig or self.pattern:
+        if self.uri or self.clef or self.key or self.key_sig or self.time_sig or self.pattern:
             output = []
             if self.uri:
                 output.append(self.uri.text())
             if self.clef:
                 output.append(self.clef.text())
+            if self.key:
+                output.append(self.key.text())
             if self.key_sig:
                 output.append(self.key_sig.text())
             if self.time_sig:
@@ -911,24 +915,92 @@ class Incipit:
             return ''
 
 
+class Media:
+
+
+    def __init__(self, uri:str|Literal|URIRef|None = None, type:str = '', license:str|Literal|URIRef|None = None, byline:str|Literal|URIRef|None = None):
+        '''
+        Media node
+
+            Parameters:
+                uri (str|Literal|URIRef|None): Input to build the URI
+                type str: Input to build the string ('image' or 'audio')
+                license (str|Literal|URIRef|None): Input to build the URI and string literal list
+                byline (str|Literal|URIRef|None): Input to build the string literal list
+        '''
+
+        # Content vars
+        self.uri:Uri = Uri(uri, normalize = False)
+        self.type:str = str(type)
+        self.license:UriLabelList = UriLabelList(license)
+        self.byline:LabelList = LabelList(byline)
+
+
+    def __bool__(self) -> bool:
+        '''
+        Indicate whether object holds content
+
+            Returns:
+                bool: Whether or not there is content
+        '''
+
+        # Return bool
+        if self.uri or self.type != '' or self.license or self.byline:
+            return True
+        else:
+            return False
+
+
+    def __str__(self) -> str:
+        '''
+        String representation of the object
+        '''
+
+        # Return string
+        if self.uri or self.type != '' or self.license or self.byline:
+            return '<' + str(self.uri) + ', ' + self.type + ', ' + str(self.license) + ', ' + str(self.byline) + '>'
+        else:
+            return 'Empty media'
+
+
+    def text(self) -> str:
+        '''
+        Return data as plain text string
+        '''
+
+        # Return string
+        if self.uri or self.type != '' or self.license or self.byline:
+            output = []
+            if self.uri:
+                output.append(self.uri.text())
+            if self.type != '':
+                output.append(self.type)
+            if self.license:
+                output.append(self.license.text())
+            if self.byline:
+                output.append(self.byline.text())
+            return ', '.join(output)
+        else:
+            return ''
+
+
     def rdflib(self) -> dict|None:
         '''
         Return data as an RDFLib class
 
             Returns:
-                dict|None: Music incipit node
+                dict|None: Media node
         '''
 
         # Return content
-        if self.uri or self.clef or self.key_sig or self.time_sig or self.pattern:
-            incipit = {
+        if self.uri or self.type != '' or self.license or self.byline:
+            media = {
                 'uri': self.uri.rdflib(),
-                'clef': self.clef.rdflib(),
-                'key_sig': self.key_sig.rdflib(),
-                'time_sig': self.time_sig.rdflib(),
-                'pattern': self.pattern.rdflib()
+                'type': Literal(self.type),
+                'license': self.license.rdflib(),
+                'byline': self.byline.rdflib()
             }
-            return incipit
+            return media
         else:
             return None
 

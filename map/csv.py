@@ -37,20 +37,18 @@ class Feed(MapFeedInterface):
         self.content += csv('element_type')
         self.content += csv('label')
         self.content += csv('label_alt')
+        self.content += csv('holding_org')
         self.content += csv('shelf_mark')
-        self.content += csv('image')
+        self.content += csv('media')
         self.content += csv('lyrics')
-        self.content += csv('text_incipit')
-        self.content += csv('music_incipit')
+        self.content += csv('teaser')
+        self.content += csv('incipit')
         self.content += csv('source_file')
-        self.content += csv('iiif_image_api')
-        self.content += csv('iiif_presentation_api')
-        self.content += csv('ddb_api')
-        self.content += csv('oaipmh_api')
         self.content += csv('publisher')
         self.content += csv('license')
-        self.content += csv('vocab_element_type')
-        self.content += csv('vocab_subject_concept')
+        self.content += csv('vocab_element_type') # Deprecated, remove along with CTO2
+        self.content += csv('vocab_subject_concept') # Deprecated, remove along with CTO2
+        self.content += csv('vocab_classifier')
         self.content += csv('vocab_related_location')
         self.content += csv('vocab_related_event')
         self.content += csv('vocab_related_organization')
@@ -119,10 +117,14 @@ class FeedElement(MapFeedElementInterface):
             self.content += csv(self.element_uri_same.text())
 
             # Element type
+            # Deprecated, remove along with CTO2 (not '_short')
             if self.element_type:
                 self.content += csv(self.element_type.text())
             else:
-                self.content += csv(self.element_type_shorthand)
+                self.content += csv(self.element_type_short)
+
+            # Data concept shorthand
+            self.content += csv(self.data_concept_short)
 
             # LABEL AND REFERENCE LITERALS
 
@@ -132,39 +134,28 @@ class FeedElement(MapFeedElementInterface):
             # Alternative label
             self.content += csv(self.label_alt.text())
 
+            # Holding organization
+            self.content += csv(self.holding_org.text())
+
             # Shelf mark
             self.content += csv(self.shelf_mark.text())
 
             # MEDIA LITERALS
 
-            # Image
-            self.content += csv(self.image.text())
+            # Media
+            self.content += csv(self.media.text())
 
             # Lyrics
             self.content += csv(self.lyrics.text())
 
-            # Text incipit
-            self.content += csv(self.text_incipit.text())
+            # Teaser
+            self.content += csv(self.teaser.text())
 
-            # Music incipit
-            self.content += csv(self.music_incipit.text())
+            # Incipit
+            self.content += csv(self.incipit.text())
 
             # Source file
             self.content += csv(self.source_file.text())
-
-            # API LITERALS
-
-            # IIIF Image API
-            self.content += csv(self.iiif_image_api.text())
-
-            # IIIF Presentation API
-            self.content += csv(self.iiif_presentation_api.text())
-
-            # DDB API
-            self.content += csv(self.ddb_api.text())
-
-            # OAI-PMH API
-            self.content += csv(self.oaipmh_api.text())
 
             # RIGHTS URIS
 
@@ -174,13 +165,21 @@ class FeedElement(MapFeedElementInterface):
             # License
             self.content += csv(self.license.text())
 
+            # Byline
+            self.content += csv(self.byline.text())
+
             # RELATED URIS AND FALLBACK LITERALS
 
             # Element type
+            # Deprecated, remove along with CTO2
             self.content += csv(self.vocab_element_type.text())
 
             # Subject concept
+            # Deprecated, remove along with CTO2
             self.content += csv(self.vocab_subject_concept.text())
+
+            # Classifier
+            self.content += csv(self.vocab_classifier.text())
 
             # Related location
             self.content += csv(self.vocab_related_location.text())

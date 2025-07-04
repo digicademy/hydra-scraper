@@ -214,6 +214,7 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
+- Remove CTO2 along with three intermediate properties
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
 - Automatically build OCI container via CI instead of on demand

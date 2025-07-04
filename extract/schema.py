@@ -10,7 +10,7 @@
 from rdflib import Namespace
 
 # Import script modules
-from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Media
 from base.extract import ExtractFeedInterface, ExtractFeedElementInterface
 from base.lookup import schema_feed
 
@@ -115,7 +115,7 @@ class FeedElement(ExtractFeedElementInterface):
                         feed_publisher = UriList(self.rdf_all_objects(catalog_uri, [SCHEMA.publisher, SDO.publisher]))
 
                     # Feed license (to use in elements)
-                    feed_license = UriList(self.rdf_all_objects(self.feed_uri.rdflib(), [SCHEMA.license, SDO.license]))
+                    feed_license = UriLabelList(self.rdf_all_objects(self.feed_uri.rdflib(), [SCHEMA.license, SDO.license]))
 
                     # Element URI (if it has not been set)
                     if not self.element_uri:
@@ -130,10 +130,14 @@ class FeedElement(ExtractFeedElementInterface):
                     self.element_uri_same = UriList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.sameAs, SDO.sameAs]), normalize = False)
 
                     # Element type
+                    # Deprecated, remove along with CTO2
                     self.element_type = Uri(self.rdf_first_object(self.element_uri.rdflib(), RDF.type))
 
                     # Element type shorthand
-                    #self.element_type_shorthand = 
+                    #self.element_type_short = 
+
+                    # Data concept shorthand
+                    #self.data_concept_short = 
 
                     # Label
                     self.label = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.name, SDO.name]))
@@ -141,37 +145,30 @@ class FeedElement(ExtractFeedElementInterface):
                     # Alternative label (if CTO used in schema.org)
                     self.label_alt = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), SKOS.altLabel))
 
+                    # Holding organization
+                    #self.holding_org = 
+                    # TODO Check if holding org data may be possible
+
                     # Shelf mark (if CTO used in schema.org)
                     self.shelf_mark = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), CTO.shelfMark))
 
-                    # Image
-                    self.image = Uri(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.image, SDO.image, SCHEMA.contentUrl, SDO.contentUrl, SCHEMA.associatedMedia, SDO.associatedMedia]), normalize = False)
+                    # Media
+                    self.media = Media(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.image, SDO.image, SCHEMA.contentUrl, SDO.contentUrl, SCHEMA.associatedMedia, SDO.associatedMedia]), type = 'image')
+                    # TODO Properly check type of media and add license/byline data
 
                     # Lyrics
                     wrapper = self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.lyrics, SDO.lyrics])
                     if wrapper != None:
                         self.lyrics = LabelList(self.rdf_all_objects(wrapper, [SCHEMA.text, SDO.text]))
 
-                    # Text incipit
-                    self.text_incipit = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.text, SDO.text]))
+                    # Teaser
+                    self.teaser = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.text, SDO.text]))
 
-                    # Music incipit
-                    #self.music_incipit = 
+                    # Incipit
+                    #self.incipit = 
 
                     # Source file
                     self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
-
-                    # IIIF image API (if CTO used in schema.org)
-                    self.iiif_image_api = Uri(self.rdf_all_objects(self.element_uri.rdflib(), CTO.iiifImageAPI))
-
-                    # IIIF presentation API (if CTO used in schema.org)
-                    self.iiif_presentation_api = Uri(self.rdf_all_objects(self.element_uri.rdflib(), CTO.iiifPresentationAPI))
-
-                    # DDB API (if CTO used in schema.org)
-                    self.ddb_api = Uri(self.rdf_all_objects(self.element_uri.rdflib(), CTO.ddbAPI))
-
-                    # OAI-PMH API (if CTO used in schema.org)
-                    self.oaipmh_api = Uri(self.rdf_all_objects(self.element_uri.rdflib(), CTO['oai-pmhAPI']))
 
                     # Publisher (observe element and feed)
                     self.publisher = UriList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.publisher, SDO.publisher]))
@@ -179,15 +176,25 @@ class FeedElement(ExtractFeedElementInterface):
                         self.publisher = feed_publisher
 
                     # License (observe feed and element)
-                    self.license = UriList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.license, SDO.license]))
+                    self.license = UriLabelList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.license, SDO.license]))
                     if self.license == None and feed_license != None:
                         self.license = feed_license
 
+                    # Byline
+                    #self.byline =
+                    # TODO Check if byline data is available
+
                     # Vocabulary: element type
+                    # Deprecated, remove along with CTO2
                     #self.vocab_element_type = 
 
                     # Vocabulary: subject concept
+                    # Deprecated, remove along with CTO2
                     #self.vocab_subject_concept = 
+
+                    # Vocabulary: classifier
+                    #self.vocab_classifier =
+                    # TODO Make sure classifiers are recognised
 
                     # Vocabulary: related location
                     #self.vocab_related_location = 

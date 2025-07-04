@@ -2,8 +2,9 @@
 
 ## 0.9.5
 
-- Preliminarily include `SCHEMA.associatedMedia` in image extraction
-- Add TGN and further normalise AAT identifiers
+- Revise intermediate data structure for CTO 3
+- Include `SCHEMA.associatedMedia` in image/media extraction
+- Add Getty TGN and further normalise Getty AAT identifiers
 
 ## 0.9.4
 

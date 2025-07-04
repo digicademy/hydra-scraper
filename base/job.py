@@ -150,10 +150,12 @@ class Job:
                                     element_data.vocab_related_location.uri_labels.append(uri_label)
                                 elif check == 'event':
                                     element_data.vocab_related_event.uri_labels.append(uri_label)
-                                elif check == 'subject_concept':
+                                elif check == 'subject_concept': # Deprecated, remove along with CTO2
                                     element_data.vocab_subject_concept.uri_labels.append(uri_label)
-                                elif check == 'element_type':
+                                elif check == 'element_type': # Deprecated, remove along with CTO2
                                     element_data.vocab_element_type.uri_labels.append(uri_label)
+                                elif check == 'classifier': # TODO Make sure classifiers are recognised
+                                    element_data.vocab_classifier.uri_labels.append(uri_label)
 
                                 # Recompile vocab_further with everything else
                                 else:
@@ -271,10 +273,12 @@ class Job:
                                             element_data.vocab_related_location.uri_labels.append(uri_label)
                                         elif check == 'event':
                                             element_data.vocab_related_event.uri_labels.append(uri_label)
-                                        elif check == 'subject_concept':
+                                        elif check == 'subject_concept': # Deprecated, remove along with CTO2
                                             element_data.vocab_subject_concept.uri_labels.append(uri_label)
-                                        elif check == 'element_type':
+                                        elif check == 'element_type': # Deprecated, remove along with CTO2
                                             element_data.vocab_element_type.uri_labels.append(uri_label)
+                                        elif check == 'classifier': # TODO Make sure classifiers are recognised
+                                            element_data.vocab_classifier.uri_labels.append(uri_label)
 
                                         # Recompile vocab_further with everything else
                                         else:

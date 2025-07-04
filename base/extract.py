@@ -11,7 +11,7 @@ import logging
 from rdflib.term import BNode, Literal, URIRef
 
 # Import script modules
-from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Incipit
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Incipit, Media
 from base.file import File
 import map.beacon as beacon
 import map.csv as csv
@@ -794,24 +794,24 @@ class ExtractFeedElementInterface(ExtractInterface):
         self.feed_uri:Uri = Uri(feed_uri, normalize = False)
         self.element_uri:Uri = Uri(element_uri, normalize = False)
         self.element_uri_same:UriList = UriList()
-        self.element_type:Uri = Uri()
-        self.element_type_shorthand:str = ''
+        self.element_type:Uri = Uri() # Deprecated, remove along with CTO2
+        self.element_type_short:str = ''
+        self.data_concept_short:str = ''
         self.label:LabelList = LabelList()
         self.label_alt:LabelList = LabelList()
+        self.holding_org:Uri = Uri()
         self.shelf_mark:LabelList = LabelList()
-        self.image:Uri = Uri()
+        self.media:Media = Media()
         self.lyrics:LabelList = LabelList()
-        self.text_incipit:LabelList = LabelList()
-        self.music_incipit:Incipit = Incipit()
+        self.teaser:LabelList = LabelList()
+        self.incipit:Incipit = Incipit()
         self.source_file:Label = Label()
-        self.iiif_image_api:Uri = Uri()
-        self.iiif_presentation_api:Uri = Uri()
-        self.ddb_api:Uri = Uri()
-        self.oaipmh_api:Uri = Uri()
         self.publisher:UriList = UriList()
-        self.license:UriList = UriList()
-        self.vocab_element_type:UriLabelList = UriLabelList()
-        self.vocab_subject_concept:UriLabelList = UriLabelList()
+        self.license:UriLabelList = UriLabelList()
+        self.byline:LabelList = LabelList()
+        self.vocab_element_type:UriLabelList = UriLabelList() # Deprecated, remove along with CTO2
+        self.vocab_subject_concept:UriLabelList = UriLabelList() # Deprecated, remove along with CTO2
+        self.vocab_classifier:UriLabelList = UriLabelList()
         self.vocab_related_location:UriLabelList = UriLabelList()
         self.vocab_related_event:UriLabelList = UriLabelList()
         self.vocab_related_organization:UriLabelList = UriLabelList()
@@ -858,23 +858,23 @@ class ExtractFeedElementInterface(ExtractInterface):
             '- element_uri: ' + str(self.element_uri) + '\n' +\
             '- element_uri_same: ' + str(self.element_uri_same) + '\n' +\
             '- element_type: ' + str(self.element_type) + '\n' +\
-            '- element_type_shorthand: ' + str(self.element_type_shorthand) + '\n' +\
+            '- element_type_short: ' + str(self.element_type_short) + '\n' +\
+            '- data_concept_short: ' + str(self.data_concept_short) + '\n' +\
             '- label: ' + str(self.label) + '\n' +\
             '- label_alt: ' + str(self.label_alt) + '\n' +\
+            '- holding_org: ' + str(self.holding_org) + '\n' +\
             '- shelf_mark: ' + str(self.shelf_mark) + '\n' +\
-            '- image: ' + str(self.image) + '\n' +\
+            '- media: ' + str(self.media) + '\n' +\
             '- lyrics: ' + str(self.lyrics) + '\n' +\
-            '- text_incipit: ' + str(self.text_incipit) + '\n' +\
-            '- music_incipit: ' + str(self.music_incipit) + '\n' +\
+            '- teaser: ' + str(self.teaser) + '\n' +\
+            '- incipit: ' + str(self.incipit) + '\n' +\
             '- source_file: ' + str(self.source_file) + '\n' +\
-            '- iiif_image_api: ' + str(self.iiif_image_api) + '\n' +\
-            '- iiif_presentation_api: ' + str(self.iiif_presentation_api) + '\n' +\
-            '- ddb_api: ' + str(self.ddb_api) + '\n' +\
-            '- oaipmh_api: ' + str(self.oaipmh_api) + '\n' +\
             '- publisher: ' + str(self.publisher) + '\n' +\
             '- license: ' + str(self.license) + '\n' +\
+            '- byline: ' + str(self.byline) + '\n' +\
             '- vocab_element_type: ' + str(self.vocab_element_type) + '\n' +\
             '- vocab_subject_concept: ' + str(self.vocab_subject_concept) + '\n' +\
+            '- vocab_classifier: ' + str(self.vocab_classifier) + '\n' +\
             '- vocab_related_location: ' + str(self.vocab_related_location) + '\n' +\
             '- vocab_related_event: ' + str(self.vocab_related_event) + '\n' +\
             '- vocab_related_organization: ' + str(self.vocab_related_organization) + '\n' +\

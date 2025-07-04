@@ -156,18 +156,19 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.externalVocabulary, i))
 
             # Element type and element type shorthand
+            # Deprecated, remove along with CTO2 (not '_short')
             self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.DataFeedElement))
             # Element type: person
-            if self.element_type_shorthand == 'person' or self.element_type.rdflib() in schema_person:
+            if self.element_type_short == 'person' or self.element_type.rdflib() in schema_person:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Person))
              # Element type: organization
-            elif self.element_type_shorthand == 'organization' or self.element_type_shorthand == 'organisation' or self.element_type.rdflib() in schema_organization:
+            elif self.element_type_short == 'organization' or self.element_type_short == 'organisation' or self.element_type.rdflib() in schema_organization:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Organization))
             # Element type: place
-            elif self.element_type_shorthand == 'place' or self.element_type_shorthand == 'location' or self.element_type.rdflib() in schema_location:
+            elif self.element_type_short == 'place' or self.element_type_short == 'location' or self.element_type.rdflib() in schema_location:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Place))
             # Element type: event
-            elif self.element_type_shorthand == 'event' or self.element_type_shorthand == 'date' or self.element_type.rdflib() in schema_event:
+            elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type.rdflib() in schema_event:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Event))
             # Element type: item that is a schema.org creative work
             elif self.element_type.rdflib() in schema_item:
@@ -176,6 +177,9 @@ class FeedElement(MapFeedElementInterface):
             # Element type: generic item
             else:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.Item))
+
+            # Data concept shorthand
+            #self.data_concept_short
 
             # Optional wrapper
             if prepare != None and len(prepare) == 2:
@@ -194,6 +198,9 @@ class FeedElement(MapFeedElementInterface):
             for i in self.label_alt.rdflib():
                 self.rdf.add((self.element_uri.rdflib(), SKOS.altLabel, i))
 
+            # Holding organization
+            #self.holding_org
+
             # Shelf mark
             for i in self.shelf_mark.rdflib():
                 self.rdf.add((self.element_uri.rdflib(), CTO.shelfMark, i))
@@ -204,9 +211,10 @@ class FeedElement(MapFeedElementInterface):
             if self.element_uri:
                 self.rdf.add((self.element_uri.rdflib(), SCHEMA.url, Literal(self.element_uri.uri, datatype = SCHEMA.URL)))
 
-            # Image
-            if self.image:
-                self.rdf.add((self.element_uri.rdflib(), SCHEMA.image, Literal(self.image.uri, datatype = SCHEMA.URL)))
+            # Media
+            if self.media:
+                if self.media.type == 'image':
+                    self.rdf.add((self.element_uri.rdflib(), SCHEMA.image, Literal(self.media.uri.uri, datatype = SCHEMA.URL)))
 
             # Lyrics
             for i in self.lyrics.rdflib():
@@ -215,50 +223,34 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((wrapper, RDF.type, MO.Lyrics))
                 self.rdf.add((wrapper, MO.text, i))
 
-            # Text incipit
-            for i in self.text_incipit.rdflib():
+            # Teaser
+            for i in self.teaser.rdflib():
                 self.rdf.add((self.element_uri.rdflib(), CTO.textIncipit, i))
 
-            # Music incipit
-            if self.music_incipit:
-                music_incipit = self.music_incipit.rdflib()
-                if music_incipit['uri']:
-                    uri_or_wrapper = music_incipit['uri']
+            # Incipit
+            if self.incipit:
+                incipit = self.incipit.rdflib()
+                if incipit['uri']:
+                    uri_or_wrapper = incipit['uri']
                 else:
                     uri_or_wrapper = BNode()
                 self.rdf.add((uri_or_wrapper, RDF.type, CTO.Incipit))
                 self.rdf.add((uri_or_wrapper, CTO.incipitOf, self.element_uri.rdflib()))
-                if music_incipit['clef']:
-                    self.rdf.add((uri_or_wrapper, CTO.clef, music_incipit['clef']))
-                if music_incipit['key_sig']:
-                    self.rdf.add((uri_or_wrapper, CTO.keySignature, music_incipit['key_sig']))
-                if music_incipit['time_sig']:
-                    self.rdf.add((uri_or_wrapper, CTO.timeSignature, music_incipit['time_sig']))
-                if music_incipit['pattern']:
-                    self.rdf.add((uri_or_wrapper, CTO.pattern, music_incipit['pattern']))
+                if incipit['clef']:
+                    self.rdf.add((uri_or_wrapper, CTO.clef, incipit['clef']))
+                #if incipit['key']:
+                    #self.rdf.add((uri_or_wrapper, CTO.key, incipit['key']))
+                if incipit['key_sig']:
+                    self.rdf.add((uri_or_wrapper, CTO.keySignature, incipit['key_sig']))
+                if incipit['time_sig']:
+                    self.rdf.add((uri_or_wrapper, CTO.timeSignature, incipit['time_sig']))
+                if incipit['pattern']:
+                    self.rdf.add((uri_or_wrapper, CTO.pattern, incipit['pattern']))
 
             # Source file
             if self.source_file:
                 self.source_file.data_type = SCHEMA.URL
                 self.rdf.add((self.element_uri.rdflib(), CTO.sourceFile, self.source_file.rdflib()))
-
-            # API LITERALS
-
-            # IIIF Image API
-            if self.iiif_image_api:
-                self.rdf.add((self.element_uri.rdflib(), CTO.iiifImageAPI, Literal(self.iiif_image_api.uri, datatype = SCHEMA.URL)))
-
-            # IIIF Presentation API
-            if self.iiif_presentation_api:
-                self.rdf.add((self.element_uri.rdflib(), CTO.iiifPresentationAPI, Literal(self.iiif_presentation_api.uri, datatype = SCHEMA.URL)))
-
-            # DDB API
-            if self.ddb_api:
-                self.rdf.add((self.element_uri.rdflib(), CTO.ddbAPI, Literal(self.ddb_api.uri, datatype = SCHEMA.URL)))
-
-            # OAI-PMH API
-            if self.oaipmh_api:
-                self.rdf.add((self.element_uri.rdflib(), CTO['oai-pmhAPI'], Literal(self.oaipmh_api.uri, datatype = SCHEMA.URL))) # Alternative notation due to hyphen
 
             # RIGHTS URIS
 
@@ -268,11 +260,16 @@ class FeedElement(MapFeedElementInterface):
 
             # License
             for i in self.license.rdflib():
-                self.rdf.add((self.element_uri.rdflib(), NFDICORE.license, i))
+                if i[0]:
+                    self.rdf.add((self.element_uri.rdflib(), NFDICORE.license, i[0]))
+
+            # Byline
+            #self.byline
 
             # RELATED URIS AND FALLBACK LITERALS
 
             # Element type
+            # Deprecated, remove along with CTO2
             for i in self.vocab_element_type.rdflib():
                 if i[0]:
                     self.rdf.add((self.element_uri.rdflib(), CTO.elementType, i[0]))
@@ -284,6 +281,7 @@ class FeedElement(MapFeedElementInterface):
                         self.rdf.add((self.element_uri.rdflib(), CTO.elementTypeLiteral, e))
 
             # Subject concept
+            # Deprecated, remove along with CTO2
             for i in self.vocab_subject_concept.rdflib():
                 if i[0]:
                     self.rdf.add((self.element_uri.rdflib(), CTO.subjectConcept, i[0]))
@@ -293,6 +291,9 @@ class FeedElement(MapFeedElementInterface):
                 else:
                     for e in i[1]:
                         self.rdf.add((self.element_uri.rdflib(), CTO.subjectConceptLiteral, e))
+
+            # Classifier
+            #self.vocab_classifier
 
             # Related location
             for i in self.vocab_related_location.rdflib():
@@ -349,7 +350,7 @@ class FeedElement(MapFeedElementInterface):
             # DATES BY TYPE
 
             # For persons
-            if self.element_type_shorthand == 'person' or self.element_type.rdflib() in schema_person:
+            if self.element_type_short == 'person' or self.element_type.rdflib() in schema_person:
 
                 # Birth date
                 if self.birth_date:
@@ -360,7 +361,7 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.deathDate, self.death_date.rdflib()))
 
             # For organizations
-            elif self.element_type_shorthand == 'organization' or self.element_type_shorthand == 'organisation' or self.element_type.rdflib() in schema_organization:
+            elif self.element_type_short == 'organization' or self.element_type_short == 'organisation' or self.element_type.rdflib() in schema_organization:
 
                 # Foundation date
                 if self.foundation_date:
@@ -371,11 +372,11 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.dissolutionDate, self.dissolution_date.rdflib()))
 
             # For places
-            elif self.element_type_shorthand == 'place' or self.element_type_shorthand == 'location' or self.element_type.rdflib() in schema_location:
+            elif self.element_type_short == 'place' or self.element_type_short == 'location' or self.element_type.rdflib() in schema_location:
                 pass
 
             # For events
-            elif self.element_type_shorthand == 'event' or self.element_type_shorthand == 'date' or self.element_type.rdflib() in schema_event:
+            elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type.rdflib() in schema_event:
 
                 # Start date
                 if self.start_date:
