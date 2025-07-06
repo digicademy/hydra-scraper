@@ -117,11 +117,10 @@ class FeedElement(MapFeedElementInterface):
             self.content += csv(self.element_uri_same.text())
 
             # Element type
-            # Deprecated, remove along with CTO2 (not '_short')
-            if self.element_type:
-                self.content += csv(self.element_type.text())
-            else:
-                self.content += csv(self.element_type_short)
+            self.content += csv(self.element_type.text())
+            
+            # Element type shorthand
+            self.content += csv(self.element_type_short)
 
             # Data concept shorthand
             self.content += csv(self.data_concept_short)

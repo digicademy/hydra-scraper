@@ -2,7 +2,8 @@
 
 ## 0.9.5
 
-- Revise intermediate data structure for CTO 3
+- New serialisation to NFDIcore/CTO v3
+- Revise intermediate data structure for NFDIcore/CTO v3
 - Include `SCHEMA.associatedMedia` in image/media extraction
 - Add Getty TGN and further normalise Getty AAT identifiers
 

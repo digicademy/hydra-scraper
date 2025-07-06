@@ -44,14 +44,14 @@ class FeedElement(ExtractFeedElementInterface):
             self.element_uri_same = UriList(self.xml_all_texts('.//{L}lido/objectPublishedID'))
 
             # Element type
-            # Deprecated, remove along with CTO2
             self.element_type = Uri(SCHEMA.VisualArtwork)
 
             # Element type shorthand
-            #self.element_type_short = 
+            self.element_type_short = 'item'
 
             # Data concept shorthand
             #self.data_concept_short = 
+            # TODO Fill this gap
 
             # Label and alternative label (overflow mechanic)
             label = []

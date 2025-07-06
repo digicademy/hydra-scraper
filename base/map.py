@@ -274,7 +274,7 @@ class MapFeedElementInterface(MapInterface):
         self.feed_uri:Uri = Uri()
         self.element_uri:Uri = Uri()
         self.element_uri_same:UriList = UriList()
-        self.element_type:Uri = Uri() # Deprecated, remove along with CTO2
+        self.element_type:Uri = Uri()
         self.element_type_short:str = ''
         self.data_concept_short:str = ''
         self.label:LabelList = LabelList()
@@ -392,7 +392,7 @@ class MapFeedElementInterface(MapInterface):
             self.element_uri = data.element_uri
         if data.element_uri_same:
             self.element_uri_same = data.element_uri_same
-        if data.element_type: # Deprecated, remove along with CTO2
+        if data.element_type:
             self.element_type = data.element_type
         if data.element_type_short != '':
             self.element_type_short = data.element_type_short

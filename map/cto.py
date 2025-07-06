@@ -15,7 +15,6 @@ from rdflib.term import BNode, Literal, URIRef
 
 # Import script modules
 from base.map import MapFeedInterface, MapFeedElementInterface
-from base.lookup import schema_person, schema_organization, schema_location, schema_event, schema_item
 
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, SKOS, XSD
@@ -156,30 +155,26 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.externalVocabulary, i))
 
             # Element type and element type shorthand
-            # Deprecated, remove along with CTO2 (not '_short')
             self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.DataFeedElement))
             # Element type: person
-            if self.element_type_short == 'person' or self.element_type.rdflib() in schema_person:
+            if self.element_type_short == 'person':
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Person))
              # Element type: organization
-            elif self.element_type_short == 'organization' or self.element_type_short == 'organisation' or self.element_type.rdflib() in schema_organization:
+            elif self.element_type_short == 'organization' or self.element_type_short == 'organisation':
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Organization))
             # Element type: place
-            elif self.element_type_short == 'place' or self.element_type_short == 'location' or self.element_type.rdflib() in schema_location:
+            elif self.element_type_short == 'place' or self.element_type_short == 'location' or self.element_type_short == 'structure':
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Place))
             # Element type: event
-            elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type.rdflib() in schema_event:
+            elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type_short == 'theater-event':
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, NFDICORE.Event))
             # Element type: item that is a schema.org creative work
-            elif self.element_type.rdflib() in schema_item:
+            elif self.element_type_short == 'item' or self.element_type_short == 'book' or self.element_type_short == 'sculpture' or self.element_type_short == 'sheet-music':
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.Item))
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, self.element_type.rdflib()))
             # Element type: generic item
             else:
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.Item))
-
-            # Data concept shorthand
-            #self.data_concept_short
 
             # Optional wrapper
             if prepare != None and len(prepare) == 2:
@@ -198,9 +193,6 @@ class FeedElement(MapFeedElementInterface):
             for i in self.label_alt.rdflib():
                 self.rdf.add((self.element_uri.rdflib(), SKOS.altLabel, i))
 
-            # Holding organization
-            #self.holding_org
-
             # Shelf mark
             for i in self.shelf_mark.rdflib():
                 self.rdf.add((self.element_uri.rdflib(), CTO.shelfMark, i))
@@ -208,8 +200,7 @@ class FeedElement(MapFeedElementInterface):
             # MEDIA LITERALS
 
             # URL
-            if self.element_uri:
-                self.rdf.add((self.element_uri.rdflib(), SCHEMA.url, Literal(self.element_uri.uri, datatype = SCHEMA.URL)))
+            self.rdf.add((self.element_uri.rdflib(), SCHEMA.url, Literal(self.element_uri.uri, datatype = SCHEMA.URL)))
 
             # Media
             if self.media:
@@ -217,11 +208,11 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), SCHEMA.image, Literal(self.media.uri.uri, datatype = SCHEMA.URL)))
 
             # Lyrics
+            lyrics = BNode()
+            self.rdf.add((self.element_uri.rdflib(), MO.lyrics, lyrics))
             for i in self.lyrics.rdflib():
-                wrapper = BNode()
-                self.rdf.add((self.element_uri.rdflib(), MO.lyrics, wrapper))
-                self.rdf.add((wrapper, RDF.type, MO.Lyrics))
-                self.rdf.add((wrapper, MO.text, i))
+                self.rdf.add((lyrics, RDF.type, MO.Lyrics))
+                self.rdf.add((lyrics, MO.text, i))
 
             # Teaser
             for i in self.teaser.rdflib():
@@ -263,9 +254,6 @@ class FeedElement(MapFeedElementInterface):
                 if i[0]:
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.license, i[0]))
 
-            # Byline
-            #self.byline
-
             # RELATED URIS AND FALLBACK LITERALS
 
             # Element type
@@ -291,9 +279,6 @@ class FeedElement(MapFeedElementInterface):
                 else:
                     for e in i[1]:
                         self.rdf.add((self.element_uri.rdflib(), CTO.subjectConceptLiteral, e))
-
-            # Classifier
-            #self.vocab_classifier
 
             # Related location
             for i in self.vocab_related_location.rdflib():
@@ -350,7 +335,7 @@ class FeedElement(MapFeedElementInterface):
             # DATES BY TYPE
 
             # For persons
-            if self.element_type_short == 'person' or self.element_type.rdflib() in schema_person:
+            if self.element_type_short == 'person':
 
                 # Birth date
                 if self.birth_date:
@@ -361,7 +346,7 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.deathDate, self.death_date.rdflib()))
 
             # For organizations
-            elif self.element_type_short == 'organization' or self.element_type_short == 'organisation' or self.element_type.rdflib() in schema_organization:
+            elif self.element_type_short == 'organization' or self.element_type_short == 'organisation':
 
                 # Foundation date
                 if self.foundation_date:
@@ -372,11 +357,11 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((self.element_uri.rdflib(), NFDICORE.dissolutionDate, self.dissolution_date.rdflib()))
 
             # For places
-            elif self.element_type_short == 'place' or self.element_type_short == 'location' or self.element_type.rdflib() in schema_location:
+            elif self.element_type_short == 'place' or self.element_type_short == 'location' or self.element_type_short == 'structure':
                 pass
 
             # For events
-            elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type.rdflib() in schema_event:
+            elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type_short == 'theater-event':
 
                 # Start date
                 if self.start_date:

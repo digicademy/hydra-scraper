@@ -794,7 +794,7 @@ class ExtractFeedElementInterface(ExtractInterface):
         self.feed_uri:Uri = Uri(feed_uri, normalize = False)
         self.element_uri:Uri = Uri(element_uri, normalize = False)
         self.element_uri_same:UriList = UriList()
-        self.element_type:Uri = Uri() # Deprecated, remove along with CTO2
+        self.element_type:Uri = Uri()
         self.element_type_short:str = ''
         self.data_concept_short:str = ''
         self.label:LabelList = LabelList()

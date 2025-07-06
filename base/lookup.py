@@ -157,7 +157,7 @@ class Lookup:
                 for rdf_type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if rdf_type in schema_person:
                         output = 'person'
-                    elif rdf_type in schema_organization:
+                    elif rdf_type in schema_organisation:
                         output = 'organization'
                     elif rdf_type in schema_location:
                         output = 'location'
@@ -315,8 +315,6 @@ schema_item = [
     SCHEMA.APIReference,
     SCHEMA.Atlas,
     SCHEMA.Blog,
-    SCHEMA.Book,
-    SCHEMA.Audiobook,
     SCHEMA.Certification,
     SCHEMA.Chapter,
     SCHEMA.Claim,
@@ -431,9 +429,7 @@ schema_item = [
     SCHEMA.MediaReview,
     SCHEMA.Recommendation,
     SCHEMA.UserReview,
-    SCHEMA.Sculpture,
     SCHEMA.Season,
-    SCHEMA.SheetMusic,
     SCHEMA.ShortStory,
     SCHEMA.SoftwareApplication,
     SCHEMA.MobileApplication,
@@ -473,6 +469,19 @@ schema_item = [
     SCHEMA.WPHeader,
     SCHEMA.WPSideBar,
     SCHEMA.WebSite
+]
+
+schema_book = [
+    SCHEMA.Book,
+    SCHEMA.Audiobook,
+]
+
+schema_sculpture = [
+    SCHEMA.Sculpture,
+]
+
+schema_music = [
+    SCHEMA.SheetMusic,
 ]
 
 # Element type (only Getty AAT needed right now)
@@ -559,7 +568,7 @@ rism_organization = [
     RISM_API.Institution,
 ]
 
-schema_organization = [
+schema_organisation = [
     SCHEMA.Organization,
     SCHEMA.Airline,
     SCHEMA.Consortium,
@@ -744,7 +753,7 @@ wd_organization = [
 
 fg_location = [
     FG.Q8, # Locality
-    FG.Q160381 # Architectural structure
+    FG.Q160381, # Architectural structure
 ]
 
 gnd_location = [
@@ -834,18 +843,21 @@ schema_location = [
     SCHEMA.Continent,
     SCHEMA.Mountain,
     SCHEMA.Volcano,
-    SCHEMA.LandmarksOrHistoricalBuildings,
     SCHEMA.LocalBusiness,
     SCHEMA.Residence,
     SCHEMA.ApartmentComplex,
     SCHEMA.GatedResidenceCommunity,
     SCHEMA.TouristAttraction,
-    SCHEMA.TouristDestination
+    SCHEMA.TouristDestination,
+]
+
+schema_structure = [
+    SCHEMA.LandmarksOrHistoricalBuildings,
 ]
 
 wd_location = [
     WD.Q618123, # geographical feature
-    WD.Q811979 # architectural structure
+    WD.Q811979, # architectural structure
 ]
 
 # Event
@@ -883,7 +895,6 @@ schema_event = [
     SCHEMA.ScreeningEvent,
     SCHEMA.SocialEvent,
     SCHEMA.SportsEvent,
-    SCHEMA.TheaterEvent,
     SCHEMA.UserInteraction,
     SCHEMA.UserBlocks,
     SCHEMA.UserCheckins,
@@ -894,9 +905,13 @@ schema_event = [
     SCHEMA.UserPlays,
     SCHEMA.UserPlusOnes,
     SCHEMA.UserTweets,
-    SCHEMA.VisualArtsEvent
+    SCHEMA.VisualArtsEvent,
+]
+
+schema_theater = [
+    SCHEMA.TheaterEvent,
 ]
 
 wd_event = [
-    WD.Q67518978
+    WD.Q67518978,
 ]

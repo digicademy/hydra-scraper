@@ -12,7 +12,7 @@ from rdflib import Namespace
 # Import script modules
 from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Media
 from base.extract import ExtractFeedInterface, ExtractFeedElementInterface
-from base.lookup import schema_feed
+from base.lookup import schema_feed, schema_person, schema_organisation, schema_location, schema_structure, schema_event, schema_theater, schema_item, schema_book, schema_sculpture, schema_music
 
 # Define namespaces
 from rdflib.namespace import RDF, SDO, SKOS
@@ -130,14 +130,35 @@ class FeedElement(ExtractFeedElementInterface):
                     self.element_uri_same = UriList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.sameAs, SDO.sameAs]), normalize = False)
 
                     # Element type
-                    # Deprecated, remove along with CTO2
                     self.element_type = Uri(self.rdf_first_object(self.element_uri.rdflib(), RDF.type))
 
                     # Element type shorthand
-                    #self.element_type_short = 
+                    if self.element_type.rdflib() in schema_person:
+                        self.element_type_short = 'person'
+                    elif self.element_type.rdflib() in schema_organisation:
+                        self.element_type_short = 'organisation'
+                    elif self.element_type.rdflib() in schema_event:
+                        self.element_type_short = 'event'
+                    elif self.element_type.rdflib() in schema_location:
+                        self.element_type_short = 'location'
+                    elif self.element_type.rdflib() in schema_book:
+                        self.element_type_short = 'book'
+                    elif self.element_type.rdflib() in schema_structure:
+                        self.element_type_short = 'structure'
+                    elif self.element_type.rdflib() in schema_sculpture:
+                        self.element_type_short = 'sculpture'
+                    elif self.element_type.rdflib() in schema_music:
+                        self.element_type_short = 'sheet-music'
+                    elif self.element_type.rdflib() in schema_theater:
+                        self.element_type_short = 'theater-event'
+                    elif self.element_type.rdflib() in schema_item:
+                        self.element_type_short = 'item'
+                    else:
+                        self.element_type_short = 'item'
 
                     # Data concept shorthand
                     #self.data_concept_short = 
+                    # TODO Fill this gap
 
                     # Label
                     self.label = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.name, SDO.name]))
