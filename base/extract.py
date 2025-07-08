@@ -796,7 +796,7 @@ class ExtractFeedElementInterface(ExtractInterface):
         self.element_uri_same:UriList = UriList()
         self.element_type:Uri = Uri()
         self.element_type_short:str = ''
-        self.data_concept_short:str = ''
+        self.data_concept_short:set = set()
         self.label:LabelList = LabelList()
         self.label_alt:LabelList = LabelList()
         self.holding_org:Uri = Uri()

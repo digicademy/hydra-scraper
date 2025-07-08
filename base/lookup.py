@@ -34,6 +34,19 @@ SCHEMA = Namespace('http://schema.org/')
 VIAF = Namespace('http://viaf.org/viaf/')
 WD = Namespace('http://www.wikidata.org/entity/')
 TGN = Namespace('https://vocab.getty.edu/tgn/')
+ORCID = Namespace('https://orcid.org/')
+ROR = Namespace('https://ror.org/')
+DOI = Namespace('https://doi.org/')
+CERL = Namespace('http://data.cerl.org/thesaurus/')
+FPCAT = Namespace('https://filmportal.de/material/') # TODO Unclear whether this is the namespace the classifier refers to
+GV = Namespace('http://partage.vocnet.org/')
+HS = Namespace('http://www.mimo-db.eu/HornbostelAndSachs/')
+LCSH = Namespace('http://id.loc.gov/authorities/subjects/')
+MIMO = Namespace('http://www.mimo-db.eu/InstrumentsKeywords/')
+MATCULT = Namespace('http://matcult-the.vocnet.org/')
+UNESCO = Namespace('http://vocabularies.unesco.org/thesaurus/')
+MOP = Namespace('http://iflastandards.info/ns/unimarc/terms/mop/') # TODO Maybe use UNIMARC MOP as the label because UNIMARC refers to 52 different vocabularies
+WNK = Namespace('http://lvr.vocnet.org/wnk/')
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -97,28 +110,36 @@ class Lookup:
 
         # CLEAR CASES
 
-        # GeoNames
-        elif URIRef(uri) in GN:
-            output = 'location'
-
-        # TGN
-        elif URIRef(uri) in TGN:
+        # GeoNames or Getty TGN
+        elif URIRef(uri) in GN or URIRef(uri) in TGN:
             output = 'location'
 
         # Iconclass
         elif URIRef(uri) in IC:
-            output = 'subject_concept'
+            output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
 
-        # ISIL
-        elif URIRef(uri) in ISIL:
+        # ISIL or ROR
+        elif URIRef(uri) in ISIL or URIRef(uri) in ROR:
             output = 'organization'
+
+        # ORCID
+        elif URIRef(uri) in ORCID:
+            output = 'person'
+
+        # DOI
+        elif URIRef(uri) in DOI:
+            output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
+
+        # CERL, FPCAT, GV, HS, LCSH, MIMO, MATCULT, UNESCO, MOP, WNK
+        elif URIRef(uri) in CERL or URIRef(uri) in FPCAT or URIRef(uri) in GV or URIRef(uri) in HS or URIRef(uri) in LCSH or URIRef(uri) in MIMO or URIRef(uri) in MATCULT or URIRef(uri) in UNESCO or URIRef(uri) in MOP or URIRef(uri) in WNK:
+            output = 'classifier'
 
         # ANALYSE URI
 
         # RISM
         elif URIRef(uri) in RISM:
             if '/sources/' in uri:
-                output = 'subject_concept'
+                output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
             elif '/people/' in uri:
                 output = 'person'
             elif '/institutions/' in uri:
@@ -135,7 +156,7 @@ class Lookup:
                     uri = remote.location
                 for rdf_type in remote.rdf.objects(URIRef(uri), RDF.type):
                     if rdf_type in gnd_subject_concept:
-                        output = 'subject_concept'
+                        output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
                     elif rdf_type in gnd_person:
                         output = 'person'
                     elif rdf_type in gnd_organization:
@@ -170,15 +191,15 @@ class Lookup:
 
         # Getty AAT
         elif URIRef(uri) in AAT:
-            output = 'subject_concept'
+            output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
             query = 'SELECT ?bool WHERE { BIND(EXISTS{<' + uri + '> <http://vocab.getty.edu/ontology#broaderExtended> <' + str(AAT) + '300264092>} AS ?bool) . }'
             check = sparql('https://vocab.getty.edu/sparql', 'bool', query)
             if check:
-                output = 'element_type'
+                output = 'element_type' # Deprecated, turn to 'classifier' when removing CTO2
 
         # FactGrid
         elif URIRef(uri) in FG:
-            output = 'subject_concept'
+            output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
             query = 'SELECT ?obj WHERE { <' + uri + '> <https://database.factgrid.de/prop/P2>/<https://database.factgrid.de/prop/statement/P2>/<https://database.factgrid.de/prop/direct/P3>* ?obj . }'
             checks = sparql('https://database.factgrid.de/sparql', 'obj', query)
             if checks:
@@ -194,7 +215,7 @@ class Lookup:
 
         # Wikidata
         elif URIRef(uri) in WD:
-            output = 'subject_concept'
+            output = 'subject_concept' # Deprecated, turn to 'classifier' when removing CTO2
             query = 'SELECT ?obj WHERE { <' + uri + '> <http://www.wikidata.org/prop/P31>/<http://www.wikidata.org/prop/statement/P31>/<http://www.wikidata.org/prop/direct/P279>* ?obj . }'
             checks = sparql('https://query.wikidata.org/bigdata/namespace/wdq/sparql', 'obj', query)
             if checks:

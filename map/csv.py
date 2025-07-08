@@ -123,7 +123,7 @@ class FeedElement(MapFeedElementInterface):
             self.content += csv(self.element_type_short)
 
             # Data concept shorthand
-            self.content += csv(self.data_concept_short)
+            self.content += csv('; '.join(str(dcs) for dcs in self.data_concept_short))
 
             # LABEL AND REFERENCE LITERALS
 

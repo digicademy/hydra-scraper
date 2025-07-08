@@ -276,7 +276,7 @@ class MapFeedElementInterface(MapInterface):
         self.element_uri_same:UriList = UriList()
         self.element_type:Uri = Uri()
         self.element_type_short:str = ''
-        self.data_concept_short:str = ''
+        self.data_concept_short:set = set()
         self.label:LabelList = LabelList()
         self.label_alt:LabelList = LabelList()
         self.holding_org:Uri = Uri()
@@ -396,7 +396,7 @@ class MapFeedElementInterface(MapInterface):
             self.element_type = data.element_type
         if data.element_type_short != '':
             self.element_type_short = data.element_type_short
-        if data.data_concept_short != '':
+        if len(data.data_concept_short) > 0:
             self.data_concept_short = data.data_concept_short
         if data.label:
             self.label = data.label

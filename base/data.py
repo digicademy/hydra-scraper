@@ -16,7 +16,8 @@ from validators import url
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, XSD
 NFDICORE = Namespace('https://nfdi.fiz-karlsruhe.de/ontology/')
-CTO = Namespace('https://nfdi4culture.de/ontology#')
+CTO2 = Namespace('https://nfdi4culture.de/ontology#')
+CTO3 = Namespace('https://nfdi4culture.de/ontology/')
 MO = Namespace('http://purl.org/ontology/mo/')
 N4C = Namespace('https://nfdi4culture.de/id/')
 GN = Namespace('http://sws.geonames.org/')
@@ -945,7 +946,7 @@ class Media:
         '''
 
         # Return bool
-        if self.uri or self.type != '' or self.license or self.byline:
+        if self.uri:
             return True
         else:
             return False
@@ -1068,7 +1069,8 @@ def clean_namespaces(input:str) -> str:
 
     # List namespaces to check
     checks = [
-        str(CTO),
+        str(CTO2),
+        str(CTO3),
         str(MO),
         str(NFDICORE),
         str(OWL),

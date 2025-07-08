@@ -19,7 +19,7 @@ from base.map import MapFeedInterface, MapFeedElementInterface
 # Define namespaces
 from rdflib.namespace import OWL, RDF, RDFS, XSD
 AAT = Namespace('http://vocab.getty.edu/aat/')
-CTO = Namespace('https://nfdi4culture.de/ontology#')
+CTO = Namespace('https://nfdi4culture.de/ontology/')
 FG = Namespace('https://database.factgrid.de/entity/')
 GN = Namespace('http://sws.geonames.org/')
 GND = Namespace('https://d-nb.info/gnd/')
@@ -74,7 +74,7 @@ class Feed(MapFeedInterface):
                 feed_uri = URIRef(str(N4C) + prepare[0])
             else:
                 feed_uri = self.feed_uri.rdflib()
-            self.rdf.add((feed_uri, RDF.type, NFDICORE.Dataset))
+            self.rdf.add((feed_uri, RDF.type, NFDICORE.NFDI_0000009)) # dataset
             self.rdf.add((feed_uri, RDF.type, SCHEMA.DataFeed))
 
             # Date modified
@@ -86,9 +86,9 @@ class Feed(MapFeedInterface):
 
             # Same as feed URI
             if prepare != None and len(prepare) == 2:
-                self.rdf.add((feed_uri, OWL.sameAs, self.feed_uri.rdflib()))
+                self.rdf.add((feed_uri, SCHEMA.sameAs, self.feed_uri.rdflib()))
             for i in self.feed_uri_same.rdflib():
-                self.rdf.add((feed_uri, OWL.sameAs, i))
+                self.rdf.add((feed_uri, SCHEMA.sameAs, i))
 
             # Catalog URI
             if prepare != None and len(prepare) == 2:
@@ -97,14 +97,14 @@ class Feed(MapFeedInterface):
                 catalog_uri = self.catalog_uri.rdflib()
 
             if catalog_uri:
-                self.rdf.add((catalog_uri, RDF.type, NFDICORE.DataPortal))
-                self.rdf.add((catalog_uri, NFDICORE.dataset, feed_uri))
+                self.rdf.add((catalog_uri, RDF.type, NFDICORE.NFDI_0000123)) # data portal
+                self.rdf.add((catalog_uri, NFDICORE.NFDI_0000125, feed_uri)) # has data set
 
                 # Same as catalog URI
                 if prepare != None and len(prepare) == 2:
-                    self.rdf.add((catalog_uri, OWL.sameAs, self.catalog_uri.rdflib()))
+                    self.rdf.add((catalog_uri, SCHEMA.sameAs, self.catalog_uri.rdflib()))
                 for i in self.catalog_uri_same.rdflib():
-                    self.rdf.add((catalog_uri, OWL.sameAs, i))
+                    self.rdf.add((catalog_uri, SCHEMA.sameAs, i))
 
             # Add element triples after overwriting feed URI
             for i in self.feed_elements:
@@ -171,7 +171,7 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((wrapper, RDF.type, SCHEMA.DataFeedItem))
                 self.rdf.add((wrapper, SCHEMA.item, self.element_uri.rdflib())) # TODO Discussions are ongoing whether to use OBO.IAO_0000136 (is about)
 
-            # Element type
+            # Element type shorthand
             if self.element_type_short in ['person', 'organisation', 'organization', 'event', 'date', 'place', 'location', 'book', 'structure', 'sculpture', 'sheet-music', 'theater-event', 'item']:
                 realworld = BNode() # TODO This is supposed to be an ARK ID per real-world object, which requires a look-up service
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001025, realworld)) # is about real world entity
@@ -203,19 +203,20 @@ class FeedElement(MapFeedElementInterface):
                         self.rdf.add((realworld, NFDICORE.NFDI_0001006, i)) # has external identifier
                         self.rdf.add((i, RDF.type, element_uri_same_type))
 
-            if self.data_concept_short == '3d-model':
+            # Data concept shorthand
+            if '3d-model' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001034)) # has data concept, 3D model
-            elif self.data_concept_short == 'audio':
+            if 'audio' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001043)) # has data concept, audio object
-            elif self.data_concept_short == 'image':
+            if 'image' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001044)) # has data concept, image object
-            elif self.data_concept_short == 'media':
+            if 'media' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001045)) # has data concept, media object
-            elif self.data_concept_short == 'sheet-music':
+            if 'sheet-music' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001046)) # has data concept, sheet music
-            elif self.data_concept_short == 'text':
+            if 'text' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001047)) # has data concept, text object
-            elif self.data_concept_short == 'video':
+            if 'video' in self.data_concept_short:
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001049, CTO.CTO_0001048)) # has data concept, video object
 
             # LABEL AND REFERENCE LITERALS
@@ -551,10 +552,10 @@ def identifier_type(identifier:URIRef) -> URIRef|None:
         return NFDICORE.NFDI_0001016 # RISM identifier
     elif identifier in ROR:
         return NFDICORE.NFDI_0001013 # ROR identifier
-    elif identifier in ROR:
+    elif identifier in VIAF:
         return NFDICORE.NFDI_0001010 # VIAF identifier
     elif identifier in WD:
-        return NFDICORE.NFDI_0001012 # (Wikidata identifier
+        return NFDICORE.NFDI_0001012 # Wikidata identifier
     elif identifier in DOI:
         return NFDICORE.NFDI_0001037 # digital object identifier
     elif identifier in TGN:
@@ -574,7 +575,7 @@ def classifier_type(classifier:URIRef) -> URIRef|None:
             URIRef|None: Classifier type if found
     '''
 
-    # Check ifentifier namespace
+    # Check classifier namespace
     if classifier in AAT:
         return CTO.CTO_0001029 # AAT classifier
     elif classifier in RISM:
