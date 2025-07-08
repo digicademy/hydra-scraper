@@ -209,10 +209,11 @@ class FeedElement(MapFeedElementInterface):
 
             # Lyrics
             lyrics = BNode()
-            self.rdf.add((self.element_uri.rdflib(), MO.lyrics, lyrics))
-            for i in self.lyrics.rdflib():
-                self.rdf.add((lyrics, RDF.type, MO.Lyrics))
-                self.rdf.add((lyrics, MO.text, i))
+            if self.lyrics:
+                self.rdf.add((self.element_uri.rdflib(), MO.lyrics, lyrics))
+                for i in self.lyrics.rdflib():
+                    self.rdf.add((lyrics, RDF.type, MO.Lyrics))
+                    self.rdf.add((lyrics, MO.text, i))
 
             # Teaser
             for i in self.teaser.rdflib():

@@ -59,7 +59,7 @@ indicate what kind of scraping run you desire.
   - `beacon`: a text file listing one URI per line
   - `csv`: a CSV table of data
   - `cto`: NFDI4Culture-style triples
-  - `cto3`: NFDI4Culture-style triples (CTO version 3)
+  - `cto3`: NFDI4Culture-style triples (CTO v3, to become just `cto` when v2 is removed)
   - `files`: the original files
   - `triples`: the original triples
 

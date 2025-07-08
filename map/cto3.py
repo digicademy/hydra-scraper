@@ -155,7 +155,7 @@ class FeedElement(MapFeedElementInterface):
 
             # Basics
             self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.CTO_0001005)) # source item
-            self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0001008, self.element_uri.uri)) # has url
+            self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0001008, Literal(self.element_uri.uri))) # has url
 
             # Feed URI
             if prepare != None and len(prepare) == 2:
@@ -198,7 +198,7 @@ class FeedElement(MapFeedElementInterface):
 
                 # Same as element URI
                 for i in self.element_uri_same.rdflib():
-                    element_uri_same_type = identifier_type(i)
+                    element_uri_same_type = type_identifier(i)
                     if element_uri_same_type:
                         self.rdf.add((realworld, NFDICORE.NFDI_0001006, i)) # has external identifier
                         self.rdf.add((i, RDF.type, element_uri_same_type))
@@ -319,7 +319,7 @@ class FeedElement(MapFeedElementInterface):
             # Classifier
             for i in self.vocab_classifier.rdflib():
                 if i[0]:
-                    classifier_type = classifier_type(i[0])
+                    classifier_type = type_classifier(i[0])
                     if classifier_type:
                         self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001026, i[0])) # has external classifier
                         self.rdf.add((i[0], RDF.type, classifier_type))
@@ -333,7 +333,7 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001011, related_location)) # has related location
                 self.rdf.add((related_location, RDF.type, NFDICORE.NFDI_0000005)) # place
                 if i[0]:
-                    related_location_type = identifier_type(i[0])
+                    related_location_type = type_identifier(i[0])
                     if related_location_type:
                         self.rdf.add((related_location, NFDICORE.NFDI_0001006, i[0])) # has external identifier
                         self.rdf.add((i[0], RDF.type, related_location_type))
@@ -347,7 +347,7 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001012, related_event)) # has related event
                 self.rdf.add((related_event, RDF.type, NFDICORE.NFDI_0000131)) # event
                 if i[0]:
-                    related_event_type = identifier_type(i[0])
+                    related_event_type = type_identifier(i[0])
                     if related_event_type:
                         self.rdf.add((related_event, NFDICORE.NFDI_0001006, i[0])) # has external identifier
                         self.rdf.add((i[0], RDF.type, related_event_type))
@@ -361,7 +361,7 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001010, related_organization)) # has related organization
                 self.rdf.add((related_organization, RDF.type, NFDICORE.NFDI_0000003)) # organization
                 if i[0]:
-                    related_organization_type = identifier_type(i[0])
+                    related_organization_type = type_identifier(i[0])
                     if related_organization_type:
                         self.rdf.add((related_organization, NFDICORE.NFDI_0001006, i[0])) # has external identifier
                         self.rdf.add((i[0], RDF.type, related_organization_type))
@@ -375,7 +375,7 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001009, related_person)) # has related person
                 self.rdf.add((related_person, RDF.type, NFDICORE.NFDI_0000004)) # person
                 if i[0]:
-                    related_person_type = identifier_type(i[0])
+                    related_person_type = type_identifier(i[0])
                     if related_person_type:
                         self.rdf.add((related_person, NFDICORE.NFDI_0001006, i[0])) # has external identifier
                         self.rdf.add((i[0], RDF.type, related_person_type))
@@ -526,7 +526,7 @@ def element_ark(element_uri:str, prepare_feed:str) -> URIRef:
     return URIRef(uri)
 
 
-def identifier_type(identifier:URIRef) -> URIRef|None:
+def type_identifier(identifier:URIRef) -> URIRef|None:
     '''
     Provide the CTO identifier type
 
@@ -564,7 +564,7 @@ def identifier_type(identifier:URIRef) -> URIRef|None:
         return None
 
 
-def classifier_type(classifier:URIRef) -> URIRef|None:
+def type_classifier(classifier:URIRef) -> URIRef|None:
     '''
     Provide the CTO classifier type
 
