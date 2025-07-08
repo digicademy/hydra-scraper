@@ -168,11 +168,11 @@ class FeedElement(ExtractFeedElementInterface):
                     data_concept_show = self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.contentUrl, SDO.contentUrl, SCHEMA.associatedMedia, SDO.associatedMedia, SCHEMA.encoding, SDO.encoding])
                     if data_concept_show:
                         for i in data_concept_show:
-                            if self.rdf_first_object(i, RDF.type) in [SCHEMA.ImageObject, SDO.ImageObject]:
+                            if self.rdf_first_object(i, RDF.type) in [SCHEMA.ImageObject, SDO.ImageObject, SCHEMA.ImageObjectSnapshot, SDO.ImageObjectSnapshot, SCHEMA.Barcode, SDO.Barcode]:
                                 self.data_concept_short.add('image')
-                            if self.rdf_first_object(i, RDF.type) in [SCHEMA.AudioObject, SDO.AudioObject]:
+                            if self.rdf_first_object(i, RDF.type) in [SCHEMA.AudioObject, SDO.AudioObject, SCHEMA.AudioObjectSnapshot, SDO.AudioObjectSnapshot, SCHEMA.Audiobook, SDO.Audiobook]:
                                 self.data_concept_short.add('audio')
-                            if self.rdf_first_object(i, RDF.type) in [SCHEMA.VideoObject, SDO.VideoObject, SCHEMA.MusicVideoObject, SDO.MusicVideoObject]:
+                            if self.rdf_first_object(i, RDF.type) in [SCHEMA.VideoObject, SDO.VideoObject, SCHEMA.VideoObjectSnapshot, SDO.VideoObjectSnapshot, SCHEMA.MusicVideoObject, SDO.MusicVideoObject]:
                                 self.data_concept_short.add('video')
                             if self.rdf_first_object(i, RDF.type) in [SCHEMA.TextObject, SDO.TextObject]:
                                 self.data_concept_short.add('text')
@@ -204,11 +204,11 @@ class FeedElement(ExtractFeedElementInterface):
                     if not self.media:
                         self.media = Media(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.contentUrl, SDO.contentUrl, SCHEMA.associatedMedia, SDO.associatedMedia, SCHEMA.encoding, SDO.encoding]))
                         if self.media:
-                            if self.rdf_first_object(self.media.uri.rdflib(), RDF.type) in [SCHEMA.ImageObject, SDO.ImageObject]:
+                            if self.rdf_first_object(self.media.uri.rdflib(), RDF.type) in [SCHEMA.ImageObject, SDO.ImageObject, SCHEMA.ImageObjectSnapshot, SDO.ImageObjectSnapshot, SCHEMA.Barcode, SDO.Barcode]:
                                 self.media.type = 'image'
-                            if self.rdf_first_object(self.media.uri.rdflib(), RDF.type) in [SCHEMA.AudioObject, SDO.AudioObject]:
+                            if self.rdf_first_object(self.media.uri.rdflib(), RDF.type) in [SCHEMA.AudioObject, SDO.AudioObject, SCHEMA.AudioObjectSnapshot, SDO.AudioObjectSnapshot, SCHEMA.Audiobook, SDO.Audiobook]:
                                 self.media.type = 'audio'
-                            #if self.rdf_first_object(mself.media.uri.rdflib(), RDF.type) in [SCHEMA.VideoObject, SDO.VideoObject, SCHEMA.MusicVideoObject, SDO.MusicVideoObject]:
+                            #if self.rdf_first_object(mself.media.uri.rdflib(), RDF.type) in [SCHEMA.VideoObject, SDO.VideoObject, SCHEMA.VideoObjectSnapshot, SDO.VideoObjectSnapshot, SCHEMA.MusicVideoObject, SDO.MusicVideoObject]:
                                 #self.media.type = 'video'
 
                     # Media license
