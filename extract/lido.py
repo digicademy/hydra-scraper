@@ -12,7 +12,7 @@ from rdflib import Namespace
 from rdflib.term import Literal
 
 # Import script modules
-from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Media
 from base.extract import ExtractFeedElementInterface
 
 # Define namespaces
@@ -47,7 +47,24 @@ class FeedElement(ExtractFeedElementInterface):
             self.element_type = Uri(SCHEMA.VisualArtwork)
 
             # Element type shorthand
-            #self.element_type_shorthand = 
+            self.element_type_short = 'item'
+
+            # Data concept shorthand (check for provided 3D, video, image, audio, or text representations)
+            data_concept_short = self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00468"]/{L}linkResource')
+            if data_concept_short != None:
+                self.data_concept_short.add('3d-model')
+            data_concept_short = self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00466"]/{L}linkResource')
+            if data_concept_short != None:
+                self.data_concept_short.add('video')
+            data_concept_short = self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00464"]/{L}linkResource')
+            if data_concept_short != None:
+                self.data_concept_short.add('image')
+            data_concept_short = self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00465"]/{L}linkResource')
+            if data_concept_short != None:
+                self.data_concept_short.add('audio')
+            data_concept_short = self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00482"]/{L}linkResource')
+            if data_concept_short != None:
+                self.data_concept_short.add('text')
 
             # Label and alternative label (overflow mechanic)
             label = []
@@ -70,43 +87,40 @@ class FeedElement(ExtractFeedElementInterface):
             self.label = LabelList(label)
             self.label_alt = LabelList(label_alt)
 
+            # Holding organization
+            #self.holding_org = 
+
             # Shelf mark
             #self.shelf_mark = 
 
-            # Image (select largest or first)
-            largest_width = 0
-            widths = self.xml_all_elements('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}resourceMeasurementsSet/{L}measurementValue')
-            if widths:
-                for width in widths:
-                    if int(width.text) > largest_width:
-                        largest_width = int(width.text)
-                        self.image = Uri(width.getparent().getparent().findtext('.//{http://www.lido-schema.org}linkResource'), normalize = False)
-            else:
-                self.image = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation/{L}linkResource'), normalize = False)
+            # Media (select first preview image or preview audio or regular image or regular audio)
+            self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00451"]/{L}linkResource'), type = 'image')
+            if not self.media:
+                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00452"]/{L}linkResource'), type = 'audio')
+            if not self.media:
+                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00464"]/{L}linkResource'), type = 'image')
+            if not self.media:
+                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00465"]/{L}linkResource'), type = 'audio')
+
+            # Media license
+            if self.media:
+                self.media.license = UriLabelList(self.xml_all_lido_concepts('.//{L}rightsResource/{L}rightsType'))
+
+            # Media byline
+            if self.media:
+                self.media.byline = LabelList(self.xml_all_texts('.//{L}rightsResource/{L}creditLine', True))
 
             # Lyrics
             #self.lyrics = 
 
-            # Text incipit
-            #self.text_incipit = 
+            # Teaser
+            #self.teaser = 
 
-            # Music incipit
-            #self.music_incipit = 
+            # Incipit
+            #self.incipit = 
 
             # Source file
             self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
-
-            # IIIF image API
-            self.iiif_image_api = Uri(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00912"]/{L}linkResource'), normalize = False)
-
-            # IIIF presentation API
-            #self.iiif_presentation_api = 
-
-            # DDB API
-            #self.ddb_api = 
-
-            # OAI-PMH API
-            #self.oaipmh_api = 
 
             # Publisher (auto-correct ISIL URIs)
             publishers = self.xml_all_texts('.//{L}recordWrap/{L}recordSource/{L}legalBodyID[@{L}source="ISIL (ISO 15511)"]')
@@ -115,18 +129,31 @@ class FeedElement(ExtractFeedElementInterface):
                     publisher.replace('info:isil/', 'https://ld.zdb-services.de/resource/organisations/')
             self.publisher = UriList(publishers)
 
-            # License (observe work, record, and image licenses)
-            self.license = UriList(self.xml_all_lido_concepts([
+            # License (observe work and record licenses)
+            self.license = UriLabelList(self.xml_all_lido_concepts([
                 './/{L}rightsWorkSet/{L}rightsType',
                 './/{L}recordRights/{L}rightsType',
-                './/{L}rightsResource/{L}rightsType',
             ]))
 
+            # Byline
+            self.byline = LabelList(self.xml_all_texts([
+                './/{L}rightsWorkSet/{L}creditLine',
+                './/{L}recordRights/{L}creditLine',
+            ], True))
+
             # Vocabulary: element type
+            # Deprecated, remove along with CTO2
             self.vocab_element_type = UriLabelList(self.xml_all_lido_concepts('.//{L}objectClassificationWrap/{L}objectWorkTypeWrap/{L}objectWorkType'))
 
             # Vocabulary: subject concept
+            # Deprecated, remove along with CTO2
             self.vocab_subject_concept = UriLabelList(self.xml_all_lido_concepts('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectConcept'))
+
+            # Vocabulary: classifier
+            self.vocab_classifier = UriLabelList(self.xml_all_lido_concepts([
+                './/{L}objectClassificationWrap/{L}objectWorkTypeWrap/{L}objectWorkType',
+                './/{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectConcept',
+            ]))
 
             # Vocabulary: related location (two distinct nodes)
             vocab_related_location = []

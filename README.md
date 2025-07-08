@@ -59,6 +59,7 @@ indicate what kind of scraping run you desire.
   - `beacon`: a text file listing one URI per line
   - `csv`: a CSV table of data
   - `cto`: NFDI4Culture-style triples
+  - `cto3`: NFDI4Culture-style triples (CTO v3, to become just `cto` when v2 is removed)
   - `files`: the original files
   - `triples`: the original triples
 
@@ -213,6 +214,7 @@ Use GitHub to make the release. Use semantic versioning.
 
 ## Roadmap
 
+- Remove CTO2 along with two deprecated intermediate properties
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
 - Automatically build OCI container via CI instead of on demand

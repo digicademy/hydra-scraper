@@ -2,8 +2,11 @@
 
 ## 0.9.5
 
-- Preliminarily include `SCHEMA.associatedMedia` in image extraction
-- Add TGN and further normalise AAT identifiers
+- New serialisation to NFDIcore/CTO v3
+- Revise intermediate data structure for NFDIcore/CTO v3
+- Enhanced lookup to accommodate NFDIcore/CTO v3
+- Include `SCHEMA.associatedMedia` and `SCHEMA.encoding` in media extraction
+- Add Getty TGN and further normalise Getty AAT identifiers
 
 ## 0.9.4
 

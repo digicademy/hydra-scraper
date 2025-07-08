@@ -44,6 +44,7 @@ class Organise:
         self.folder_beacon:str|None = None
         self.folder_csv:str|None = None
         self.folder_cto:str|None = None
+        self.folder_cto3:str|None = None
         self.folder_files:str|None = None
         self.folder_triples:str|None = None
 
@@ -109,6 +110,7 @@ class Organise:
                 'beacon',
                 'csv',
                 'cto',
+                'cto3',
                 'files',
                 'triples'
             ],
@@ -240,7 +242,7 @@ class Organise:
 
         # Catch output commands that require data extraction
         if not self.elements:
-            if 'beacon' in self.output or 'csv' in self.output or 'cto' in self.output:
+            if 'beacon' in self.output or 'csv' in self.output or 'cto' in self.output or 'cto3' in self.output:
                 raise ValueError('Hydra Scraper called with extraction routine but no element markup.')
 
         # Check Basic Auth data
@@ -274,6 +276,9 @@ class Organise:
         if 'cto' in self.output:
             self.folder_cto = self.folder + '/cto'
             create_folder(self.folder_cto)
+        if 'cto3' in self.output:
+            self.folder_cto3 = self.folder + '/cto3'
+            create_folder(self.folder_cto3)
         if 'files' in self.output:
             self.folder_files = self.folder + '/files'
             create_folder(self.folder_files)

@@ -11,7 +11,7 @@ import logging
 from rdflib import Graph
 
 # Import script modules
-from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Incipit
+from base.data import Uri, UriList, Label, LabelList, UriLabelList, Date, DateList, Incipit, Media
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -275,23 +275,23 @@ class MapFeedElementInterface(MapInterface):
         self.element_uri:Uri = Uri()
         self.element_uri_same:UriList = UriList()
         self.element_type:Uri = Uri()
-        self.element_type_shorthand:str = ''
+        self.element_type_short:str = ''
+        self.data_concept_short:set = set()
         self.label:LabelList = LabelList()
         self.label_alt:LabelList = LabelList()
+        self.holding_org:Uri = Uri()
         self.shelf_mark:LabelList = LabelList()
-        self.image:Uri = Uri()
+        self.media:Media = Media()
         self.lyrics:LabelList = LabelList()
-        self.text_incipit:LabelList = LabelList()
-        self.music_incipit:Incipit = Incipit()
+        self.teaser:LabelList = LabelList()
+        self.incipit:Incipit = Incipit()
         self.source_file:Label = Label()
-        self.iiif_image_api:Uri = Uri()
-        self.iiif_presentation_api:Uri = Uri()
-        self.ddb_api:Uri = Uri()
-        self.oaipmh_api:Uri = Uri()
         self.publisher:UriList = UriList()
-        self.license:UriList = UriList()
-        self.vocab_element_type:UriLabelList = UriLabelList()
-        self.vocab_subject_concept:UriLabelList = UriLabelList()
+        self.license:UriLabelList = UriLabelList()
+        self.byline:LabelList = LabelList()
+        self.vocab_element_type:UriLabelList = UriLabelList() # Deprecated, remove along with CTO2
+        self.vocab_subject_concept:UriLabelList = UriLabelList() # Deprecated, remove along with CTO2
+        self.vocab_classifier:UriLabelList = UriLabelList()
         self.vocab_related_location:UriLabelList = UriLabelList()
         self.vocab_related_event:UriLabelList = UriLabelList()
         self.vocab_related_organization:UriLabelList = UriLabelList()
@@ -338,23 +338,23 @@ class MapFeedElementInterface(MapInterface):
             '- element_uri: ' + str(self.element_uri) + '\n' +\
             '- element_uri_same: ' + str(self.element_uri_same) + '\n' +\
             '- element_type: ' + str(self.element_type) + '\n' +\
-            '- element_type_shorthand: ' + str(self.element_type_shorthand) + '\n' +\
+            '- element_type_short: ' + str(self.element_type_short) + '\n' +\
+            '- data_concept_short: ' + str(self.data_concept_short) + '\n' +\
             '- label: ' + str(self.label) + '\n' +\
             '- label_alt: ' + str(self.label_alt) + '\n' +\
+            '- holding_org: ' + str(self.holding_org) + '\n' +\
             '- shelf_mark: ' + str(self.shelf_mark) + '\n' +\
-            '- image: ' + str(self.image) + '\n' +\
+            '- media: ' + str(self.media) + '\n' +\
             '- lyrics: ' + str(self.lyrics) + '\n' +\
-            '- text_incipit: ' + str(self.text_incipit) + '\n' +\
-            '- music_incipit: ' + str(self.music_incipit) + '\n' +\
+            '- teaser: ' + str(self.teaser) + '\n' +\
+            '- incipit: ' + str(self.incipit) + '\n' +\
             '- source_file: ' + str(self.source_file) + '\n' +\
-            '- iiif_image_api: ' + str(self.iiif_image_api) + '\n' +\
-            '- iiif_presentation_api: ' + str(self.iiif_presentation_api) + '\n' +\
-            '- ddb_api: ' + str(self.ddb_api) + '\n' +\
-            '- oaipmh_api: ' + str(self.oaipmh_api) + '\n' +\
             '- publisher: ' + str(self.publisher) + '\n' +\
             '- license: ' + str(self.license) + '\n' +\
+            '- byline: ' + str(self.byline) + '\n' +\
             '- vocab_element_type: ' + str(self.vocab_element_type) + '\n' +\
             '- vocab_subject_concept: ' + str(self.vocab_subject_concept) + '\n' +\
+            '- vocab_classifier: ' + str(self.vocab_classifier) + '\n' +\
             '- vocab_related_location: ' + str(self.vocab_related_location) + '\n' +\
             '- vocab_related_event: ' + str(self.vocab_related_event) + '\n' +\
             '- vocab_related_organization: ' + str(self.vocab_related_organization) + '\n' +\
@@ -394,40 +394,40 @@ class MapFeedElementInterface(MapInterface):
             self.element_uri_same = data.element_uri_same
         if data.element_type:
             self.element_type = data.element_type
-        if data.element_type_shorthand != '':
-            self.element_type_shorthand = data.element_type_shorthand
+        if data.element_type_short != '':
+            self.element_type_short = data.element_type_short
+        if len(data.data_concept_short) > 0:
+            self.data_concept_short = data.data_concept_short
         if data.label:
             self.label = data.label
         if data.label_alt:
             self.label_alt = data.label_alt
+        if data.holding_org:
+            self.holding_org = data.holding_org
         if data.shelf_mark:
             self.shelf_mark = data.shelf_mark
-        if data.image:
-            self.image = data.image
+        if data.media:
+            self.media = data.media
         if data.lyrics:
             self.lyrics = data.lyrics
-        if data.text_incipit:
-            self.text_incipit = data.text_incipit
-        if data.music_incipit:
-            self.music_incipit = data.music_incipit
+        if data.teaser:
+            self.teaser = data.teaser
+        if data.incipit:
+            self.incipit = data.incipit
         if data.source_file:
             self.source_file = data.source_file
-        if data.iiif_image_api:
-            self.iiif_image_api = data.iiif_image_api
-        if data.iiif_presentation_api:
-            self.iiif_presentation_api = data.iiif_presentation_api
-        if data.ddb_api:
-            self.ddb_api = data.ddb_api
-        if data.oaipmh_api:
-            self.oaipmh_api = data.oaipmh_api
         if data.publisher:
             self.publisher = data.publisher
         if data.license:
             self.license = data.license
-        if data.vocab_element_type:
+        if data.byline:
+            self.byline = data.byline
+        if data.vocab_element_type: # Deprecated, remove along with CTO2
             self.vocab_element_type = data.vocab_element_type
-        if data.vocab_subject_concept:
+        if data.vocab_subject_concept: # Deprecated, remove along with CTO2
             self.vocab_subject_concept = data.vocab_subject_concept
+        if data.vocab_classifier:
+            self.vocab_classifier = data.vocab_classifier
         if data.vocab_related_location:
             self.vocab_related_location = data.vocab_related_location
         if data.vocab_related_event:
