@@ -66,12 +66,14 @@ class FeedElement(ExtractFeedElementInterface):
             if data_concept_short != None:
                 self.data_concept_short.add('text')
 
-            # Label and alternative label (overflow mechanic)
+            # Label and alternative label (overflow mechanic; some LIDO files fall back to object numbers as titles instead of generic terms)
             label = []
             label_langs = []
             label_alt = []
             label_alt_langs = []
-            all_labels = self.xml_all_texts('.//{L}objectIdentificationWrap/{L}titleWrap/{L}titleSet/{L}appellationValue', True)
+            all_labels = self.xml_all_texts('.//{L}objectIdentificationWrap/{L}titleWrap/{L}titleSet/{L}appellationValue', True, True)
+            if all_labels == None:
+                all_labels = self.xml_all_texts('.//{L}objectClassificationWrap/{L}objectWorkTypeWrap/{L}objectWorkType/{L}term', True, True)
             if all_labels != None:
                 for single_label in all_labels:
                     if isinstance(single_label, Literal):

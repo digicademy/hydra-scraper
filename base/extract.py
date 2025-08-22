@@ -319,13 +319,14 @@ class ExtractInterface:
                     return uri
 
 
-    def xml_first_text(self, element_path:str, get_lang:bool = False) -> str|Literal|None:
+    def xml_first_text(self, element_path:str, get_lang:bool = False, no_digits:bool = False) -> str|Literal|None:
         '''
         Get text of first XML node matching an element path
 
             Parameters:
                 element_path (str): Element path to check, i.e. a limited implementation of XPath
                 get_lang (bool): Whether to also identidy language indicators in the XML tree
+                no_digits (bool): Whether to remove a label that is purely numeric
 
             Returns:
                 str|Literal|None: Requested text node
@@ -343,24 +344,28 @@ class ExtractInterface:
         # Produce literal with language code or string
         if element != None:
             element_string = element.xpath('normalize-space(string())')
-            if lang and element_string != '':
-                element = Literal(element_string, lang = lang)
-            elif element_string != '':
-                element = element_string
-            else:
+            if no_digits and element_string.isdigit():
                 element = None
+            else:
+                if lang and element_string != '':
+                    element = Literal(element_string, lang = lang)
+                elif element_string != '':
+                    element = element_string
+                else:
+                    element = None
 
         # Return result
         return element
 
 
-    def xml_all_texts(self, element_paths:str|list, get_lang:bool = False) -> list|None:
+    def xml_all_texts(self, element_paths:str|list, get_lang:bool = False, no_digits:bool = False) -> list|None:
         '''
         Get text of all XML nodes matching an element path
 
             Parameters:
                 element_paths (str|list): Element path to check, i.e. a limited implementation of XPath
-                get_lang (bool): Whether to also identidy language indicators in the XML tree
+                get_lang (bool): Whether to also identify language indicators in the XML tree
+                no_digits (bool): Whether to remove labels that are purely numeric
 
             Returns:
                 list|None: List of requested text nodes
@@ -371,6 +376,8 @@ class ExtractInterface:
         elements = []
         for element_path in element_paths:
             new_elements = [match for match in self.file.xml.iterfind(element_path) if match != None and match.xpath('normalize-space(string())') != '']
+            if no_digits:
+                new_elements = [match for match in new_elements if not match.xpath('normalize-space(string())').isdigit()]
             elements += new_elements
 
         # Go through elements
