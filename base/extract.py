@@ -342,10 +342,11 @@ class ExtractInterface:
 
         # Produce literal with language code or string
         if element != None:
-            if lang and element.text != '':
-                element = Literal(element.text, lang = lang)
-            elif element.text != '':
-                element = element.text
+            element_string = element.xpath('normalize-space(string())')
+            if lang and element_string != '':
+                element = Literal(element_string, lang = lang)
+            elif element_string != '':
+                element = element_string
             else:
                 element = None
 
@@ -369,7 +370,7 @@ class ExtractInterface:
         element_paths = self.xml_paths(element_paths, True)
         elements = []
         for element_path in element_paths:
-            new_elements = [match for match in self.file.xml.iterfind(element_path) if match != None and match.text != '']
+            new_elements = [match for match in self.file.xml.iterfind(element_path) if match != None and match.xpath('normalize-space(string())') != '']
             elements += new_elements
 
         # Go through elements
@@ -382,9 +383,9 @@ class ExtractInterface:
 
             # Replace element by literal with language code or string
             if lang:
-                elements[i] = Literal(elements[i].text, lang = lang)
+                elements[i] = Literal(elements[i].xpath('normalize-space(string())'), lang = lang)
             else:
-                elements[i] = elements[i].text
+                elements[i] = elements[i].xpath('normalize-space(string())')
 
         # Return unique results
         if elements != []:
@@ -519,14 +520,15 @@ class ExtractInterface:
                 # Element label
                 element_label = element.find(label)
                 if element_label != None:
-                    if element_label.text != '':
+                    element_label_text = element_label.xpath('normalize-space(string())')
+                    if element_label_text != '':
 
                         # Produce literal with language code or string
                         lang = self.xml_lang(element_label)
-                        if lang and element_label.text != '':
-                            element_label = Literal(element_label.text, lang = lang)
-                        elif label.text != '':
-                            element_label = element_label.text
+                        if lang and element_label_text != '':
+                            element_label = Literal(element_label_text, lang = lang)
+                        elif element_label_text != '':
+                            element_label = element_label_text
 
                 # Add tuple to ouput
                 output.append((element_uri, element_label))
@@ -806,6 +808,7 @@ class ExtractFeedElementInterface(ExtractInterface):
         self.teaser:LabelList = LabelList()
         self.incipit:Incipit = Incipit()
         self.source_file:Label = Label()
+        self.source_type_short:set = set()
         self.publisher:UriList = UriList()
         self.license:UriLabelList = UriLabelList()
         self.byline:LabelList = LabelList()
@@ -869,6 +872,7 @@ class ExtractFeedElementInterface(ExtractInterface):
             '- teaser: ' + str(self.teaser) + '\n' +\
             '- incipit: ' + str(self.incipit) + '\n' +\
             '- source_file: ' + str(self.source_file) + '\n' +\
+            '- source_type_short: ' + str(self.source_type_short) + '\n' +\
             '- publisher: ' + str(self.publisher) + '\n' +\
             '- license: ' + str(self.license) + '\n' +\
             '- byline: ' + str(self.byline) + '\n' +\

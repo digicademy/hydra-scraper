@@ -29,7 +29,7 @@ class FeedElement(ExtractFeedElementInterface):
         '''
 
         # Check for LIDO content
-        if self.xml_first_element('.//{L}lido') == None:
+        if self.xml_first_element('.//{L}lido') == None and self.file.xml.tag != '{http://www.lido-schema.org}lido':
             self.success = False
         else:
 
@@ -122,6 +122,9 @@ class FeedElement(ExtractFeedElementInterface):
             # Source file
             self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
 
+            # Source type shorthand
+            self.source_type_short.add('lido')
+
             # Publisher (auto-correct ISIL URIs)
             publishers = self.xml_all_texts('.//{L}recordWrap/{L}recordSource/{L}legalBodyID[@{L}source="ISIL (ISO 15511)"]')
             if publishers != None:
@@ -136,10 +139,11 @@ class FeedElement(ExtractFeedElementInterface):
             ]))
 
             # Byline
-            self.byline = LabelList(self.xml_all_texts([
-                './/{L}rightsWorkSet/{L}creditLine',
-                './/{L}recordRights/{L}creditLine',
-            ], True))
+            if self.license == None:
+                self.byline = LabelList(self.xml_all_texts([
+                    './/{L}rightsWorkSet/{L}creditLine',
+                    './/{L}recordRights/{L}creditLine',
+                ], True))
 
             # Vocabulary: element type
             # Deprecated, remove along with CTO2
@@ -169,10 +173,10 @@ class FeedElement(ExtractFeedElementInterface):
             #self.vocab_related_event = 
 
             # Vocabulary: related organization
-            self.vocab_related_organization = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="organization"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
+            self.vocab_related_organization = UriLabelList(self.xml_uri_label(self.xml_all_elements(['.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00165"]', './/{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00166"]', './/{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00413"]']), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
 
             # Vocabulary: related person
-            self.vocab_related_person = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="person"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
+            self.vocab_related_person = UriLabelList(self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00163"]'), './/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}nameActorSet/{L}appellationValue', True))
 
             # Further vocabulary terms
             self.vocab_further = UriLabelList(self.xml_all_lido_concepts('.//{L}objectIdentificationWrap/{L}objectMaterialsTechWrap/{L}objectMaterialsTechSet/{L}materialsTech/{L}termMaterialsTech'))
@@ -209,7 +213,7 @@ class FeedElement(ExtractFeedElementInterface):
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
             if events != None:
                 for event in events:
-                    if event.text in check_terms:
+                    if event.xpath('normalize-space(string())') in check_terms:
                         try:
                             self.creation_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
                         except (ValueError, TypeError):
@@ -217,7 +221,7 @@ class FeedElement(ExtractFeedElementInterface):
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
             if events != None:
                 for event in events:
-                    if event.text in check_terms:
+                    if event.xpath('normalize-space(string())') in check_terms:
                         try:
                             self.creation_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}earliestDate')))
                         except (ValueError, TypeError):
@@ -227,7 +231,7 @@ class FeedElement(ExtractFeedElementInterface):
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
             if events != None:
                 for event in events:
-                    if event.text in check_terms:
+                    if event.xpath('normalize-space(string())') in check_terms:
                         try:
                             self.creation_period = DateList(Literal(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'), lang = self.xml_lang(event.getparent().getparent().find('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'))))
                         except ValueError:
@@ -235,7 +239,7 @@ class FeedElement(ExtractFeedElementInterface):
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
             if events != None:
                 for event in events:
-                    if event.text in check_terms:
+                    if event.xpath('normalize-space(string())') in check_terms:
                         try:
                             self.creation_period = DateList(Literal(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'), lang = self.xml_lang(event.getparent().getparent().getparent().find('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}displayDate'))))
                         except ValueError:
@@ -253,7 +257,7 @@ class FeedElement(ExtractFeedElementInterface):
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
             if events != None:
                 for event in events:
-                    if event.text in check_terms:
+                    if event.xpath('normalize-space(string())') in check_terms:
                         try:
                             self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
                         except (ValueError, TypeError):
@@ -261,7 +265,7 @@ class FeedElement(ExtractFeedElementInterface):
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{S}Concept/{S}prefLabel')
             if events != None:
                 for event in events:
-                    if event.text in check_terms:
+                    if event.xpath('normalize-space(string())') in check_terms:
                         try:
                             self.destruction_date = Date(date.fromisoformat(event.getparent().getparent().getparent().findtext('.//{http://www.lido-schema.org}eventDate/{http://www.lido-schema.org}date/{http://www.lido-schema.org}latestDate')))
                         except (ValueError, TypeError):
@@ -294,7 +298,7 @@ class FeedElement(ExtractFeedElementInterface):
             new_elements = self.file.xml.iterfind(element_path + '/{http://www.lido-schema.org}conceptID')
             new_concepts = []
             for new_element in new_elements:
-                new_concept = new_element.text
+                new_concept = new_element.xpath('normalize-space(string())')
 
                 # Fix old Iconclass notations
                 if '{http://www.lido-schema.org}source' in new_element.attrib:
