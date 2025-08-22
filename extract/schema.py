@@ -237,6 +237,9 @@ class FeedElement(ExtractFeedElementInterface):
                     # Source file
                     self.source_file = Label(self.file.location, remove_path = self.file.directory_path)
 
+                    # Source type shorthand
+                    self.source_type_short.add('cgif')
+
                     # Publisher (observe element and feed)
                     self.publisher = UriList(self.rdf_all_objects(self.element_uri.rdflib(), [SCHEMA.publisher, SDO.publisher]))
                     if not self.publisher and feed_publisher:

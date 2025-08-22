@@ -35,6 +35,8 @@ class Feed(MapFeedInterface):
         self.content += csv('element_uri')
         self.content += csv('element_uri_same')
         self.content += csv('element_type')
+        self.content += csv('element_type_short')
+        self.content += csv('data_concept_short')
         self.content += csv('label')
         self.content += csv('label_alt')
         self.content += csv('holding_org')
@@ -44,8 +46,10 @@ class Feed(MapFeedInterface):
         self.content += csv('teaser')
         self.content += csv('incipit')
         self.content += csv('source_file')
+        self.content += csv('source_type_short')
         self.content += csv('publisher')
         self.content += csv('license')
+        self.content += csv('byline')
         self.content += csv('vocab_element_type') # Deprecated, remove along with CTO2
         self.content += csv('vocab_subject_concept') # Deprecated, remove along with CTO2
         self.content += csv('vocab_classifier')
@@ -155,6 +159,9 @@ class FeedElement(MapFeedElementInterface):
 
             # Source file
             self.content += csv(self.source_file.text())
+
+            # Source type_short
+            self.content += csv('; '.join(str(sts) for sts in self.source_type_short))
 
             # RIGHTS URIS
 

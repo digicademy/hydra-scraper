@@ -142,13 +142,12 @@ class FeedElement(MapFeedElementInterface):
             # 2. As we have datasets that use it, is an additional `TGN identifier` for Getty TGN parallel to the `GeoNames identifier` on the horizon?
             # 3. `schema:associatedMedia` appears to only allow for `schema:ImageObject` or `schema:AudioObject`, rather than a wider range of [`schema:MediaObject`s](https://schema.org/MediaObject). Why?
             # 4. How do we justify that there are multiple properties around music lyrics and music incipits, but nothing of this sort for text, video, and other media?
-            # 5. What is the intention behind `has license statement` versus `has rights statement`? Since almost all our data providers use a single property for both, are we allowed to use their superproperty `has legal statement` directly, which the description discourages?
-            # 6. Is there an option to decouple `has source file` from the superproperty `has url`? For file dumps we can only list individual file names here, which do not conform to `xsd:anyURI` (which `has url` requires).
-            # 7. The illustrations diverge from the ontology a bit, especially around lyrics and incipits. Is it safe to assume that the use of `rdfs:label` and `has text` for lyrics (as well the incipit attached to the lyrics) are errors?
-            # 8. Why do `has creation date` and `has destruction date` take a `xsd:dateTime` instead of a `xsd:date`?
-            # 9. Could someone explain what the BFO 2020-compliant replacements for what used to be `start date` and `end date` in events are? And why we cannot have simple `xsd:date` properties in addition to whatever needs to be done to please the BFO?
-            # 10. Why does `is about real world entity` not also take `organization` and `place` like we use them in the `related` properties? And why is `schema:Sculpture` listed as range but not other relevant classes of objects?
-            # 11. Is there an option to clarify the UNIMARC classifier as UNIMARC MOP? And where do I find information about the filmportal.de category vocabulary?
+            # 5. Is there an option to decouple `has source file` from the superproperty `has url`? For file dumps we can only list individual file names here, which do not conform to `xsd:anyURI` (which `has url` requires).
+            # 6. The illustrations diverge from the ontology a bit, especially around lyrics and incipits. Is it safe to assume that the use of `rdfs:label` and `has text` for lyrics (as well the incipit attached to the lyrics) are errors?
+            # 7. Why do `has creation date` and `has destruction date` take a `xsd:dateTime` instead of a `xsd:date`?
+            # 8. Could someone explain what the BFO 2020-compliant replacements for what used to be `start date` and `end date` in events are? And why we cannot have simple `xsd:date` properties in addition to whatever needs to be done to please the BFO?
+            # 9. Why does `is about real world entity` not also take `organization` and `place` like we use them in the `related` properties? And why is `schema:Sculpture` listed as range but not other relevant classes of objects?
+            # 10. Is there an option to clarify the UNIMARC classifier as UNIMARC MOP? And where do I find information about the filmportal.de category vocabulary?
 
 
             # ELEMENT
@@ -170,6 +169,10 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((feed_uri, SCHEMA.dataFeedElement, wrapper))
                 self.rdf.add((wrapper, RDF.type, SCHEMA.DataFeedItem))
                 self.rdf.add((wrapper, SCHEMA.item, self.element_uri.rdflib())) # TODO Discussions are ongoing whether to use OBO.IAO_0000136 (is about)
+                
+                # Date modified
+                today = date.today()
+                self.rdf.add((wrapper, SCHEMA.dateModified, Literal(str(today.isoformat()), datatype = XSD.date)))
 
             # Element type shorthand
             if self.element_type_short in ['person', 'organisation', 'organization', 'event', 'date', 'place', 'location', 'book', 'structure', 'sculpture', 'sheet-music', 'theater-event', 'item']:
@@ -194,7 +197,10 @@ class FeedElement(MapFeedElementInterface):
                 elif self.element_type_short == 'theater-event':
                     self.rdf.add((realworld, RDF.type, SCHEMA.TheaterEvent))
                 elif self.element_type_short == 'item':
-                    self.rdf.add((realworld, RDF.type, SCHEMA.CreativeWork)) # TODO This is currently a non-standard type and specific SCHEMA ones would be available
+                    if self.element_type:
+                        self.rdf.add((realworld, RDF.type, self.element_type.rdflib())) # TODO These are currently non-standard types
+                    else:
+                        self.rdf.add((realworld, RDF.type, SCHEMA.CreativeWork)) # TODO This is currently a non-standard type
 
                 # Same as element URI
                 for i in self.element_uri_same.rdflib():
@@ -252,12 +258,15 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((media, CTO.CTO_0001021, self.media.uri.rdflib())) # has content url
                 for i in self.media.license.rdflib():
                     if i[0]:
-                        self.rdf.add((media, NFDICORE.NFDI_0000142, i[0])) # has license
-                    elif i[1]:
-                        for e in i[1]:
-                            self.rdf.add((media, CTO.CTO_0001007, e)) # has license statement
+                        n4c_media_license = license_identifier(i[0])
+                        if n4c_media_license:
+                            self.rdf.add((media, NFDICORE.NFDI_0000142, n4c_media_license)) # has license
+                        else:
+                            n4c_media_rights = rights_identifier(i[0])
+                            if n4c_media_rights:
+                                self.rdf.add((media, CTO.CTO_0001022, n4c_media_rights)) # has rights statement
                 for i in self.media.byline.rdflib():
-                    self.rdf.add((media, CTO.CTO_0001022, i)) # has rights statement
+                    self.rdf.add((media, CTO.CTO_0001007, i)) # has license statement
 
             # Lyrics
             if self.lyrics:
@@ -269,7 +278,7 @@ class FeedElement(MapFeedElementInterface):
 
             # Teaser
             #for i in self.teaser.rdflib():
-                #self.rdf.add((self.element_uri.rdflib(), CTO.CTO_XXXXXX2, i)) # teaser TODO Not available
+                #self.rdf.add((self.element_uri.rdflib(), CTO.CTO_XXXXXX3, i)) # teaser TODO Not available
 
             # Incipit
             if self.incipit:
@@ -296,6 +305,19 @@ class FeedElement(MapFeedElementInterface):
                 self.source_file.data_type = SCHEMA.URL # TODO This is supposed to be XSD.anyURI, but that does not work for file names
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001080, self.source_file.rdflib())) # has source file
 
+            # Source type shorthand
+            if 'cgif' in self.data_concept_short:
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6367)) # has standard, CGIF
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3087)) # has media type, JSON
+
+            if 'tei' in self.data_concept_short:
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3948)) # has standard, TEI
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3081)) # has media type, XML
+
+            if 'lido' in self.data_concept_short:
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3947)) # has standard, LIDO
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3081)) # has media type, XML
+
             # RIGHTS URIS
 
             # Publisher
@@ -305,14 +327,17 @@ class FeedElement(MapFeedElementInterface):
             # License
             for i in self.license.rdflib():
                 if i[0]:
-                    self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000142, i[0])) # has license
-                elif i[1]:
-                    for e in i[1]:
-                        self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001007, e)) # has license statement
+                    n4c_license = license_identifier(i[0])
+                    if n4c_license:
+                        self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000142, n4c_license)) # has license
+                    else:
+                        n4c_rights = rights_identifier(i[0])
+                        if n4c_rights:
+                            self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001022, n4c_rights)) # has rights statement
 
             # Byline
             for i in self.byline.rdflib():
-                self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001022, i)) # has rights statement
+                self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001007, i)) # has license statement
 
             # RELATED URIS AND FALLBACK LITERALS
 
@@ -417,15 +442,14 @@ class FeedElement(MapFeedElementInterface):
 
             # For events
             elif self.element_type_short == 'event' or self.element_type_short == 'date' or self.element_type_short == 'theater-event':
-                pass
 
                 # Start date
-                #if self.start_date:
-                    #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_XXXXXX3, self.start_date.rdflib(True))) # start date TODO Not available
+                if self.start_date:
+                    self.rdf.add((self.element_uri.rdflib(), CTO.CTO_XXXXXX1, self.start_date.rdflib(True))) # start date TODO Not available, and BFO event start/end properties not allowed in a continuant
 
                 # End date
-                #if self.end_date:
-                    #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_XXXXXX4, self.end_date.rdflib(True))) # end date TODO Not available
+                if self.end_date:
+                    self.rdf.add((self.element_uri.rdflib(), CTO.CTO_XXXXXX2, self.end_date.rdflib(True))) # end date TODO Not available, and BFO event start/end properties not allowed in a continuant
 
             # For items
             else:
@@ -537,7 +561,7 @@ def type_identifier(identifier:URIRef) -> URIRef|None:
             URIRef|None: Identifier type if found
     '''
 
-    # Check ifentifier namespace
+    # Check identifier namespace
     if identifier in FG:
         return NFDICORE.NFDI_0001015 # FactGrid identifier
     elif identifier in GND:
@@ -604,5 +628,121 @@ def type_classifier(classifier:URIRef) -> URIRef|None:
         return CTO.CTO_0001079 # Wikidata classifier
     elif classifier in WNK:
         return CTO.CTO_0001058 # Wortnetz Kultur classifier
+    else:
+        return None
+
+
+def license_identifier(identifier:URIRef) -> URIRef|None:
+    '''
+    Provide the N4C license identifier
+
+        Parameters:
+            identifier (URIRef): URI of the license to produce the N4C identifier for
+
+        Returns:
+            URIRef|None: N4C identifier if found
+    '''
+
+    # Check license identifier
+    if 'creativecommons.org/publicdomain/zero/1.0' in identifier:
+        return N4C.E3978
+    elif 'creativecommons.org/licenses/by/4.0' in identifier:
+        return N4C.E6404
+    elif 'creativecommons.org/licenses/by/3.0' in identifier:
+        return N4C.E6406
+    elif 'creativecommons.org/licenses/by-nc/3.0' in identifier:
+        return N4C.E6408
+    elif 'creativecommons.org/licenses/by-nc/4.0' in identifier:
+        return N4C.E6410
+    elif 'creativecommons.org/licenses/by-nc-nd/3.0' in identifier:
+        return N4C.E6413
+    elif 'creativecommons.org/licenses/by-nc-nd/4.0' in identifier:
+        return N4C.E6415
+    elif 'creativecommons.org/licenses/by-nc-sa/3.0' in identifier:
+        return N4C.E6417
+    elif 'creativecommons.org/licenses/by-nc-sa/4.0' in identifier:
+        return N4C.E6418
+    elif 'creativecommons.org/licenses/by-nd/3.0' in identifier:
+        return N4C.E6419
+    elif 'creativecommons.org/licenses/by-nd/4.0' in identifier:
+        return N4C.E6422
+    elif 'creativecommons.org/licenses/by-sa/3.0' in identifier:
+        return N4C.E6428
+    elif 'creativecommons.org/licenses/by-sa/4.0' in identifier:
+        return N4C.E6429
+    elif 'opensource.org/license/mit' in identifier:
+        return N4C.E3604
+    elif 'opensource.org/license/apache-2-0' in identifier:
+        return N4C.E3605
+    elif 'opensource.org/license/gpl-3-0' in identifier:
+        return N4C.E3606
+    elif 'opensource.org/license/mpl-2-0' in identifier:
+        return N4C.E3933
+    elif 'opensource.org/license/agpl-v3' in identifier:
+        return N4C.E4114
+    elif 'opensource.org/license/cddl-1-0' in identifier:
+        return N4C.E4197
+    elif 'opensource.org/license/epl-2-0' in identifier:
+        return N4C.E4206
+    elif 'opensource.org/license/gpl-2-0' in identifier:
+        return N4C.E4208
+    elif 'opensource.org/license/lgpl-2-1' in identifier:
+        return N4C.E4210
+    elif 'opensource.org/license/lgpl-3-0' in identifier:
+        return N4C.E4212
+    elif 'opensource.org/license/lgpl-2-0' in identifier:
+        return N4C.E4214
+    elif 'opensource.org/license/bsd-2-clause' in identifier:
+        return N4C.E4216
+    elif 'opensource.org/license/bsd-3-clause' in identifier:
+        return N4C.E4219
+    elif 'creativecommons.org/publicdomain/mark/1.0' in identifier:
+        return N4C.E5156
+    elif 'opendatacommons.org/licenses/by/1-0' in identifier:
+        return N4C.E6395
+    elif 'opendatacommons.org/licenses/odbl/1-0' in identifier:
+        return N4C.E6397
+    elif 'opendatacommons.org/licenses/pddl/1.0' in identifier:
+        return N4C.E6399
+    else:
+        return None
+
+
+def rights_identifier(identifier:URIRef) -> URIRef|None:
+    '''
+    Provide the N4C rights-statement identifier
+
+        Parameters:
+            identifier (URIRef): URI of the rights statement to produce the N4C identifier for
+
+        Returns:
+            URIRef|None: N4C identifier if found
+    '''
+
+    # Check rights-statement identifier
+    if 'rightsstatements.org/vocab/CNE/1.0' in identifier:
+        return N4C.E6214
+    elif 'rightsstatements.org/vocab/UND/1.0' in identifier:
+        return N4C.E6216
+    elif 'rightsstatements.org/vocab/InC/1.0' in identifier:
+        return N4C.E6206
+    elif 'www.deutsche-digitale-bibliothek.de/content/lizenzen/rv-fz' in identifier:
+        return N4C.E6206
+    elif 'rightsstatements.org/vocab/InC-EDU/1.0' in identifier:
+        return N4C.E6210
+    elif 'rightsstatements.org/vocab/InC-OW-EU/1.0' in identifier:
+        return N4C.E6207
+    elif 'rightsstatements.org/vocab/InC-NC/1.0' in identifier:
+        return N4C.E6208
+    elif 'rightsstatements.org/vocab/InC-RUU/1.0' in identifier:
+        return N4C.E6209
+    elif 'rightsstatements.org/vocab/NoC-CR/1.0' in identifier:
+        return N4C.E6213
+    elif 'rightsstatements.org/vocab/NoC-NC/1.0' in identifier:
+        return N4C.E6212
+    elif 'rightsstatements.org/vocab/NoC-OKLR/1.0' in identifier:
+        return N4C.E6211
+    elif 'rightsstatements.org/vocab/NKC/1.0' in identifier:
+        return N4C.E6215
     else:
         return None

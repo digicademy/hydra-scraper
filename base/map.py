@@ -104,7 +104,7 @@ class MapInterface:
             else:
                 file_extension = format
             file_path = file_path + '.' + file_extension
-            self.rdf.serialize(destination = file_path, format = format)
+            self.rdf.serialize(destination = file_path, format = format, encoding = 'utf-8')
 
             # Log info
             logger.info('Mapped data to RDF file ' + file_path)
@@ -286,6 +286,7 @@ class MapFeedElementInterface(MapInterface):
         self.teaser:LabelList = LabelList()
         self.incipit:Incipit = Incipit()
         self.source_file:Label = Label()
+        self.source_type_short:set = set()
         self.publisher:UriList = UriList()
         self.license:UriLabelList = UriLabelList()
         self.byline:LabelList = LabelList()
@@ -349,6 +350,7 @@ class MapFeedElementInterface(MapInterface):
             '- teaser: ' + str(self.teaser) + '\n' +\
             '- incipit: ' + str(self.incipit) + '\n' +\
             '- source_file: ' + str(self.source_file) + '\n' +\
+            '- source_type_short: ' + str(self.source_type_short) + '\n' +\
             '- publisher: ' + str(self.publisher) + '\n' +\
             '- license: ' + str(self.license) + '\n' +\
             '- byline: ' + str(self.byline) + '\n' +\
@@ -416,6 +418,8 @@ class MapFeedElementInterface(MapInterface):
             self.incipit = data.incipit
         if data.source_file:
             self.source_file = data.source_file
+        if data.source_type_short:
+            self.source_type_short = data.source_type_short
         if data.publisher:
             self.publisher = data.publisher
         if data.license:

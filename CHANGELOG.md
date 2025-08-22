@@ -5,7 +5,9 @@
 - New serialisation to NFDIcore/CTO v3
 - Revise intermediate data structure for NFDIcore/CTO v3
 - Enhanced lookup to accommodate NFDIcore/CTO v3
+- Automatic output of N-Triples instead of Turtle for NFDIcore/CTO v3
 - Include `SCHEMA.associatedMedia` and `SCHEMA.encoding` in media extraction
+- Improve XML and LIDO extraction, especially of related people and organisations
 - Add Getty TGN and further normalise Getty AAT identifiers
 
 ## 0.9.4

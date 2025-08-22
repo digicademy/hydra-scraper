@@ -215,6 +215,7 @@ Use GitHub to make the release. Use semantic versioning.
 ## Roadmap
 
 - Remove CTO2 along with two deprecated intermediate properties
+- Remove `rdfa` paths as the format is no longer supported by RDFLib
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
 - Automatically build OCI container via CI instead of on demand
