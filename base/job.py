@@ -180,7 +180,7 @@ class Job:
                     if 'cto3' in self.organise.output:
                         status.done()
                         status = Progress('Saving temporary nfdicore/cto v3 triples', self.organise.quiet)
-                        feed_data.map_and_turtle('cto3', self.organise.folder_cto3 + '/' + feed_name, self.organise.prepare)
+                        feed_data.map_and_ntriples('cto3', self.organise.folder_cto3 + '/' + feed_name, self.organise.prepare)
 
                 # Save list without elements
                 else:
@@ -194,7 +194,7 @@ class Job:
                         if 'cto' in self.organise.output:
                             feed_data.map_and_turtle('cto', self.organise.folder_cto + '/0', self.organise.prepare)
                         if 'cto3' in self.organise.output:
-                            feed_data.map_and_turtle('cto3', self.organise.folder_cto3 + '/0', self.organise.prepare)
+                            feed_data.map_and_ntriples('cto3', self.organise.folder_cto3 + '/0', self.organise.prepare)
 
                     # Loop through elements
                     status.done()
@@ -297,7 +297,7 @@ class Job:
                                 if 'cto' in self.organise.output:
                                     element_data.map_and_turtle('cto', self.organise.folder_cto + '/' + element_name, self.organise.prepare)
                                 if 'cto3' in self.organise.output:
-                                    element_data.map_and_turtle('cto3', self.organise.folder_cto3 + '/' + element_name, self.organise.prepare)
+                                    element_data.map_and_ntriples('cto3', self.organise.folder_cto3 + '/' + element_name, self.organise.prepare)
 
                 # Set up next feed page to harvest, if available
                 if feed_data.feed_uri_next:
@@ -329,7 +329,7 @@ class Job:
         if self.organise.elements and 'cto3' in self.organise.output:
             status.done()
             status = Progress('Saving compiled nfdicore/cto v3 triples', self.organise.quiet)
-            combine_triples(self.organise.folder_cto3, self.organise.folder + '/cto3')
+            combine_triples(self.organise.folder_cto3, self.organise.folder + '/cto3', True)
             remove_folder(self.organise.folder_cto3)
         if 'triples' in self.organise.output:
             status.done()
@@ -457,17 +457,21 @@ def combine_text(folder:str, file_path:str, file_extension:str, ignore:str):
     logger.info('Combined temporary text files into ' + file_path)
 
 
-def combine_triples(folder:str, file_path:str):
+def combine_triples(folder:str, file_path:str, use_ntriples:bool = False):
     '''
     Parses all Turtle files in a folder and saves them as a single file
 
         Parameters:
             folder (str): Path of the folder to parse
             file_path (str): Path of the file to create
+            use_ntriples (bool): Whether to use ntriples instead of Turtle
     '''
 
     # Prepare paths
-    file_path += '.ttl'
+    if use_ntriples:
+        file_path += '.nt'
+    else:
+        file_path += '.ttl'
     paths = files_in_folder(folder)
 
     # Calculate size of folder
@@ -478,17 +482,25 @@ def combine_triples(folder:str, file_path:str):
     # Parse and save using pyoxigraph (quick and dirty, JSON-LD not supported)
     if folder_size >= 50000000: # 50 MB
         rdf = Store()
+        if use_ntriples:
+            rdf_format = RdfFormat.N_TRIPLES
+        else:
+            rdf_format = RdfFormat.TURTLE
         for path in paths:
-            rdf.load(path = path, format = RdfFormat.TURTLE, to_graph = DefaultGraph())
-        rdf.dump(output = file_path, format = RdfFormat.TURTLE, from_graph = DefaultGraph())
+            rdf.load(path = path, format = rdf_format, to_graph = DefaultGraph())
+        rdf.dump(output = file_path, format = rdf_format, from_graph = DefaultGraph())
 
     # Parse and save using rdflib (slow and pretty, hogs more memory)
     else:
         rdf = Graph()
         rdf.bind('schema', SCHEMA, replace = True) # "Replace" overrides the RDFLib schema namespace (SDO), which uses "https"
+        if use_ntriples:
+            rdf_format = 'nt'
+        else:
+            rdf_format = 'turtle'
         for path in paths:
-            rdf.parse(path, format = 'turtle')
-        rdf.serialize(destination = file_path, format = 'turtle')
+            rdf.parse(path, format = rdf_format)
+        rdf.serialize(destination = file_path, format = rdf_format, encoding = 'utf-8')
 
     # Log info
     logger.info('Combined temporary RDF files into ' + file_path)

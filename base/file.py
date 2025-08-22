@@ -412,7 +412,7 @@ class File:
                 else:
                     file_extension = format
                 file_path = file_path + '.' + file_extension
-                self.rdf.serialize(destination = file_path, format = format)
+                self.rdf.serialize(destination = file_path, format = format, encoding = 'utf-8')
                 logger.info('Saved RDF to file ' + file_path)
 
             else:
