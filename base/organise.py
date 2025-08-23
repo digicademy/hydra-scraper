@@ -111,6 +111,7 @@ class Organise:
                 'csv',
                 'cto',
                 'cto3',
+                'media',
                 'files',
                 'triples'
             ],
@@ -279,6 +280,9 @@ class Organise:
         if 'cto3' in self.output:
             self.folder_cto3 = self.folder + '/cto3'
             create_folder(self.folder_cto3)
+        if 'media' in self.output:
+            self.folder_media = self.folder + '/media'
+            create_folder(self.folder_media)
         if 'files' in self.output:
             self.folder_files = self.folder + '/files'
             create_folder(self.folder_files)

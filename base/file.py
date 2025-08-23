@@ -11,11 +11,13 @@ import codecs
 import logging
 from datetime import datetime
 from glob import glob
+from hashlib import sha1
 from httpx import BasicAuth, Client, HTTPError
 from lxml import etree
 from lxml.etree import ParserError as XmlParserError
 from os import linesep, makedirs, remove
 from os.path import isdir, isfile
+from PIL import Image
 from rdflib import Graph, Namespace
 from rdflib.exceptions import ParserError as RdfParserError
 from shutil import rmtree
@@ -33,7 +35,7 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.5'):
+    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.5', ):
         '''
         Retrieve remote or local files
 
@@ -467,6 +469,178 @@ class File:
 
         # Shorthand method
         self.save(file_path, 'json-ld')
+
+
+class MediaFile:
+
+
+    def __init__(self, location:str, directory:str, element_uri:str, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.5', ):
+        '''
+        Retrieve media files
+
+            Parameters:
+                location (str): URL to retrieve the file
+                directory (str): Directory to store media file in
+                origin_uri (str): String to use to form the media file
+                ba_username (str): Basic Auth username for requests
+                ba_password (str): Basic Auth password for requests
+                user_agent (str): User agent to use in remote file requests
+        '''
+
+        # Vars
+        self.success:bool = False
+
+        # Content vars
+        self.location:str = location
+        self.directory:str = directory
+        self.file_name:str = 'media'
+        self.ba_username:str|None = ba_username
+        self.ba_password:str|None = ba_password
+        self.user_agent:str = user_agent
+        self.request_time:datetime|None = None
+
+        # Form file name
+        self.file_name = sha1(element_uri.encode()).hexdigest()
+
+        # Download file
+        if url(self.location):
+            self.remote_file()
+        else:
+            logger.error('Location ' + self.location + ' is not a URL')
+
+
+    def remote_file(self):
+        '''
+        Retrieve remote file and store content
+        '''
+
+        # Set request time to allow for delays
+        self.request_time = datetime.now()
+
+        # Compose request headers
+        headers = {
+            'User-Agent': self.user_agent,
+        }
+
+        # Compose Basic Auth data
+        auth = None
+        if self.ba_username and self.ba_password:
+            auth = BasicAuth(username = self.ba_username, password = self.ba_password)
+
+        # Set up three request attempts in case of server issues
+        try:
+            lap = 0
+            while lap < 3:
+                lap += 1
+
+                # Wait for servers to recover from server-side issues in consecutive attempts
+                if lap > 1:
+                    timer = 30
+                    sleep(timer)
+                    logger.info('Waiting for ' + str(timer) + ' seconds for the server to recover')
+
+                # Request response from URL
+                with Client(headers = headers, auth = auth, timeout = 1800.0, follow_redirects = True) as client:
+                    r = client.get(self.location)
+
+                    # Check if response is valid
+                    if r.status_code == 200:
+                        logger.info('Fetched media file ' + self.location)
+
+                        # Check response for 301 to save subsequent URI in redirect chain or successful URI
+                        check_next = False
+                        for prev_r in r.history:
+                            if check_next:
+                                self.location = str(prev_r.url)
+                                check_next = False
+                            if prev_r.status_code == 301:
+                                check_next = True
+                        if check_next:
+                            self.location = str(r.url)
+
+                        # Guess file extension
+                        content_type = r.headers['content-type']
+                        if 'image/apng' in content_type:
+                            file_extension = 'apng'
+                        elif 'image/avif' in content_type:
+                            file_extension = 'avif'
+                        elif 'image/gif' in content_type:
+                            file_extension = 'gif'
+                        elif 'image/jpeg' in content_type:
+                            file_extension = 'jpg'
+                        elif 'image/png' in content_type:
+                            file_extension = 'png'
+                        elif 'image/svg+xml' in content_type:
+                            file_extension = 'svg'
+                        elif 'image/webp' in content_type:
+                            file_extension = 'webp'
+                        elif 'audio/3gpp' in content_type:
+                            file_extension = '3gp'
+                        elif 'audio/aac' in content_type:
+                            file_extension = 'aac'
+                        elif 'audio/flac' in content_type:
+                            file_extension = 'flac'
+                        elif 'audio/mpeg' in content_type:
+                            file_extension = 'mpg'
+                        elif 'audio/mp3' in content_type:
+                            file_extension = 'mp3'
+                        elif 'audio/mp4' in content_type:
+                            file_extension = 'mp4'
+                        elif 'audio/ogg' in content_type:
+                            file_extension = 'ogg'
+                        elif 'audio/wav' in content_type:
+                            file_extension = 'wav'
+                        elif 'audio/webm' in content_type:
+                            file_extension = 'webm'
+                        elif 'video/3gpp' in content_type:
+                            file_extension = '3gp'
+                        elif 'video/mpeg' in content_type:
+                            file_extension = 'mpg'
+                        elif 'video/mp4' in content_type:
+                            file_extension = 'mp4'
+                        elif 'video/ogg' in content_type:
+                            file_extension = 'ogg'
+                        elif 'video/quicktime' in content_type:
+                            file_extension = 'mov'
+                        elif 'video/webm' in content_type:
+                            file_extension = 'webm'
+                        else:
+                            file_extension = 'unknown'
+
+                        # Store content
+                        file_path = self.directory + '/' + self.file_name + '.' + file_extension
+                        with open(file_path, 'wb') as f:
+                            f.write(r.content)
+                        self.success = True
+                        logger.info('Saved media file ' + file_path)
+
+                        # Replace large images with their thumbnails
+                        if 'image/' in content_type:
+                            try:
+                                im = Image.open(file_path)
+                                if im.size[0] > 500 or im.size[1] > 500:
+                                    im.thumbnail((500, 500))
+                                    im.save(file_path)
+                            except IOError:
+                                logger.info('Could not resize media file ' + file_path)
+
+                        # Prevent further attempts in case of successful retrieval
+                        break
+                    
+                    # Try again for server-side issues that may heal themselves
+                    elif r.status_code in [500, 502, 503, 504]:
+                        if lap >= 3:
+                            logger.warning('Server-side issue, could not fetch media file ' + self.location)
+                        pass
+
+                    # Prevent further attempts in case of URI issues retrieval
+                    else:
+                        logger.warning('Could not fetch media file ' + self.location + ' due to a URI issue')
+                        break
+
+        # Log info
+        except HTTPError:
+            logger.error('Could not fetch media file ' + self.location)
 
 
 def strip_lines(input:str) -> str:

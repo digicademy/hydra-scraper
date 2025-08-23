@@ -2,13 +2,16 @@
 
 ## 0.9.5
 
+**Additional requirement**: `Pillow`
+
 - New serialisation to NFDIcore/CTO v3
 - Revise intermediate data structure for NFDIcore/CTO v3
 - Enhanced lookup to accommodate NFDIcore/CTO v3
 - Automatic output of N-Triples instead of Turtle for NFDIcore/CTO v3
-- Include `SCHEMA.associatedMedia` and `SCHEMA.encoding` in media extraction
+- Include `SCHEMA.associatedMedia` and `SCHEMA.encoding` in schema.org media extraction
 - Improve XML and LIDO extraction, especially of related people and organisations
 - Add Getty TGN and further normalise Getty AAT identifiers
+- Add option to download media files and produce image thumbnails
 
 ## 0.9.4
 

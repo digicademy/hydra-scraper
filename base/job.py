@@ -20,7 +20,7 @@ import extract.folder as folder
 import extract.lido as lido
 import extract.schema as schema
 from base.data import Uri, UriList
-from base.file import File, files_in_folder, remove_folder
+from base.file import MediaFile, File, files_in_folder, remove_folder
 from base.lookup import Lookup
 from base.organise import Organise, delay_request
 
@@ -182,6 +182,21 @@ class Job:
                         status = Progress('Saving temporary nfdicore/cto v3 triples', self.organise.quiet)
                         feed_data.map_and_ntriples('cto3', self.organise.folder_cto3 + '/' + feed_name, self.organise.prepare)
 
+                    # Save associated media
+                    if 'media' in self.organise.output:
+                        status.done()
+                        status = Progress('Saving associated media', self.organise.quiet)
+                        for element_data in feed_data.feed_elements:
+                            if element_data.media:
+
+                                # Delay if necessary
+                                if self.last_request:
+                                    delay_request(self.last_request, self.organise.delay)
+
+                                # Download file
+                                media = MediaFile(element_data.media.uri.uri, self.organise.folder_media, element_data.element_uri.uri, self.organise.ba_username, self.organise.ba_password)
+                                self.last_request = media.request_time
+
                 # Save list without elements
                 else:
 
@@ -298,6 +313,18 @@ class Job:
                                     element_data.map_and_turtle('cto', self.organise.folder_cto + '/' + element_name, self.organise.prepare)
                                 if 'cto3' in self.organise.output:
                                     element_data.map_and_ntriples('cto3', self.organise.folder_cto3 + '/' + element_name, self.organise.prepare)
+
+                                # Save associated media
+                                if 'media' in self.organise.output:
+                                    if element_data.media:
+
+                                        # Delay if necessary
+                                        if self.last_request:
+                                            delay_request(self.last_request, self.organise.delay)
+
+                                        # Download file
+                                        media = MediaFile(element_data.media.uri.uri, self.organise.folder_media, element_data.element_uri.uri, self.organise.ba_username, self.organise.ba_password)
+                                        self.last_request = media.request_time
 
                 # Set up next feed page to harvest, if available
                 if feed_data.feed_uri_next:

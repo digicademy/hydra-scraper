@@ -705,7 +705,7 @@ def license_identifier(identifier:URIRef) -> URIRef|None:
     elif 'opendatacommons.org/licenses/pddl/1.0' in identifier:
         return N4C.E6399
     else:
-        return None
+        return identifier
 
 
 def rights_identifier(identifier:URIRef) -> URIRef|None:
@@ -728,6 +728,8 @@ def rights_identifier(identifier:URIRef) -> URIRef|None:
         return N4C.E6206
     elif 'www.deutsche-digitale-bibliothek.de/content/lizenzen/rv-fz' in identifier:
         return N4C.E6206
+    elif 'www.deutsche-digitale-bibliothek.de/content/lizenzen/rv-ez' in identifier:
+        return N4C.E6206
     elif 'rightsstatements.org/vocab/InC-EDU/1.0' in identifier:
         return N4C.E6210
     elif 'rightsstatements.org/vocab/InC-OW-EU/1.0' in identifier:
@@ -745,4 +747,4 @@ def rights_identifier(identifier:URIRef) -> URIRef|None:
     elif 'rightsstatements.org/vocab/NKC/1.0' in identifier:
         return N4C.E6215
     else:
-        return None
+        return identifier

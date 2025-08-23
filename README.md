@@ -60,6 +60,7 @@ indicate what kind of scraping run you desire.
   - `csv`: a CSV table of data
   - `cto`: NFDI4Culture-style triples
   - `cto3`: NFDI4Culture-style triples (CTO v3, to become just `cto` when v2 is removed)
+  - `media`: associated media files
   - `files`: the original files
   - `triples`: the original triples
 
@@ -215,6 +216,7 @@ Use GitHub to make the release. Use semantic versioning.
 ## Roadmap
 
 - Remove CTO2 along with two deprecated intermediate properties
+- Merge retrieval functions of `File` and `MediaFile`
 - Remove `rdfa` paths as the format is no longer supported by RDFLib
 - Implement job presets/collections
 - Convert `test.py` to something more sophisticated
