@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.6
+
+- Increase request timeout to account for slow APIs (from 0.5 min to 3 min)
+
 ## 0.9.5
 
 **Additional requirement**: `Pillow`

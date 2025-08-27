@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 class File:
 
 
-    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.5', ):
+    def __init__(self, location:str, content_type:str|None = None, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.6', ):
         '''
         Retrieve remote or local files
 
@@ -110,7 +110,7 @@ class File:
                     logger.info('Waiting for ' + str(timer) + ' seconds for the server to recover')
 
                 # Request response from URL
-                with Client(headers = headers, auth = auth, timeout = 1800.0, follow_redirects = True) as client:
+                with Client(headers = headers, auth = auth, timeout = 10800.0, follow_redirects = True) as client:
                     r = client.get(self.location)
 
                     # Check if response is valid
@@ -474,7 +474,7 @@ class File:
 class MediaFile:
 
 
-    def __init__(self, location:str, directory:str, element_uri:str, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.5', ):
+    def __init__(self, location:str, directory:str, element_uri:str, ba_username:str|None = None, ba_password:str|None = None, user_agent:str = 'Hydra Scraper/0.9.6', ):
         '''
         Retrieve media files
 
@@ -540,7 +540,7 @@ class MediaFile:
                     logger.info('Waiting for ' + str(timer) + ' seconds for the server to recover')
 
                 # Request response from URL
-                with Client(headers = headers, auth = auth, timeout = 1800.0, follow_redirects = True) as client:
+                with Client(headers = headers, auth = auth, timeout = 10800.0, follow_redirects = True) as client:
                     r = client.get(self.location)
 
                     # Check if response is valid
