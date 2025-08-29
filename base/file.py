@@ -502,9 +502,12 @@ class MediaFile:
         # Form file name
         self.file_name = sha1(element_uri.encode()).hexdigest()
 
-        # Download file
+        # Download file if it does not exist yet
         if url(self.location):
-            self.remote_file()
+            if not glob(self.directory + '/' + self.file_name + '.*'):
+                self.remote_file()
+            else:
+                logger.info('Media file already exists for ' + self.location)
         else:
             logger.error('Location ' + self.location + ' is not a URL')
 
@@ -621,6 +624,9 @@ class MediaFile:
                                 if im.size[0] > 500 or im.size[1] > 500:
                                     im.thumbnail((500, 500))
                                     im.save(file_path)
+                            except Image.DecompressionBombError:
+                                remove(file_path)
+                                logger.info('Removed potentially malicious media file ' + file_path)
                             except IOError:
                                 logger.info('Could not resize media file ' + file_path)
 
