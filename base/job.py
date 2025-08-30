@@ -70,7 +70,8 @@ class Job:
             status.done()
             status = Progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data', self.organise.quiet)
             feed_file = File(feed_uri, ba_username = self.organise.ba_username, ba_password = self.organise.ba_password)
-            self.last_request = feed_file.request_time
+            if feed_file.request_time:
+                self.last_request = feed_file.request_time
 
             # Extract feed data
             if self.organise.feed == 'beacon':
@@ -195,7 +196,8 @@ class Job:
 
                                 # Download file
                                 media = MediaFile(element_data.media.uri.uri, self.organise.folder_media, element_data.element_uri.uri, self.organise.ba_username, self.organise.ba_password)
-                                self.last_request = media.request_time
+                                if media.request_time:
+                                    self.last_request = media.request_time
 
                 # Save list without elements
                 else:
@@ -224,7 +226,8 @@ class Job:
                         # Get feed element
                         status.update(element_index, len(feed_data.element_uris))
                         element_file = File(element_uri, self.organise.dialect, ba_username = self.organise.ba_username, ba_password = self.organise.ba_password)
-                        self.last_request = element_file.request_time
+                        if element_file.request_time:
+                            self.last_request = element_file.request_time
 
                         # Generate element file name
                         if self.organise.clean:
@@ -324,7 +327,8 @@ class Job:
 
                                         # Download file
                                         media = MediaFile(element_data.media.uri.uri, self.organise.folder_media, element_data.element_uri.uri, self.organise.ba_username, self.organise.ba_password)
-                                        self.last_request = media.request_time
+                                        if media.request_time:
+                                            self.last_request = media.request_time
 
                 # Set up next feed page to harvest, if available
                 if feed_data.feed_uri_next:
