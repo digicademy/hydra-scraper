@@ -4,6 +4,7 @@
 
 - Increase request timeout to account for slow APIs (from 0.5 min to 3 min)
 - Make media file retrieval more efficient and robust
+- Further improvements to NFDIcore/CTO v3 mapping
 
 ## 0.9.5
 

@@ -154,7 +154,7 @@ class FeedElement(MapFeedElementInterface):
 
             # Basics
             self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.CTO_0001005)) # source item
-            self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0001008, Literal(self.element_uri.uri))) # has url
+            self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0001008, Literal(self.element_uri.uri, datatype = XSD.anyURI))) # has url
 
             # Feed URI
             if prepare != None and len(prepare) == 2:
@@ -255,7 +255,7 @@ class FeedElement(MapFeedElementInterface):
                     self.rdf.add((media, RDF.type, SCHEMA.AudioObject))
                 else:
                     self.rdf.add((media, RDF.type, SCHEMA.MediaObject))
-                self.rdf.add((media, CTO.CTO_0001021, self.media.uri.rdflib())) # has content url
+                self.rdf.add((media, CTO.CTO_0001021, Literal(self.media.uri.uri, datatype = XSD.anyURI))) # has content url
                 for i in self.media.license.rdflib():
                     if i[0]:
                         n4c_media_license = license_identifier(i[0])
