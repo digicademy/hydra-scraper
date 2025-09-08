@@ -306,17 +306,132 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001080, self.source_file.rdflib())) # has source file
 
             # Source type shorthand
-            if 'cgif' in self.data_concept_short:
-                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6367)) # has standard, CGIF
+            if 'cgif' in self.source_type_short:
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4022)) # has standard, RDF
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6367)) # has standard, CGIF (TODO not currently a standard)
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4456)) # has standard, Schema.org
                 self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3087)) # has media type, JSON
-
-            if 'tei' in self.data_concept_short:
+            if 'tei' in self.source_type_short:
                 self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3948)) # has standard, TEI
                 self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3081)) # has media type, XML
-
-            if 'lido' in self.data_concept_short:
+            if 'lido' in self.source_type_short:
                 self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3947)) # has standard, LIDO
+                #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4468)) # has standard, LIDO 1.1
                 self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3081)) # has media type, XML
+            
+            # TODO CVMA additions (automate if possible)
+            if prepare[0] == 'E5308':
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3947)) # has standard, LIDO
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E5401)) # has standard, XMP
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6336)) # has standard, ISO 8601
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2971)) # has media type, JPEG
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2979)) # has media type, TIFF
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3079)) # has media type, HTML
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3081)) # has media type, XML
+
+            # TODO Bildindex additions (automate if possible)
+            if prepare[0] == 'E6161':
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2971)) # has media type, JPEG
+
+            # TODO Fotothek additions (automate if possible)
+            if prepare[0] == 'E6064':
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2971)) # has media type, JPEG
+                self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4461)) # has standard, IIIF
+
+            # TODO Optional set of further source types (standard, automate if possible)
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3947)) # has standard, LIDO
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3948)) # has standard, TEI
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3949)) # has standard, MEI
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3950)) # has standard, CIDOC-CRM
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E3951)) # has standard, MARC21
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4022)) # has standard, RDF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4091)) # has standard, DataCite Metadata Schema
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4092)) # has standard, Dublin Core Metadata Element Set
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4428)) # has standard, METS
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4432)) # has standard, MODS
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4456)) # has standard, Schema.org
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4461)) # has standard, IIIF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E4468)) # has standard, LIDO 1.1
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E5401)) # has standard, XMP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E5939)) # has standard, Europeana Data Model
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6070)) # has standard, BEACON
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6332)) # has standard, ISO 639-2
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6334)) # has standard, ISO 639-3
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000207, N4C.E6336)) # has standard, ISO 8601
+
+            # TODO Optional set of further source types (media type, automate if possible)
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2962)) # has media type, CSV
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2965)) # has media type, DOCX
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2967)) # has media type, BMP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2969)) # has media type, GIF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2971)) # has media type, JPEG
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2973)) # has media type, JP2
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2975)) # has media type, PNG
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2977)) # has media type, PSD
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2979)) # has media type, TIFF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2981)) # has media type, SVG
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2983)) # has media type, ODG
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2985)) # has media type, AAC
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2987)) # has media type, AIFF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2989)) # has media type, AC3
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2991)) # has media type, FLAC
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2992)) # has media type, MP3
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2994)) # has media type, VOX
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2996)) # has media type, WAV
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E2998)) # has media type, WMA
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3000)) # has media type, TXT
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3002)) # has media type, RTF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3003)) # has media type, H.264
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3008)) # has media type, MPEG-2
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3009)) # has media type, MPEG-4
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3010)) # has media type, OGG
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3018)) # has media type, RM
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3019)) # has media type, MPEG-2 TS
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3020)) # has media type, WebM
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3021)) # has media type, WMV
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3022)) # has media type, DAE
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3023)) # has media type, KMZ
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3024)) # has media type, OBJ
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3025)) # has media type, PLY
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3026)) # has media type, VRML
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3027)) # has media type, X3D
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3028)) # has media type, U3D
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3037)) # has media type, MOV
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3038)) # has media type, MKV
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3039)) # has media type, ZIP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3040)) # has media type, DWG
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3041)) # has media type, DXF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3050)) # has media type, 3DS
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3052)) # has media type, STL
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3054)) # has media type, XLSX
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3055)) # has media type, PDF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3057)) # has media type, ODT
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3059)) # has media type, ODS
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3061)) # has media type, ODP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3062)) # has media type, OTT
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3064)) # has media type, OTF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3066)) # has media type, OTP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3068)) # has media type, ODF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3069)) # has media type, PPT
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3070)) # has media type, PPTX
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3071)) # has media type, PDF/A
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3073)) # has media type, SXC
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3075)) # has media type, SXI
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3077)) # has media type, SXW
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3079)) # has media type, HTML
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3081)) # has media type, XML
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3083)) # has media type, WARC
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3085)) # has media type, SQL
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3087)) # has media type, JSON
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3114)) # has media type, MP4
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E3116)) # has media type, webdvd.zip
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6073)) # has media type, VTT
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6392)) # has media type, WebP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6440)) # has media type, MXF
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6443)) # has media type, SIARD
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6445)) # has media type, DPX
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6447)) # has media type, GZIP
+            #self.rdf.add((self.element_uri.rdflib(), NFDICORE.NFDI_0000146, N4C.E6449)) # has media type, GLTF
 
             # RIGHTS URIS
 
