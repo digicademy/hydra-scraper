@@ -698,7 +698,7 @@ def type_identifier(identifier:URIRef) -> URIRef|None:
     elif identifier in DOI:
         return NFDICORE.NFDI_0001037 # digital object identifier
     elif identifier in TGN:
-        return NFDICORE.NFDI_XXXXXX1 # TGN identifier TODO This is currently a non-standard type
+        return NFDICORE.NFDI_0001055 # TGN identifier
     else:
         return None
 
