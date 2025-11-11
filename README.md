@@ -77,7 +77,7 @@ additional options:
 - `-ac` or `-add_catalog <uri>`: URI of a data catalog the data feed belongs to
 - `-ap` or `-add_publisher <uri>`: URI of the data publisher
 - `-c` or `--clean <string> <string>`: strings to remove from feed element URIs to build their file names
-- `-p` or `--prepare <string> <string> <string>`: prepare cto output for this NFDI4Culture feed and catalog ID, dismiss license check optionally by adding 'no_license_check'
+- `-p` or `--prepare <string> <string> <string>`: prepare cto output for this NFDI4Culture feed and catalog ID, optionally disable feed element license checks via `no-license-check` as a third argument
 - `-bu` or `--ba_username <string>`: Basic Auth username for requests
 - `-bp` or `--ba_password <string>`: Basic Auth password for requests
 - `-q` or `--quiet`: do not display status messages
