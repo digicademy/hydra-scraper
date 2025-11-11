@@ -185,8 +185,8 @@ class Organise:
             '-p', '--prepare',
             default = None,
             type = str,
-            nargs = 2,
-            help = 'Prepare cto output for this NFDI4Culture feed and catalog ID'
+            nargs = '+',
+            help = 'Prepare cto output for this NFDI4Culture feed and catalog ID, optionally disable license check by adding "no_license_check".'
         )
         available_args.add_argument(
             '-bu', '--ba_username',
@@ -245,6 +245,13 @@ class Organise:
         if not self.elements:
             if 'beacon' in self.output or 'csv' in self.output or 'cto' in self.output or 'cto3' in self.output:
                 raise ValueError('Hydra Scraper called with extraction routine but no element markup.')
+
+        # Check given arguments in prepare
+        if self.prepare != None:
+            if len(self.prepare) < 2 or (len(self.prepare) == 2 and 'no_license_check' in self.prepare[:2]):
+                raise ValueError('Hydra Scraper expects NFDI4Culture feed and catalog ID in prepare. "no_license_check" can optionally be added as the third argument.')
+            elif len(self.prepare) == 3 and self.prepare[2] != 'no_license_check':
+                raise ValueError('Hydra Scraper expects "no_license_check" as the optional third argument in prepare.')
 
         # Check Basic Auth data
         if self.ba_username != None and self.ba_password == None:

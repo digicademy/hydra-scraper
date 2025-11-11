@@ -46,7 +46,7 @@ class Feed(MapFeedInterface):
         Generate nfdicore/cto-style feed triples and fill the store attribute
 
             Parameters:
-                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID, disable license check optionally by adding 'no_license_check'.
         '''
 
         # Check requirements
@@ -56,7 +56,7 @@ class Feed(MapFeedInterface):
             self.rdf = namespaces()
 
             # Feed URI
-            if prepare != None and len(prepare) == 2:
+            if prepare != None and len(prepare) >= 2:
                 feed_uri = URIRef(str(N4C) + prepare[0])
             else:
                 feed_uri = self.feed_uri.rdflib()
@@ -71,13 +71,13 @@ class Feed(MapFeedInterface):
                 self.rdf.add((feed_uri, SCHEMA.dateModified, Literal(str(today.isoformat()), datatype = XSD.date)))
 
             # Same as feed URI
-            if prepare != None and len(prepare) == 2:
+            if prepare != None and len(prepare) >= 2:
                 self.rdf.add((feed_uri, OWL.sameAs, self.feed_uri.rdflib()))
             for i in self.feed_uri_same.rdflib():
                 self.rdf.add((feed_uri, OWL.sameAs, i))
 
             # Catalog URI
-            if prepare != None and len(prepare) == 2:
+            if prepare != None and len(prepare) >= 2:
                 catalog_uri = URIRef(str(N4C) + prepare[1])
             else:
                 catalog_uri = self.catalog_uri.rdflib()
@@ -87,7 +87,7 @@ class Feed(MapFeedInterface):
                 self.rdf.add((catalog_uri, NFDICORE.dataset, feed_uri))
 
                 # Same as catalog URI
-                if prepare != None and len(prepare) == 2:
+                if prepare != None and len(prepare) >= 2:
                     self.rdf.add((catalog_uri, OWL.sameAs, self.catalog_uri.rdflib()))
                 for i in self.catalog_uri_same.rdflib():
                     self.rdf.add((catalog_uri, OWL.sameAs, i))
@@ -111,7 +111,7 @@ class FeedElement(MapFeedElementInterface):
         Generate nfdicore/cto-style feed element triples and fill the store attribute
 
             Parameters:
-                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID, disable license check optionally by adding 'no_license_check'.
         '''
 
         # Check requirements
@@ -119,13 +119,15 @@ class FeedElement(MapFeedElementInterface):
             logger.error('Feed element URI missing')
         elif not self.feed_uri:
             logger.error('Feed URI missing')
+        elif not self.license and len(prepare) == 2:
+            logger.warning(f'No license attached to the feed element {self.element_uri}.')
         else:
             self.rdf = namespaces()
 
             # ELEMENT
 
             # Feed URI
-            if prepare != None and len(prepare) == 2:
+            if prepare != None and len(prepare) >= 2:
                 feed_uri = URIRef(str(N4C) + prepare[0])
             else:
                 feed_uri = self.feed_uri.rdflib()
@@ -177,7 +179,7 @@ class FeedElement(MapFeedElementInterface):
                 self.rdf.add((self.element_uri.rdflib(), RDF.type, CTO.Item))
 
             # Optional wrapper
-            if prepare != None and len(prepare) == 2:
+            if prepare != None and len(prepare) >= 2:
                 wrapper = element_ark(self.element_uri.text(), prepare[0])
                 self.rdf.add((feed_uri, SCHEMA.dataFeedElement, wrapper))
                 self.rdf.add((wrapper, RDF.type, SCHEMA.DataFeedItem))
