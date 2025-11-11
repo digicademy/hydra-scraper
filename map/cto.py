@@ -46,7 +46,7 @@ class Feed(MapFeedInterface):
         Generate nfdicore/cto-style feed triples and fill the store attribute
 
             Parameters:
-                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID, disable license check optionally by adding 'no_license_check'.
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID, optionally disable feed element license checks via no-license-check as a third argument
         '''
 
         # Check requirements
@@ -111,7 +111,7 @@ class FeedElement(MapFeedElementInterface):
         Generate nfdicore/cto-style feed element triples and fill the store attribute
 
             Parameters:
-                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID, disable license check optionally by adding 'no_license_check'.
+                prepare (list|None): Prepare cto output for this NFDI4Culture feed and catalog ID, optionally disable feed element license checks via no-license-check as a third argument
         '''
 
         # Check requirements
@@ -119,8 +119,8 @@ class FeedElement(MapFeedElementInterface):
             logger.error('Feed element URI missing')
         elif not self.feed_uri:
             logger.error('Feed URI missing')
-        elif not self.license and len(prepare) == 2:
-            logger.warning(f'No license attached to the feed element {self.element_uri}.')
+        elif len(prepare) == 2 and not self.license:
+            logger.warning('No license attached to feed element')
         else:
             self.rdf = namespaces()
 
