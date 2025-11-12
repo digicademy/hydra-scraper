@@ -224,7 +224,7 @@ class FeedElement(ExtractFeedElementInterface):
 
                     # Media byline (use dedicated property or, alternatively, author or creator)
                     if self.media:
-                        self.media.byline = LabelList(self.rdf_all_objects(self.media.uri.rdflib(), [SCHEMA.creditText, SDO.creditText]))
+                        self.media.byline = LabelList(self.rdf_all_objects(self.media.uri.rdflib(), [SCHEMA.creditText, SDO.creditText, SCHEMA.copyrightNotice, SDO.copyrightNotice]))
                         if not self.media.byline:
                             self.media.byline = LabelList(self.rdf_all_objects(self.media.uri.rdflib(), [SCHEMA.author, SDO.author]))
                         if not self.media.byline:
