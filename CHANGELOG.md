@@ -4,6 +4,7 @@
 
 - Increase request timeout to account for slow APIs (from 0.5 min to 3 min)
 - Make media file retrieval more efficient and robust
+- More precise CGIF/schema.org media type recognition
 - Further improvements to NFDIcore/CTO v3 mapping
 - Require licenses in NFDIcore/CTO feed elements with optional third `prepare` argument to disable the requirement (contributed by @lsoehn)
 

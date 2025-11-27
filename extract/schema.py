@@ -195,7 +195,7 @@ class FeedElement(ExtractFeedElementInterface):
                     # Shelf mark (if CTO v2 or v3 used in schema.org)
                     self.shelf_mark = LabelList(self.rdf_all_objects(self.element_uri.rdflib(), [CTO2.shelfMark, CTO3.CTO_0001068])) # has shelf mark
 
-                    # Media
+                    # Media (check properties, or media RDF type, or element RDF type)
                     self.media = Media(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.image, SDO.image]), type = 'image')
                     if not self.media:
                         self.media = Media(self.rdf_first_object(self.element_uri.rdflib(), [SCHEMA.audio, SDO.audio]), type = 'audio')
@@ -210,6 +210,13 @@ class FeedElement(ExtractFeedElementInterface):
                                 self.media.type = 'audio'
                             #if self.rdf_first_object(mself.media.uri.rdflib(), RDF.type) in [SCHEMA.VideoObject, SDO.VideoObject, SCHEMA.VideoObjectSnapshot, SDO.VideoObjectSnapshot, SCHEMA.MusicVideoObject, SDO.MusicVideoObject]:
                                 #self.media.type = 'video'
+                            if not self.media.type:
+                                if self.element_type.rdflib() in [SCHEMA.ImageObject, SDO.ImageObject, SCHEMA.ImageObjectSnapshot, SDO.ImageObjectSnapshot, SCHEMA.Barcode, SDO.Barcode]:
+                                    self.media.type = 'image'
+                                if self.element_type.rdflib() in [SCHEMA.AudioObject, SDO.AudioObject, SCHEMA.AudioObjectSnapshot, SDO.AudioObjectSnapshot, SCHEMA.Audiobook, SDO.Audiobook]:
+                                    self.media.type = 'audio'
+                                #if self.element_type.rdflib() in [SCHEMA.VideoObject, SDO.VideoObject, SCHEMA.VideoObjectSnapshot, SDO.VideoObjectSnapshot, SCHEMA.MusicVideoObject, SDO.MusicVideoObject]:
+                                    #self.media.type = 'video'
 
                     # Media license
                     if self.media:
