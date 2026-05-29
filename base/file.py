@@ -130,7 +130,10 @@ class File:
                             self.location = str(r.url)
 
                         # Store and clean content type
-                        self.content_type = r.headers['Content-Type']
+                        if not 'Content-Type' in r.headers:
+                            logger.warning('Response without content-type header at ' + self.location)
+                        else:
+                            self.content_type = r.headers['Content-Type']
                         self.content_type.replace('; charset=UTF-8', '')
                         self.content_type.replace('; charset=utf-8', '')
                         self.content_type.replace(';charset=UTF-8', '')
