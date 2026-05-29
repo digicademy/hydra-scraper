@@ -76,6 +76,7 @@ additional options:
 - `-af` or `-add_feed <uri>`: URI of a data feed to bind members to
 - `-ac` or `-add_catalog <uri>`: URI of a data catalog the data feed belongs to
 - `-ap` or `-add_publisher <uri>`: URI of the data publisher
+- `-at` or `-add_type <uri>`: URI identifying a type to apply to feed elements
 - `-c` or `--clean <string> <string>`: strings to remove from feed element URIs to build their file names
 - `-p` or `--prepare <string> <string> <string>`: prepare cto output for this NFDI4Culture feed and catalog ID, optionally disable feed element license checks via `no-license-check` as a third argument
 - `-bu` or `--ba_username <string>`: Basic Auth username for requests
@@ -128,22 +129,22 @@ NFDIcore/CTO triples from a local **folder containing CGIF/schema.org files**:
 python go.py -l downloads/n4c-cgif/files -f folder -e schema -o cto -n n4c-cgif-folder -p E5308 E4229
 ```
 
-NFDIcore/CTO triples from a local or remote **Beacon-like feed of LIDO files** (feed URI added because it is not in the data):
+NFDIcore/CTO triples from a local or remote **Beacon-like feed of LIDO files** (feed URI added because it is not in the data, type URI added to make it more specific than the LIDO preset `CreativeWork`):
 
 ```bash
-python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308 E4229
+python go.py -l downloads/n4c-cgif/beacon.txt -f beacon -e lido -o cto -n n4c-lido -a /about.lido -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308 E4229 -at http://schema.org/VisualArtwork
 ```
 
-NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files**:
+NFDIcore/CTO triples from a local or remote **ZIP file containing LIDO files** (type URI added to make it more specific than the LIDO preset `CreativeWork`):
 
 ```bash
-python go.py -l downloads/n4c-bildindex.zip -f folder -e lido -o cto -n n4c-bildindex -af https://www.bildindex.de/ete?action=objectMode -ac https://www.bildindex.de/ -p E6161 E2916
+python go.py -l downloads/n4c-bildindex.zip -f folder -e lido -o cto -n n4c-bildindex -af https://www.bildindex.de/ete?action=objectMode -ac https://www.bildindex.de/ -p E6161 E2916 -at http://schema.org/VisualArtwork
 ```
 
-NFDIcore/CTO triples from a local **folder containing LIDO files**:
+NFDIcore/CTO triples from a local **folder containing LIDO files** (type URI added to make it more specific than the LIDO preset `CreativeWork`):
 
 ```bash
-python go.py -l downloads/n4c-lido/files -f folder -e lido -o cto -n n4c-lido-folder -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308 E4229
+python go.py -l downloads/n4c-lido/files -f folder -e lido -o cto -n n4c-lido-folder -af https://corpusvitrearum.de/cvma-digital/bildarchiv.html -p E5308 E4229 -at http://schema.org/VisualArtwork
 ```
 
 ### Corpus Vitrearum Germany
@@ -178,10 +179,10 @@ Beacon, CSV table, NFDIcore/CTO, files, and triples from **CGIF/schema.org (API)
 python go.py -l https://corpusvitrearum.de/id/about.cgif -f schema -e schema -o beacon csv cto files triples -n cvma-cgif-api -p E5308 E4229
 ```
 
-Beacon, CSV table, NFDIcore/CTO, and files from **LIDO** data:
+Beacon, CSV table, NFDIcore/CTO, and files from **LIDO** data (type URI added to make it more specific than the LIDO preset `CreativeWork`):
 
 ```bash
-python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema-list -e lido -o beacon csv cto files -n cvma-lido -a /about.lido -c https://corpusvitrearum.de/id/ /about.lido
+python go.py -l https://corpusvitrearum.de/cvma-digital/bildarchiv.html -f schema-list -e lido -o beacon csv cto files -n cvma-lido -a /about.lido -c https://corpusvitrearum.de/id/ /about.lido -at http://schema.org/VisualArtwork
 ```
 
 ## Contributing

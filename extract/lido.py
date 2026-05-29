@@ -44,7 +44,7 @@ class FeedElement(ExtractFeedElementInterface):
             self.element_uri_same = UriList(self.xml_all_texts('.//{L}lido/objectPublishedID'))
 
             # Element type
-            self.element_type = Uri(SCHEMA.VisualArtwork)
+            self.element_type = Uri(SCHEMA.CreativeWork)
 
             # Element type shorthand
             self.element_type_short = 'item'

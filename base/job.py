@@ -69,7 +69,7 @@ class Job:
             # Get feed
             status.done()
             status = Progress('Retrieving feed no. ' + str(feed_index) + ' and extracting data', self.organise.quiet)
-            feed_file = File(feed_uri, ba_username = self.organise.ba_username, ba_password = self.organise.ba_password)
+            feed_file = File(feed_uri, self.organise.dialect, ba_username = self.organise.ba_username, ba_password = self.organise.ba_password)
             if feed_file.request_time:
                 self.last_request = feed_file.request_time
 
@@ -95,11 +95,20 @@ class Job:
                 break
             else:
 
-                # Alter data if requested
+                # Alter feed data if requested
                 if self.organise.add_feed:
                     feed_data.feed_uri = Uri(self.organise.add_feed)
                 if self.organise.add_catalog:
                     feed_data.catalog_uri = Uri(self.organise.add_catalog)
+
+                # Alter element data if requested
+                for element_data in feed_data.feed_elements:
+                    if self.organise.add_feed:
+                        element_data.feed_uri = Uri(self.organise.add_feed)
+                    if self.organise.add_publisher:
+                        element_data.publisher = UriList(self.organise.add_publisher)
+                    if self.organise.add_type:
+                        element_data.element_type = Uri(self.organise.add_type)
 
                 # Alter element URIs
                 if self.organise.include:
@@ -272,6 +281,8 @@ class Job:
                                     element_data.feed_uri = Uri(self.organise.add_feed)
                                 if self.organise.add_publisher:
                                     element_data.publisher = UriList(self.organise.add_publisher)
+                                if self.organise.add_type:
+                                    element_data.element_type = Uri(self.organise.add_type)
 
                                 # Reconcile data
                                 if 'csv' in self.organise.output or 'cto' in self.organise.output or 'cto3' in self.organise.output:

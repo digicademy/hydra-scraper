@@ -62,6 +62,7 @@ class Organise:
         self.add_feed:str|None = None
         self.add_catalog:str|None = None
         self.add_publisher:str|None = None
+        self.add_type:str|None = None
         self.clean:list|None = None
         self.prepare:list|None = None
         self.ba_username:str|None = None
@@ -175,6 +176,12 @@ class Organise:
             help = 'URI of the data publisher'
         )
         available_args.add_argument(
+            '-at', '--add_type',
+            default = None,
+            type = str,
+            help = 'URI identifying a type to apply to feed elements'
+        )
+        available_args.add_argument(
             '-c', '--clean',
             default = None,
             type = str,
@@ -224,6 +231,7 @@ class Organise:
         self.add_feed = args.add_feed
         self.add_catalog = args.add_catalog
         self.add_publisher = args.add_publisher
+        self.add_type = args.add_type
         self.clean = args.clean
         self.prepare = args.prepare
         self.ba_username = args.ba_username
@@ -260,7 +268,7 @@ class Organise:
             raise ValueError('Hydra Scraper called with Basic Auth password but no username.')
 
         # Check further URIs
-        for uri in [self.add_feed, self.add_catalog, self.add_publisher]:
+        for uri in [self.add_feed, self.add_catalog, self.add_publisher, self.add_type]:
             if uri != None and not url(uri):
                 raise ValueError('Hydra Scraper called with a malformed URI to add.')
 

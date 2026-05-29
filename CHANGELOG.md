@@ -7,6 +7,9 @@
 - More precise CGIF/schema.org media type recognition
 - Further improvements to NFDIcore/CTO v3 mapping
 - Require licenses in NFDIcore/CTO feed elements with optional third `prepare` argument to disable the requirement (contributed by @lsoehn)
+- Add option to overwrite the element type of entire feeds
+- Generalise standard element type of LIDO data from visual artwork to creative work
+- Log if `Content-Type` header is missing in server response
 
 ## 0.9.5
 
