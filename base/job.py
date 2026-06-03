@@ -529,7 +529,7 @@ def combine_triples(folder:str, file_path:str, use_ntriples:bool = False):
         else:
             rdf_format = RdfFormat.TURTLE
         for path in paths:
-            rdf.load(path = path, format = rdf_format, to_graph = DefaultGraph())
+            rdf.load(path = path, format = rdf_format, to_graph = DefaultGraph(), lenient = True)
         rdf.dump(output = file_path, format = rdf_format, from_graph = DefaultGraph())
 
     # Parse and save using rdflib (slow and pretty, hogs more memory)
