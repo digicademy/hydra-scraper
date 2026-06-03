@@ -10,6 +10,8 @@
 - Add option to overwrite the element type of entire feeds
 - Generalise standard element type of LIDO data from visual artwork to creative work
 - Log if `Content-Type` header is missing in server response
+- Turn off strict IRI check that only affects large datasets
+- Raise `pyoxigraph` dependency to at least version `0.5.0`
 
 ## 0.9.5
 
