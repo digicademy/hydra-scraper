@@ -236,7 +236,18 @@ class FeedElement(ExtractFeedElementInterface):
                 'Creation',
                 'production',
                 'Production',
-                'Herstellung'
+                'Herstellung',
+                'Created',
+                'Painted',
+                'Image taken',
+                'Printing plate produced',
+                'Drawn',
+                'Copied (by hand)',
+                'Printed',
+                'Recorded',
+                'Sung',
+                'Decor designed',
+                'Modelled'
             ]
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
             if events != None:
@@ -280,7 +291,8 @@ class FeedElement(ExtractFeedElementInterface):
                 'loss',
                 'Verlust',
                 'Zerstörung',
-                'Verlust'
+                'Verlust',
+                'Destroyed'
             ]
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
             if events != None:
