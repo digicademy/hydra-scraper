@@ -174,7 +174,7 @@ class FeedElement(ExtractFeedElementInterface):
                 if repo_location is not None:
                     vocab_related_location += repo_location
             for id_type in id_types:
-                event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace/{L}place'), './/{L}placeID[@{L}type="' + id_type + '"]', './/{L}displayPlace', True)
+                event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace'), './{L}place/{L}placeID[@{L}type="' + id_type + '"]', './{L}displayPlace', True)
                 if event_locations is not None:
                     vocab_related_location += event_locations
             for id_type in id_types:
