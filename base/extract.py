@@ -537,8 +537,9 @@ class ExtractInterface:
                         elif element_label_text != '':
                             element_label = element_label_text
 
-                # Add tuple to ouput
-                output.append((element_uri, element_label))
+                # Add tuple to output only if URI and label exist
+                if element_uri is not None and element_label is not None:
+                    output.append((element_uri, element_label))
 
             # Return result
             if len(output) > 0:
