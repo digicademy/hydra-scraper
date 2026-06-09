@@ -170,7 +170,7 @@ class FeedElement(ExtractFeedElementInterface):
             # Vocabulary: related location (three distinct nodes)
             vocab_related_location = []
             for id_type in id_types:
-                repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), './/{L}placeID[@{L}type="' + id_type + '"]', './/{L}namePlaceSet/{L}appellationValue')
+                repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), './{L}placeID[@{L}type="' + id_type + '"]', './{L}namePlaceSet/{L}appellationValue')
                 if repo_location is not None:
                     vocab_related_location += repo_location
             for id_type in id_types:
