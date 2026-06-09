@@ -169,6 +169,9 @@ class FeedElement(ExtractFeedElementInterface):
             event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace/{L}place'), './/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}displayPlace', True)
             if event_locations != None:
                 vocab_related_location += event_locations
+            subject_locations = self.xml_uri_label(self.xml_all_elements('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectPlace'), './/{L}place/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}displayPlace', True)
+            if subject_locations != None:
+                vocab_related_location += subject_locations
             self.vocab_related_location = UriLabelList(list(set(vocab_related_location)))
 
             # Vocabulary: related event
