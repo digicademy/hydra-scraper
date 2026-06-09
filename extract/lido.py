@@ -161,7 +161,7 @@ class FeedElement(ExtractFeedElementInterface):
                 './/{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectConcept',
             ]))
 
-            # Vocabulary: related location (two distinct nodes)
+            # Vocabulary: related location (three distinct nodes)
             vocab_related_location = []
             repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), './/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './/{L}namePlaceSet/{L}appellationValue')
             if repo_location != None:
