@@ -200,6 +200,10 @@ class FeedElement(ExtractFeedElementInterface):
                 person = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00163"]'), './/{L}actorID[@{L}type="' + id_type + '"]', './/{L}nameActorSet/{L}appellationValue', True)
                 if person is not None:
                     vocab_related_person += person
+            for id_type in id_types:
+                subject_persons = self.xml_uri_label(self.xml_all_elements('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectActor'), './/{L}actor/{L}actorID[@{L}type="' + id_type + '"]', './/{L}displayActor', True)
+                if subject_persons is not None:
+                    vocab_related_person += subject_persons
             self.vocab_related_person = UriLabelList(list(set(vocab_related_person)))
 
             # Further vocabulary terms
