@@ -12,6 +12,7 @@ from datetime import date
 from hashlib import sha256
 from rdflib import Graph, Namespace
 from rdflib.term import BNode, Literal, URIRef
+from collections import defaultdict
 
 # Import script modules
 from base.map import MapFeedInterface, MapFeedElementInterface
@@ -470,18 +471,25 @@ class FeedElement(MapFeedElementInterface):
                                 self.rdf.add((i[0], RDFS.label, e))
 
             # Related location
+            related_locations_by_label = defaultdict(list)
             for i in self.vocab_related_location.rdflib():
-                if i[0]:
+                if i[0] and i[1]:
+                    related_locations_by_label[str(i[1])].append(i)
+
+            for label_key, entries in related_locations_by_label.items():
+                related_location = None
+                for i in entries:
                     related_location_type = type_identifier(i[0])
                     if related_location_type:
-                        related_location = BNode() # TODO This is supposed to be an ARK ID per location, which requires a look-up service
-                        self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001011, related_location)) # has related location
-                        self.rdf.add((related_location, RDF.type, NFDICORE.NFDI_0000005)) # place
-                        self.rdf.add((related_location, NFDICORE.NFDI_0001006, i[0])) # has external identifier
+                        if related_location is None:
+                            related_location = BNode()
+                            self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001011, related_location))
+                            self.rdf.add((related_location, RDF.type, NFDICORE.NFDI_0000005))
+                            if i[1]:
+                                for e in i[1]:
+                                    self.rdf.add((related_location, RDFS.label, e))
+                        self.rdf.add((related_location, NFDICORE.NFDI_0001006, i[0]))
                         self.rdf.add((i[0], RDF.type, related_location_type))
-                        if i[1]:
-                            for e in i[1]:
-                                self.rdf.add((related_location, RDFS.label, e))
 
             # Related event
             for i in self.vocab_related_event.rdflib():
