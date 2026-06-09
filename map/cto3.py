@@ -520,18 +520,25 @@ class FeedElement(MapFeedElementInterface):
                         self.rdf.add((related_organization, RDFS.label, e))
 
             # Related person
+            related_persons_by_label = defaultdict(list)
             for i in self.vocab_related_person.rdflib():
-                related_person = BNode() # TODO This is supposed to be an ARK ID per person, which requires a look-up service
-                self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001009, related_person)) # has related person
-                self.rdf.add((related_person, RDF.type, NFDICORE.NFDI_0000004)) # person
-                if i[0]:
+                if i[0] and i[1]:
+                    related_persons_by_label[str(i[1])].append(i)
+
+            for label_key, entries in related_persons_by_label.items():
+                related_person = None
+                for i in entries:
                     related_person_type = type_identifier(i[0])
                     if related_person_type:
+                        if related_person is None:
+                            related_person = BNode() # TODO This is supposed to be an ARK ID per person, which requires a look-up service
+                            self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001009, related_person)) # has related person
+                            self.rdf.add((related_person, RDF.type, NFDICORE.NFDI_0000004)) # person
+                            if i[1]:
+                                for e in i[1]:
+                                    self.rdf.add((related_person, RDFS.label, e))
                         self.rdf.add((related_person, NFDICORE.NFDI_0001006, i[0])) # has external identifier
                         self.rdf.add((i[0], RDF.type, related_person_type))
-                if i[1]:
-                    for e in i[1]:
-                        self.rdf.add((related_person, RDFS.label, e))
 
             # Related item
             for i in self.related_item.rdflib():
