@@ -521,8 +521,8 @@ class ExtractInterface:
                 elements = [elements]
             for element in elements:
 
-                # Element URI
-                element_uri = element.findtext(uri)
+                # Element URIs: collect all matching URIs
+                element_uris = [el.text for el in element.findall(uri) if el.text]
 
                 # Element label
                 element_label = element.find(label)
@@ -537,9 +537,10 @@ class ExtractInterface:
                         elif element_label_text != '':
                             element_label = element_label_text
 
-                # Add tuple to output only if URI and label exist
-                if element_uri is not None and element_label is not None:
-                    output.append((element_uri, element_label))
+                # Add a tuple per URI only if URI and label exist
+                for element_uri in element_uris:
+                    if element_uri is not None and element_label is not None:
+                        output.append((element_uri, element_label))
 
             # Return result
             if len(output) > 0:
