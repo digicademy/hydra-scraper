@@ -9,6 +9,8 @@
 - Require licenses in NFDIcore/CTO feed elements with optional third `prepare` argument to disable the requirement (contributed by @lsoehn)
 - Add option to overwrite the element type of entire feeds
 - Generalise standard element type of LIDO data from visual artwork to creative work
+- Further improve LIDO data extraction (contributed by @lsoehn)
+- Automatically remove duplicates in list data types
 - Log if `Content-Type` header is missing in server response
 - Turn off strict IRI check that only affects large datasets
 - Raise `pyoxigraph` dependency to at least version `0.5.0`
