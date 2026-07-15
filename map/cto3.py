@@ -482,13 +482,13 @@ class FeedElement(MapFeedElementInterface):
                     related_location_type = type_identifier(i[0])
                     if related_location_type:
                         if related_location is None:
-                            related_location = BNode()
-                            self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001011, related_location))
-                            self.rdf.add((related_location, RDF.type, NFDICORE.NFDI_0000005))
+                            related_location = BNode() # TODO This is supposed to be an ARK ID per location, which requires a look-up service
+                            self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001011, related_location)) # has related location
+                            self.rdf.add((related_location, RDF.type, NFDICORE.NFDI_0000005)) # place
                             if i[1]:
                                 for e in i[1]:
                                     self.rdf.add((related_location, RDFS.label, e))
-                        self.rdf.add((related_location, NFDICORE.NFDI_0001006, i[0]))
+                        self.rdf.add((related_location, NFDICORE.NFDI_0001006, i[0])) # has external identifier
                         self.rdf.add((i[0], RDF.type, related_location_type))
 
             # Related event
