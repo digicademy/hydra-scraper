@@ -33,12 +33,6 @@ class FeedElement(ExtractFeedElementInterface):
             self.success = False
         else:
 
-            # Supported type attribute values for external identifiers
-            id_types = [
-                'http://terminology.lido-schema.org/lido00099',
-                'uri',
-            ]
-
             # Feed URI
             #self.feed_uri = 
 
@@ -169,42 +163,32 @@ class FeedElement(ExtractFeedElementInterface):
 
             # Vocabulary: related location (three distinct nodes)
             vocab_related_location = []
-            for id_type in id_types:
-                repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), './{L}placeID[@{L}type="' + id_type + '"]', './{L}namePlaceSet/{L}appellationValue')
-                if repo_location is not None:
-                    vocab_related_location += repo_location
-            for id_type in id_types:
-                event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace'), './{L}place/{L}placeID[@{L}type="' + id_type + '"]', './{L}displayPlace', True)
-                if event_locations is not None:
-                    vocab_related_location += event_locations
-            for id_type in id_types:
-                subject_locations = self.xml_uri_label(self.xml_all_elements('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectPlace'), './/{L}place/{L}placeID[@{L}type="' + id_type + '"]', './/{L}displayPlace', True)
-                if subject_locations is not None:
-                    vocab_related_location += subject_locations
-            self.vocab_related_location = UriLabelList(list(set(vocab_related_location)))
+            repo_location = self.xml_uri_label(self.xml_first_element('.//{L}objectIdentificationWrap/{L}repositoryWrap/{L}repositorySet/{L}repositoryLocation'), ['./{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './{L}placeID[@{L}type="uri"]'], './{L}namePlaceSet/{L}appellationValue')
+            if repo_location != None:
+                vocab_related_location += repo_location
+            event_locations = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventPlace'), ['./{L}place/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './{L}place/{L}placeID[@{L}type="uri"]'], ['./{L}displayPlace', './{L}place/{L}namePlaceSet/{L}appellationValue'], True)
+            if event_locations != None:
+                vocab_related_location += event_locations
+            subject_locations = self.xml_uri_label(self.xml_all_elements('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectPlace'), ['./{L}place/{L}placeID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './{L}place/{L}placeID[@{L}type="uri"]'], ['./{L}displayPlace', './{L}place/{L}namePlaceSet/{L}appellationValue'], True)
+            if subject_locations != None:
+                vocab_related_location += subject_locations
+            self.vocab_related_location = UriLabelList(vocab_related_location)
 
             # Vocabulary: related event
             #self.vocab_related_event = 
 
             # Vocabulary: related organization
-            vocab_related_organization = []
-            for id_type in id_types:
-                org = self.xml_uri_label(self.xml_all_elements(['.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00165"]', './/{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00166"]', './/{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00413"]']), './/{L}actorID[@{L}type="' + id_type + '"]', './/{L}nameActorSet/{L}appellationValue', True)
-                if org is not None:
-                    vocab_related_organization += org
-            self.vocab_related_organization = UriLabelList(list(set(vocab_related_organization)))
+            self.vocab_related_organization = UriLabelList(self.xml_uri_label(self.xml_all_elements(['.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00165"]', './/{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00166"]', './/{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00413"]']), ['./{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './{L}actorID[@{L}type="uri"]'], './{L}nameActorSet/{L}appellationValue', True))
 
             # Vocabulary: related person
             vocab_related_person = []
-            for id_type in id_types:
-                person = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00163"]'), './/{L}actorID[@{L}type="' + id_type + '"]', './/{L}nameActorSet/{L}appellationValue', True)
-                if person is not None:
-                    vocab_related_person += person
-            for id_type in id_types:
-                subject_persons = self.xml_uri_label(self.xml_all_elements('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectActor'), './/{L}actor/{L}actorID[@{L}type="' + id_type + '"]', './/{L}displayActor', True)
-                if subject_persons is not None:
-                    vocab_related_person += subject_persons
-            self.vocab_related_person = UriLabelList(list(set(vocab_related_person)))
+            person = self.xml_uri_label(self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventActor/{L}actorInRole/{L}actor[@{L}type="http://terminology.lido-schema.org/lido00163"]'), ['./{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './{L}actorID[@{L}type="uri"]'], './{L}nameActorSet/{L}appellationValue', True)
+            if person != None:
+                vocab_related_person += person
+            subject_person = self.xml_uri_label(self.xml_all_elements('.//{L}objectRelationWrap/{L}subjectWrap/{L}subjectSet/{L}subject/{L}subjectActor'), ['./{L}actor/{L}actorID[@{L}type="http://terminology.lido-schema.org/lido00099"]', './{L}actor/{L}actorID[@{L}type="uri"]'], './{L}displayActor', True)
+            if subject_person != None:
+                vocab_related_person += subject_person
+            self.vocab_related_person = UriLabelList(vocab_related_person)
 
             # Further vocabulary terms
             self.vocab_further = UriLabelList(self.xml_all_lido_concepts('.//{L}objectIdentificationWrap/{L}objectMaterialsTechWrap/{L}objectMaterialsTechSet/{L}materialsTech/{L}termMaterialsTech'))
@@ -247,7 +231,7 @@ class FeedElement(ExtractFeedElementInterface):
                 'Recorded',
                 'Sung',
                 'Decor designed',
-                'Modelled'
+                'Modelled',
             ]
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
             if events != None:
@@ -291,7 +275,6 @@ class FeedElement(ExtractFeedElementInterface):
                 'loss',
                 'Verlust',
                 'Zerstörung',
-                'Verlust',
                 'Destroyed'
             ]
             events = self.xml_all_elements('.//{L}eventWrap/{L}eventSet/{L}event/{L}eventType/{L}term')
