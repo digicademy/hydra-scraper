@@ -158,6 +158,9 @@ class UriList:
                 if uri:
                     self.uris.append(uri)
 
+        # Remove duplicates
+        self.uris = list(set(self.uris))
+
 
     def __bool__(self) -> bool:
         '''
@@ -358,6 +361,9 @@ class LabelList:
                 if label:
                     self.labels.append(label)
 
+        # Remove duplicates
+        self.labels = list(set(self.labels))
+
 
     def __bool__(self) -> bool:
         '''
@@ -551,6 +557,9 @@ class UriLabelList:
                 uri_label = UriLabel(combined = uri_label)
                 if uri_label:
                     self.uri_labels.append(uri_label)
+
+        # Remove duplicates
+        self.uri_labels = list(set(self.uri_labels))
 
 
     def __bool__(self) -> bool:
@@ -780,6 +789,9 @@ class DateList:
                 single_date = Date(single_date)
                 if single_date:
                     self.dates.append(single_date)
+
+        # Remove duplicates
+        self.dates = list(set(self.dates))
 
 
     def __bool__(self) -> bool:

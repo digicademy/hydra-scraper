@@ -496,14 +496,14 @@ class ExtractInterface:
             return None
 
 
-    def xml_uri_label(self, elements:any, uri:str, label:str, is_generator:bool = False) -> list|None:
+    def xml_uri_label(self, elements:any, uri:str|list, label:str|list, is_generator:bool = False) -> list|None:
         '''
-        Retrieve a URI and its label
+        Retrieve URI and their label
 
             Parameters:
                 elements (any): Elements containing URI and label
-                uri (str): Element path to retrieve the URI
-                label (str): Element path to retrieve the label
+                uri (str|list): Element path to retrieve the URI
+                label (str|list): Element path to retrieve the corresponding label
                 is_generator (bool): Indicates whether the elements are a generator
 
             Returns:
@@ -511,8 +511,12 @@ class ExtractInterface:
         '''
 
         # Clean up paths
-        uri = self.xml_paths(uri)
-        label = self.xml_paths(label)
+        if isinstance(uri, str):
+            uri = [uri]
+        uri = [self.xml_paths(u) for u in uri]
+        if isinstance(label, str):
+            label = [label]
+        label = [self.xml_paths(l) for l in label]
 
         # Unify elements
         output = []
@@ -521,11 +525,15 @@ class ExtractInterface:
                 elements = [elements]
             for element in elements:
 
-                # Element URIs: collect all matching URIs
-                element_uris = [el.text for el in element.findall(uri) if el.text]
+                # Element URIs
+                element_uris = []
+                for u in uri:
+                    element_uris += [e.text for e in element.findall(u) if e.text]
 
                 # Element label
-                element_label = element.find(label)
+                element_label = None
+                for l in label:
+                    element_label = element.find(l)
                 if element_label != None:
                     element_label_text = element_label.xpath('normalize-space(string())')
                     if element_label_text != '':
@@ -537,9 +545,9 @@ class ExtractInterface:
                         elif element_label_text != '':
                             element_label = element_label_text
 
-                # Add a tuple per URI only if URI and label exist
+                # Add tuple per URI if URI and label exist
                 for element_uri in element_uris:
-                    if element_uri is not None and element_label is not None:
+                    if element_uri != None and element_label != None:
                         output.append((element_uri, element_label))
 
             # Return result
