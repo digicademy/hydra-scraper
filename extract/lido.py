@@ -95,14 +95,16 @@ class FeedElement(ExtractFeedElementInterface):
             # Shelf mark
             #self.shelf_mark = 
 
-            # Media (select first preview image or preview audio or regular image or regular audio)
-            self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00451"]/{L}linkResource'), type = 'image')
-            if not self.media:
-                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00452"]/{L}linkResource'), type = 'audio')
-            if not self.media:
-                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00464"]/{L}linkResource'), type = 'image')
+            # Media (select first regular image or regular audio or regular representation or preview image or preview audio)
+            self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00464"]/{L}linkResource'), type = 'image')
             if not self.media:
                 self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00465"]/{L}linkResource'), type = 'audio')
+            if not self.media:
+                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00481"]/{L}linkResource'), type = 'image')
+            if not self.media:
+                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00451"]/{L}linkResource'), type = 'image')
+            if not self.media:
+                self.media = Media(self.xml_first_text('.//{L}resourceWrap/{L}resourceSet/{L}resourceRepresentation[@{L}type="http://terminology.lido-schema.org/lido00452"]/{L}linkResource'), type = 'audio')
 
             # Media license
             if self.media:
