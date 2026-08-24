@@ -1079,6 +1079,12 @@ def clean_namespaces(input:str) -> str:
     elif input.startswith('https://www.geonames.org/'):
         input = input.replace('https://www.geonames.org/', str(GN), 1)
 
+    # Avoid known Iconclass issues
+    if input.startswith('http://iconclass.org/rkd/'):
+        input = input.replace('http://iconclass.org/rkd/', str(IC), 1)
+    elif input.startswith('https://iconclass.org/rkd/'):
+        input = input.replace('https://iconclass.org/rkd/', str(IC), 1)
+
     # List namespaces to check
     checks = [
         str(CTO2),
