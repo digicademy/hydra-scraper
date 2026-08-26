@@ -533,7 +533,7 @@ class FeedElement(MapFeedElementInterface):
                     related_persons_by_label[str(i[1])].append(i)
                 elif i[0]:
                     related_person_type = type_identifier(i[0])
-                    if related_location_type:
+                    if related_person_type:
                         related_person = BNode() # TODO This is supposed to be an ARK ID per person, which requires a look-up service
                         self.rdf.add((self.element_uri.rdflib(), CTO.CTO_0001009, related_person)) # has related person
                         self.rdf.add((related_person, RDF.type, NFDICORE.NFDI_0000004)) # person
