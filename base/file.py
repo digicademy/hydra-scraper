@@ -265,6 +265,9 @@ class File:
                 elif self.file_extension.startswith('json'):
                     self.content_type = 'application/ld+json'
                     self.file_type = 'json-ld'
+                elif self.file_extension.startswith('cgif'):
+                    self.content_type = 'application/ld+json'
+                    self.file_type = 'json-ld'
                 elif self.file_extension == 'hext':
                     self.content_type = 'application/hex+x-ndjson'
                     self.file_type = 'hext'
